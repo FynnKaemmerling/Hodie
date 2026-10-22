@@ -4,7 +4,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 ## Projekt
 
-**Hodie** ist eine Desktop-App. *(Beschreibung folgt.)*
+**Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
 **Status:** Meilenstein 1 (Gerüst) ist aufgesetzt: Tauri-2-App mit React/TypeScript, i18n und Design-Tokens. Es gibt noch keine fachlichen Funktionen.
 
@@ -19,8 +19,13 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | App-Gerüst | Tauri 2 |
 | Backend | Rust |
 | Frontend | React + TypeScript + Vite |
+| Lokaler Speicher | SQLite über `rusqlite` (gebündelt) *(geplant)* |
+| Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) *(geplant)* |
+| Globales Tastenkürzel | `tauri-plugin-global-shortcut` *(geplant)* |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
+
+Mit *(geplant)* markierte Abhängigkeiten sind vorgeschlagen, aber noch nicht installiert.
 
 Weitere Abhängigkeiten nur nach Rücksprache hinzufügen. Bevorzugt werden gepflegte Bibliotheken, die auf allen drei Systemen funktionieren.
 
@@ -53,7 +58,7 @@ src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
 src/styles/tokens.css   Design tokens (the only place for raw colors, sizes, etc.)
 src/styles/global.css   Global base styles
-src-tauri/              Rust backend
+src-tauri/              Rust backend (storage, commands)
 src-tauri/capabilities/ Tauri permissions for the frontend
 .github/workflows/      CI builds for all three platforms
 ```
@@ -81,7 +86,16 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 
 ## Architektur-Leitlinien
 
-*(Folgt, sobald der fachliche Umfang feststeht.)*
+1. **Klare Schichten trennen**
+   - *Speicher-Schicht (Rust):* SQLite-Datenbank, Schema-Migrationen, alle Lese- und Schreibzugriffe. Keine UI-Abhängigkeiten.
+   - *Befehls-Schicht (Rust):* Tauri-Befehle als einzige Schnittstelle zum Frontend. Sie validieren Eingaben und geben Daten oder Fehlercodes zurück.
+   - *UI-Schicht (React):* Spricht ausschließlich über diese Befehle mit dem Backend, nie direkt mit der Datenbank.
+2. **Datenmodell:** Board → Spalte → Karte → Teilaufgabe. Tags gehören keinem Board und werden Karten über eine Zuordnungstabelle zugewiesen. Genau eine Spalte pro Board ist die Erledigt-Spalte.
+3. **Reihenfolge stabil speichern:** Position von Boards, Spalten, Karten und Teilaufgaben als eigenes Sortierfeld, das beim Verschieben nur die bewegte Zeile ändert (z. B. Fractional Indexing), nicht alle Geschwister neu nummeriert.
+4. **Optimistische Oberfläche:** Änderungen erscheinen sofort, werden im Hintergrund gespeichert und bei einem Fehler zurückgenommen, mit Hinweis an den Nutzer.
+5. **Kein Datenverlust:** Jede Änderung wird sofort gespeichert. Gelöschtes bleibt kurz wiederherstellbar (Rückgängig). Schema-Änderungen nur über Migrationen, nie durch Neuanlegen der Datenbank.
+6. **Reine Logik testbar halten:** Kurzschreibweise der Schnelleingabe, Sortierlogik und Filter als reine Funktionen mit Tests.
+7. **Datenbankpfad** über Tauris Pfad-API (App-Datenverzeichnis), nie fest eintragen.
 
 ## Plattformübergreifend
 
@@ -94,11 +108,15 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 
 ## UI-Leitlinien
 
-Die Designrichtung steht in [`DESIGN.md`](DESIGN.md). Kernregeln: alle visuellen Werte über CSS-Variablen (Tokens), keine festen Farben in Komponenten, keine Bibliothek mit festem Look, Barrierefreiheit (mindestens WCAG AA, vollständige Tastaturbedienung, Screenreader-Beschriftungen) von Anfang an.
+Die Designrichtung steht in [`DESIGN.md`](DESIGN.md). Kernregeln: alle visuellen Werte über CSS-Variablen (Tokens), keine festen Farben in Komponenten, keine Bibliothek mit festem Look, Hell- und Dunkelmodus über denselben Satz semantischer Tokens, Barrierefreiheit (mindestens WCAG AA in beiden Themes, vollständige Tastaturbedienung auch für Drag & Drop, Screenreader-Beschriftungen) von Anfang an.
+
+- Kanban-Layout: Seitenleiste mit Boards links, Spalten nebeneinander, Kartendetails im Seitenpanel rechts.
+- Sofort speichern, kein Speichern-Button. Löschen mit Rückgängig statt Bestätigungsdialog.
+- Tastenkürzel zentral definieren, siehe Tabelle in `DESIGN.md`.
 
 ## Arbeitsweise
 
 - Kleine, fokussierte Änderungen. Vor größeren Architektur- oder Abhängigkeitsentscheidungen kurz Rücksprache halten.
-- Neue Funktionen mit Tests absichern.
+- Neue Funktionen mit Tests absichern, besonders Speicher-Schicht, Migrationen und Sortierlogik.
 - Commits nur auf ausdrückliche Anweisung. Commit-Messages auf Englisch im Imperativ (z. B. `Add settings view`).
 - Diese Datei aktuell halten, sobald sich Stack, Befehle oder Struktur ändern.
