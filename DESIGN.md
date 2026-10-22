@@ -93,7 +93,7 @@ Alle visuellen Grundwerte sind **CSS-Variablen** in `src/styles/tokens.css`. Kom
 
 ## Komponenten
 
-- Eigene, schlanke Komponenten auf Basis einer Bibliothek, die nur Verhalten und Barrierefreiheit liefert, kein Aussehen (Radix UI oder React Aria).
+- Eigene, schlanke Komponenten auf Basis von **React Aria Components**, die nur Verhalten und Barrierefreiheit liefern, kein Aussehen. Drag & Drop über `@dnd-kit`.
 - **Keine** Bibliothek mit festem Look (Material UI, Ant Design o. Ä.).
 - Styling über **CSS Modules** neben der Komponente, ausschließlich mit Variablen aus `tokens.css`.
 - Gemeinsame Bausteine (Button, Menü, Dialog, Eingabefeld, Tag, Checkbox) liegen an einer Stelle und werden wiederverwendet.
@@ -121,4 +121,3 @@ Feste Regeln, keine spätere Verbesserung:
 - Akzentfarbe und Gesamtstimmung der Farbpalette
 - Icon-Set (Vorschlag: Lucide)
 - Logo und App-Icon
-- Radix UI oder React Aria als Grundlage der Komponenten

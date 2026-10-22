@@ -1,0 +1,40 @@
+.slot {
+  list-style: none;
+}
+
+.card {
+  display: block;
+  padding: var(--space-4) var(--space-4);
+  border: 1px solid var(--color-border-card);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-card);
+  cursor: grab;
+  touch-action: manipulation;
+  transition:
+    box-shadow var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* The spot the card will land in while it is being dragged. */
+.slot[data-dragging] .card {
+  border: 1px dashed var(--color-border-strong);
+  background: transparent;
+  box-shadow: none;
+}
+
+.slot[data-dragging] .card > * {
+  visibility: hidden;
+}
+
+/* The copy that follows the pointer (DragOverlay). */
+.overlay {
+  cursor: grabbing;
+  box-shadow: var(--shadow-drag);
+  transform: rotate(1.5deg);
+}

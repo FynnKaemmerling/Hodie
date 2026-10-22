@@ -1,0 +1,98 @@
+.column {
+  display: flex;
+  flex-direction: column;
+  width: var(--column-width);
+  flex-shrink: 0;
+  max-height: 100%;
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-column);
+}
+
+.column[data-dragging] {
+  opacity: 0.4;
+}
+
+.overlay {
+  max-height: none;
+  box-shadow: var(--shadow-drag);
+  cursor: grabbing;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--list-row-height) + var(--space-4));
+  padding: var(--space-3) var(--space-3) var(--space-2) var(--space-3);
+}
+
+.handle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: grab;
+}
+
+.name {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  min-width: 1.5em;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-count);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.done {
+  color: var(--color-success);
+  font-weight: var(--font-weight-bold);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: var(--space-3);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  overflow-y: auto;
+}
+
+.footer {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--list-row-height);
+  padding-inline: var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--easing-standard);
+}
+
+.add:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}

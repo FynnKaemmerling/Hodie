@@ -17,19 +17,55 @@
   --color-text-disabled: #9a9ea2;
   --color-text-on-accent: #ffffff;
 
+  /* Board */
+  --color-bg-column: #efefec;
+  --color-bg-card: #ffffff;
+  --color-bg-count: #e2e2de;
+
+  /* Inverse surfaces (toasts) */
+  --color-bg-inverse: #2d3135;
+  --color-bg-inverse-hover: #41464b;
+  --color-text-inverse: #f3f3f1;
+  --color-accent-on-inverse: #a9c3ea;
+
   /* Lines */
   --color-border: #e3e3df;
   --color-border-strong: #cfd0cc;
+  --color-border-card: #e6e6e2;
 
   /* Accent (placeholder, still to be decided) */
   --color-accent: #4a6a95;
   --color-accent-hover: #3f5c82;
   --color-focus-ring: #6f8fbf;
+  --color-focus-ring-soft: rgb(111 143 191 / 0.25);
 
   /* Status */
   --color-success: #3f7d5a;
   --color-warning: #9a6b1f;
   --color-danger: #a8473f;
+
+  /* Priority (always shown with a symbol, never by colour alone) */
+  --color-priority-low: #4a6a95;
+  --color-priority-medium: #9a6b1f;
+  --color-priority-high: #a8473f;
+
+  /* Tag palette: keys match TAG_COLORS in src/api/types.ts */
+  --tag-gray-bg: #e8e8e5;
+  --tag-gray-fg: #4b4f53;
+  --tag-red-bg: #f6e1df;
+  --tag-red-fg: #8f3a33;
+  --tag-orange-bg: #f8e6d6;
+  --tag-orange-fg: #8a4b17;
+  --tag-yellow-bg: #f5ecc9;
+  --tag-yellow-fg: #6f5a10;
+  --tag-green-bg: #dfeee4;
+  --tag-green-fg: #2f6a47;
+  --tag-teal-bg: #dbeeed;
+  --tag-teal-fg: #25625f;
+  --tag-blue-bg: #e0e8f4;
+  --tag-blue-fg: #3a5880;
+  --tag-purple-bg: #ebe3f3;
+  --tag-purple-fg: #5d4282;
 
   /* Spacing */
   --space-1: 0.125rem;
@@ -44,10 +80,16 @@
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 999px;
 
   /* Shadows (use sparingly) */
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
   --shadow-md: 0 2px 8px rgb(0 0 0 / 0.07);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.12);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 2px 6px rgb(0 0 0 / 0.07);
+  --shadow-drag: 0 12px 28px rgb(0 0 0 / 0.16);
 
   /* Typography */
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, sans-serif;
@@ -65,8 +107,9 @@
   /* Density */
   --list-row-height: 2.25rem;
   --sidebar-width: 15rem;
-  --toolbar-height: 3rem;
-  --statusbar-height: 1.75rem;
+  --toolbar-height: 3.25rem;
+  --column-width: 17.5rem;
+  --icon-button-size: 1.75rem;
 
   /* Motion */
   --duration-fast: 120ms;

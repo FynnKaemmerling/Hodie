@@ -4,10 +4,68 @@
   },
   "nav": {
     "title": "Navigation",
-    "home": "Home"
+    "boards": "Boards"
   },
-  "toolbar": {
-    "search": "Search"
+  "home": {
+    "empty": {
+      "title": "No board yet",
+      "description": "Create a board to collect your tasks.",
+      "action": "Create board"
+    }
+  },
+  "board": {
+    "name": "Board name",
+    "namePlaceholder": "e.g. Work",
+    "add": "New board",
+    "defaultName": "My tasks",
+    "defaultColumns": {
+      "open": "To do",
+      "doing": "In progress",
+      "done": "Done"
+    }
+  },
+  "column": {
+    "name": "Column name",
+    "namePlaceholder": "e.g. Waiting for",
+    "add": "Add column",
+    "setDone": "Make done column",
+    "isDone": "Done column",
+    "deleteDoneHint": "The done column cannot be deleted",
+    "cardCount_one": "{{count}} card",
+    "cardCount_other": "{{count}} cards"
+  },
+  "card": {
+    "title": "Card title",
+    "titlePlaceholder": "What needs to be done?",
+    "add": "Add card",
+    "priority": {
+      "low": "Low priority",
+      "medium": "Medium priority",
+      "high": "High priority"
+    },
+    "subtasks": "{{done}} of {{total}} subtasks done",
+    "hasNotes": "Has notes"
+  },
+  "actions": {
+    "more": "More actions for {{name}}",
+    "rename": "Rename",
+    "delete": "Delete",
+    "undo": "Undo"
+  },
+  "toast": {
+    "boardDeleted": "Board “{{name}}” deleted",
+    "columnDeleted": "Column “{{name}}” deleted",
+    "cardDeleted": "Card “{{title}}” deleted"
+  },
+  "dnd": {
+    "instructions": "Press space to pick up the item. Use the arrow keys to move it, space to drop it, and escape to cancel.",
+    "pickedUp": "Picked up “{{name}}”.",
+    "over": "“{{name}}” {{target}}.",
+    "notOver": "“{{name}}” is not over a drop target.",
+    "dropped": "Dropped “{{name}}”.",
+    "cancelled": "Moving “{{name}}” was cancelled.",
+    "cardPosition": "in column {{column}}, position {{position}}",
+    "columnPosition": "at position {{position}} of {{total}}"
   },
   "settings": {
     "language": "Language"
@@ -16,13 +74,30 @@
     "de": "Deutsch",
     "en": "English"
   },
-  "home": {
-    "empty": {
-      "title": "Welcome to Hodie",
-      "description": "Something is coming here soon."
-    }
-  },
-  "status": {
-    "ready": "Ready"
+  "errors": {
+    "not_found": "This item no longer exists.",
+    "validation": {
+      "empty": "The name must not be empty."
+    },
+    "board": {
+      "no_columns": "A board needs at least one column."
+    },
+    "column": {
+      "is_done": "The done column cannot be deleted. Make another column the done column first."
+    },
+    "card": {
+      "archived": "The card is archived.",
+      "not_archived": "The card is not archived."
+    },
+    "tag": {
+      "duplicate_name": "A tag with this name already exists.",
+      "invalid_color": "This colour is not available for tags."
+    },
+    "db": {
+      "too_new": "The data comes from a newer version of Hodie. Please update the app.",
+      "error": "The change could not be saved."
+    },
+    "internal": "An internal error occurred.",
+    "unknown": "Something went wrong."
   }
 }

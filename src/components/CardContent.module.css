@@ -1,0 +1,82 @@
+.title {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-block-start: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.priority {
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.05em;
+}
+
+.priority[data-priority="low"] {
+  color: var(--color-priority-low);
+}
+
+.priority[data-priority="medium"] {
+  color: var(--color-priority-medium);
+}
+
+.priority[data-priority="high"] {
+  color: var(--color-priority-high);
+}
+
+.badge[data-complete] {
+  color: var(--color-success);
+}
+
+.tag {
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  line-height: 1.6;
+  font-weight: var(--font-weight-medium);
+}
+
+.tag[data-color="gray"] {
+  background: var(--tag-gray-bg);
+  color: var(--tag-gray-fg);
+}
+
+.tag[data-color="red"] {
+  background: var(--tag-red-bg);
+  color: var(--tag-red-fg);
+}
+
+.tag[data-color="orange"] {
+  background: var(--tag-orange-bg);
+  color: var(--tag-orange-fg);
+}
+
+.tag[data-color="yellow"] {
+  background: var(--tag-yellow-bg);
+  color: var(--tag-yellow-fg);
+}
+
+.tag[data-color="green"] {
+  background: var(--tag-green-bg);
+  color: var(--tag-green-fg);
+}
+
+.tag[data-color="teal"] {
+  background: var(--tag-teal-bg);
+  color: var(--tag-teal-fg);
+}
+
+.tag[data-color="blue"] {
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-fg);
+}
+
+.tag[data-color="purple"] {
+  background: var(--tag-purple-bg);
+  color: var(--tag-purple-fg);
+}

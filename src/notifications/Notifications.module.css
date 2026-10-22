@@ -1,0 +1,54 @@
+.region {
+  position: fixed;
+  inset-block-end: var(--space-6);
+  inset-inline: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  max-width: min(32rem, calc(100vw - 2 * var(--space-6)));
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  animation: enter var(--duration-normal) var(--easing-standard);
+}
+
+.toast[data-kind="error"] {
+  background: var(--color-danger);
+  color: var(--color-text-on-accent);
+}
+
+.message {
+  flex: 1;
+  padding-block: var(--space-2);
+}
+
+.action {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-accent-on-inverse);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--color-bg-inverse-hover);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-3));
+  }
+}

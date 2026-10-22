@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Meilenstein 2 (Datenmodell und Speicher) ist fertig: SQLite-Schema mit Migrationen und alle Tauri-Befehle für Boards, Spalten, Karten, Teilaufgaben und Tags. Die Oberfläche nutzt sie noch nicht, sie ist noch das Gerüst aus Meilenstein 1.
+**Status:** Meilenstein 3 (Board-Ansicht) ist umgesetzt: Seitenleiste mit Boards, Spalten und Karten mit Drag & Drop und Tastaturbedienung, Anlegen, Umbenennen und Löschen mit Rückgängig. Als Nächstes folgen die Kartendetails (Meilenstein 4).
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -20,7 +20,8 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Backend | Rust |
 | Frontend | React + TypeScript + Vite |
 | Lokaler Speicher | SQLite über `rusqlite` (gebündelt) |
-| Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) *(geplant)* |
+| UI-Bausteine | React Aria Components (Verhalten und Barrierefreiheit, kein eigenes Aussehen) |
+| Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) |
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` *(geplant)* |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
@@ -53,6 +54,9 @@ CI (`.github/workflows/build.yml`) führt all diese Prüfungen auf Windows, macO
 
 ```
 src/                    React frontend
+src/api/                Typed wrappers for the Tauri commands, error codes
+src/board/              Board state: pure update functions (tested), hooks, drag-and-drop ids
+src/notifications/      Toasts with undo (also Mod+Z)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
@@ -71,7 +75,9 @@ src-tauri/capabilities/ Tauri permissions for the frontend
 
 Styling: CSS Modules (`*.module.css`) neben der Komponente, ausschließlich mit Variablen aus `tokens.css`.
 
-Die Sprachwahl wird vorerst im `localStorage` gespeichert. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
+Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit einer reinen Funktion aus `boardState.ts` geändert, dann der Befehl aufgerufen. Schlägt er fehl, erscheint der übersetzte Fehler und das Board wird neu geladen.
+
+Die Sprachwahl und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
 
 ## Sprache
 

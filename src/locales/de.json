@@ -4,10 +4,68 @@
   },
   "nav": {
     "title": "Navigation",
-    "home": "Start"
+    "boards": "Boards"
   },
-  "toolbar": {
-    "search": "Suchen"
+  "home": {
+    "empty": {
+      "title": "Noch kein Board",
+      "description": "Lege ein Board an und sammle darin deine Aufgaben.",
+      "action": "Board anlegen"
+    }
+  },
+  "board": {
+    "name": "Name des Boards",
+    "namePlaceholder": "z. B. Arbeit",
+    "add": "Neues Board",
+    "defaultName": "Meine Aufgaben",
+    "defaultColumns": {
+      "open": "Offen",
+      "doing": "In Arbeit",
+      "done": "Erledigt"
+    }
+  },
+  "column": {
+    "name": "Name der Spalte",
+    "namePlaceholder": "z. B. Warten auf",
+    "add": "Spalte hinzufügen",
+    "setDone": "Als Erledigt-Spalte festlegen",
+    "isDone": "Erledigt-Spalte",
+    "deleteDoneHint": "Die Erledigt-Spalte kann nicht gelöscht werden",
+    "cardCount_one": "{{count}} Karte",
+    "cardCount_other": "{{count}} Karten"
+  },
+  "card": {
+    "title": "Titel der Karte",
+    "titlePlaceholder": "Was ist zu tun?",
+    "add": "Karte hinzufügen",
+    "priority": {
+      "low": "Priorität niedrig",
+      "medium": "Priorität mittel",
+      "high": "Priorität hoch"
+    },
+    "subtasks": "{{done}} von {{total}} Teilaufgaben erledigt",
+    "hasNotes": "Hat Notizen"
+  },
+  "actions": {
+    "more": "Weitere Aktionen für {{name}}",
+    "rename": "Umbenennen",
+    "delete": "Löschen",
+    "undo": "Rückgängig"
+  },
+  "toast": {
+    "boardDeleted": "Board „{{name}}“ gelöscht",
+    "columnDeleted": "Spalte „{{name}}“ gelöscht",
+    "cardDeleted": "Karte „{{title}}“ gelöscht"
+  },
+  "dnd": {
+    "instructions": "Leertaste drücken, um das Element aufzunehmen. Mit den Pfeiltasten verschieben, mit der Leertaste ablegen, mit Escape abbrechen.",
+    "pickedUp": "„{{name}}“ aufgenommen.",
+    "over": "„{{name}}“ {{target}}.",
+    "notOver": "„{{name}}“ ist über keinem Ziel.",
+    "dropped": "„{{name}}“ abgelegt.",
+    "cancelled": "Verschieben von „{{name}}“ abgebrochen.",
+    "cardPosition": "in Spalte {{column}}, Position {{position}}",
+    "columnPosition": "an Position {{position}} von {{total}}"
   },
   "settings": {
     "language": "Sprache"
@@ -16,13 +74,30 @@
     "de": "Deutsch",
     "en": "English"
   },
-  "home": {
-    "empty": {
-      "title": "Willkommen bei Hodie",
-      "description": "Hier entsteht bald etwas."
-    }
-  },
-  "status": {
-    "ready": "Bereit"
+  "errors": {
+    "not_found": "Das Element gibt es nicht mehr.",
+    "validation": {
+      "empty": "Der Name darf nicht leer sein."
+    },
+    "board": {
+      "no_columns": "Ein Board braucht mindestens eine Spalte."
+    },
+    "column": {
+      "is_done": "Die Erledigt-Spalte kann nicht gelöscht werden. Lege vorher eine andere Spalte als Erledigt-Spalte fest."
+    },
+    "card": {
+      "archived": "Die Karte ist archiviert.",
+      "not_archived": "Die Karte ist nicht archiviert."
+    },
+    "tag": {
+      "duplicate_name": "Einen Tag mit diesem Namen gibt es schon.",
+      "invalid_color": "Diese Farbe ist für Tags nicht vorgesehen."
+    },
+    "db": {
+      "too_new": "Die Daten stammen aus einer neueren Version von Hodie. Bitte aktualisiere die App.",
+      "error": "Die Änderung konnte nicht gespeichert werden."
+    },
+    "internal": "Ein interner Fehler ist aufgetreten.",
+    "unknown": "Etwas ist schiefgelaufen."
   }
 }

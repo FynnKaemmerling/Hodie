@@ -1,35 +1,53 @@
 import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "./components/LanguageSwitcher";
+import BoardCanvas from "./components/BoardCanvas";
 import Sidebar from "./components/Sidebar";
+import { useBoard } from "./board/useBoard";
+import { useBoards } from "./board/useBoards";
 import styles from "./App.module.css";
 
 function App() {
   const { t } = useTranslation();
+  const boards = useBoards();
+  const board = useBoard(boards.selectedId);
+  const selected = boards.boards?.find((b) => b.id === boards.selectedId);
 
   return (
     <div className={styles.app}>
-      <Sidebar />
+      <Sidebar
+        boards={boards.boards ?? []}
+        selectedId={boards.selectedId}
+        onSelect={boards.select}
+        onCreate={boards.create}
+        onRename={boards.rename}
+        onDelete={boards.remove}
+      />
 
-      <div className={styles.main}>
-        <header className={styles.toolbar}>
-          <input
-            className={styles.search}
-            type="search"
-            placeholder={t("toolbar.search")}
-            aria-label={t("toolbar.search")}
-          />
-          <LanguageSwitcher />
-        </header>
-
-        <main className={styles.content}>
+      <main className={styles.main}>
+        {boards.boards?.length === 0 && (
           <div className={styles.empty}>
             <h1 className={styles.emptyTitle}>{t("home.empty.title")}</h1>
             <p className={styles.emptyText}>{t("home.empty.description")}</p>
+            <button
+              type="button"
+              className={styles.primary}
+              onClick={() => boards.create(t("board.defaultName"))}
+            >
+              {t("home.empty.action")}
+            </button>
           </div>
-        </main>
+        )}
 
-        <footer className={styles.statusbar}>{t("status.ready")}</footer>
-      </div>
+        {selected && (
+          <>
+            <header className={styles.toolbar}>
+              <h1 className={styles.title}>{selected.name}</h1>
+            </header>
+            <div className={styles.content}>
+              <BoardCanvas board={board} />
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }
