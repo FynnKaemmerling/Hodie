@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Meilenstein 3 (Board-Ansicht) ist umgesetzt: Seitenleiste mit Boards, Spalten und Karten mit Drag & Drop und Tastaturbedienung, Anlegen, Umbenennen und Löschen mit Rückgängig. Als Nächstes folgen die Kartendetails (Meilenstein 4).
+**Status:** Meilenstein 4 (Kartendetails) ist umgesetzt: Seitenpanel mit Titel, Notizen (reiner Text), Priorität, Tags und Teilaufgaben, Archiv mit Wiederherstellen, „Erledigte archivieren“. Als Nächstes folgen Schnelleingabe und Suche (Meilenstein 5).
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -55,7 +55,7 @@ CI (`.github/workflows/build.yml`) führt all diese Prüfungen auf Windows, macO
 ```
 src/                    React frontend
 src/api/                Typed wrappers for the Tauri commands, error codes
-src/board/              Board state: pure update functions (tested), hooks, drag-and-drop ids
+src/board/              Board, card and archive state: pure update functions (tested), hooks
 src/notifications/      Toasts with undo (also Mod+Z)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
@@ -75,7 +75,7 @@ src-tauri/capabilities/ Tauri permissions for the frontend
 
 Styling: CSS Modules (`*.module.css`) neben der Komponente, ausschließlich mit Variablen aus `tokens.css`.
 
-Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit einer reinen Funktion aus `boardState.ts` geändert, dann der Befehl aufgerufen. Schlägt er fehl, erscheint der übersetzte Fehler und das Board wird neu geladen.
+Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit einer reinen Funktion aus `boardState.ts` geändert, dann der Befehl aufgerufen. Schlägt er fehl, erscheint der übersetzte Fehler und das Board wird neu geladen. Das Kartenpanel arbeitet genauso über `useCardDetail` (`cardState.ts`) und spiegelt jede Änderung per `patchCard` in Board und Archiv. Notizen werden kurz nach dem Tippen, beim Verlassen des Felds und beim Schließen des Panels gespeichert.
 
 Die Sprachwahl und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
 

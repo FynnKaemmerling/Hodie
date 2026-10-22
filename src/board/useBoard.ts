@@ -4,6 +4,9 @@ import { api, type BoardView, type CardSummary, type ColumnView, type Id, type T
 import { useNotifications } from "../notifications/Notifications";
 import * as state from "./boardState";
 
+/** Enough of a card to act on it and name it in a message. */
+export type CardRef = Pick<CardSummary, "id" | "title">;
+
 /**
  * One board with its columns and cards. Changes show immediately and are
  * saved in the background; if saving fails, the board is reloaded from the
@@ -81,7 +84,7 @@ export function useBoard(boardId: Id | null) {
   );
 
   const deleteCard = useCallback(
-    async (card: CardSummary) => {
+    async (card: CardRef) => {
       const deleted = await apply(
         (v) => state.removeCard(v, card.id),
         () => api.deleteCard(card.id),
@@ -160,13 +163,70 @@ export function useBoard(boardId: Id | null) {
     [notify, reload, t],
   );
 
+  /** Mirrors a change saved elsewhere (the card panel) without saving again. */
+  const patchCard = useCallback(
+    (cardId: Id, change: Partial<Omit<CardSummary, "id" | "columnId">>) => {
+      setView((current) => current && state.updateCard(current, cardId, change));
+    },
+    [],
+  );
+
+  const archiveCard = useCallback(
+    async (card: CardRef) => {
+      const archived = await apply(
+        (v) => state.removeCard(v, card.id),
+        () => api.archiveCard(card.id),
+      );
+      if (!archived) return;
+      notify.info(t("toast.cardArchived", { title: card.title }), async () => {
+        try {
+          await api.unarchiveCard(card.id);
+        } catch (error) {
+          notify.error(error);
+        }
+        await reload();
+      });
+    },
+    [apply, notify, reload, t],
+  );
+
+  const archiveDoneCards = useCallback(async () => {
+    if (boardId === null) return;
+    try {
+      const ids = await api.archiveDoneCards(boardId);
+      if (ids.length === 0) return;
+      setView((current) => ids.reduce((v, id) => v && state.removeCard(v, id), current));
+      notify.info(t("toast.doneArchived", { count: ids.length }), async () => {
+        try {
+          for (const id of ids) await api.unarchiveCard(id);
+        } catch (error) {
+          notify.error(error);
+        }
+        await reload();
+      });
+    } catch (error) {
+      notify.error(error);
+    }
+  }, [boardId, notify, reload, t]);
+
+  const addTag = useCallback((tag: Tag) => {
+    setTags((current) =>
+      [...current, tag].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" })),
+    );
+  }, []);
+
   return {
     view,
     tags,
+    reload,
+    patchCard,
+    addTag,
     createCard,
     renameCard,
     moveCard,
     deleteCard,
+    archiveCard,
+    archiveDoneCards,
     createColumn,
     renameColumn,
     moveColumn,

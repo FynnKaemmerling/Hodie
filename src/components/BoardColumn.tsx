@@ -20,6 +20,9 @@ interface Props {
   onRenameCard: (cardId: Id, title: string) => void;
   onDeleteCard: (card: CardSummary) => void;
   onNavigate: (cardId: Id, direction: Direction) => void;
+  onOpenCard: (cardId: Id) => void;
+  onArchiveDone: () => void;
+  selectedCardId: Id | null;
 }
 
 function BoardColumn({
@@ -32,6 +35,9 @@ function BoardColumn({
   onRenameCard,
   onDeleteCard,
   onNavigate,
+  onOpenCard,
+  onArchiveDone,
+  selectedCardId,
 }: Props) {
   const { t } = useTranslation();
   const [renaming, setRenaming] = useState(false);
@@ -105,6 +111,16 @@ function BoardColumn({
                   disabled: column.isDone,
                   onAction: () => onSetDone(column.id),
                 },
+                ...(column.isDone
+                  ? [
+                      {
+                        id: "archiveDone",
+                        label: t("column.archiveDone"),
+                        disabled: column.cards.length === 0,
+                        onAction: onArchiveDone,
+                      },
+                    ]
+                  : []),
                 {
                   id: "delete",
                   label: column.isDone ? t("column.deleteDoneHint") : t("actions.delete"),
@@ -131,6 +147,8 @@ function BoardColumn({
               onRename={onRenameCard}
               onDelete={onDeleteCard}
               onNavigate={onNavigate}
+              onOpen={onOpenCard}
+              selected={card.id === selectedCardId}
             />
           ))}
         </ul>

@@ -4,7 +4,8 @@
   },
   "nav": {
     "title": "Navigation",
-    "boards": "Boards"
+    "boards": "Boards",
+    "archive": "Archive"
   },
   "home": {
     "empty": {
@@ -32,7 +33,8 @@
     "isDone": "Done column",
     "deleteDoneHint": "The done column cannot be deleted",
     "cardCount_one": "{{count}} card",
-    "cardCount_other": "{{count}} cards"
+    "cardCount_other": "{{count}} cards",
+    "archiveDone": "Archive done cards"
   },
   "card": {
     "title": "Card title",
@@ -43,8 +45,7 @@
       "medium": "Medium priority",
       "high": "High priority"
     },
-    "subtasks": "{{done}} of {{total}} subtasks done",
-    "hasNotes": "Has notes"
+    "subtasks": "{{done}} of {{total}} subtasks done"
   },
   "actions": {
     "more": "More actions for {{name}}",
@@ -55,7 +56,12 @@
   "toast": {
     "boardDeleted": "Board “{{name}}” deleted",
     "columnDeleted": "Column “{{name}}” deleted",
-    "cardDeleted": "Card “{{title}}” deleted"
+    "cardDeleted": "Card “{{title}}” deleted",
+    "cardArchived": "Card “{{title}}” archived",
+    "doneArchived_one": "{{count}} card archived",
+    "doneArchived_other": "{{count}} cards archived",
+    "cardRestored": "Card “{{title}}” is back on the board",
+    "subtaskDeleted": "Subtask “{{title}}” deleted"
   },
   "dnd": {
     "instructions": "Press space to pick up the item. Use the arrow keys to move it, space to drop it, and escape to cancel.",
@@ -65,7 +71,8 @@
     "dropped": "Dropped “{{name}}”.",
     "cancelled": "Moving “{{name}}” was cancelled.",
     "cardPosition": "in column {{column}}, position {{position}}",
-    "columnPosition": "at position {{position}} of {{total}}"
+    "columnPosition": "at position {{position}} of {{total}}",
+    "listPosition": "at position {{position}} of {{total}}"
   },
   "settings": {
     "language": "Language"
@@ -99,5 +106,62 @@
     },
     "internal": "An internal error occurred.",
     "unknown": "Something went wrong."
+  },
+  "panel": {
+    "title": "Card details",
+    "close": "Close details",
+    "archived": "Archived",
+    "priority": "Priority",
+    "priorities": {
+      "none": "None",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "tags": "Tags",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes …",
+    "subtasks": "Subtasks",
+    "archive": "Archive",
+    "unarchive": "Back to board",
+    "created": "Created {{date}}",
+    "updated": "Changed {{date}}"
+  },
+  "subtasks": {
+    "title": "Subtask title",
+    "placeholder": "New subtask",
+    "add": "Add subtask",
+    "move": "Move “{{title}}”",
+    "rename": "Rename “{{title}}”",
+    "delete": "Delete “{{title}}”"
+  },
+  "tags": {
+    "title": "Choose tags",
+    "add": "Tag",
+    "remove": "Remove tag “{{name}}”",
+    "search": "Search or create tags",
+    "searchPlaceholder": "Search or create tag …",
+    "empty": "No tags yet. Type a name to create the first one.",
+    "color": "Colour of the new tag",
+    "create": "Create “{{name}}”",
+    "colors": {
+      "gray": "Grey",
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "teal": "Teal",
+      "blue": "Blue",
+      "purple": "Purple"
+    }
+  },
+  "archive": {
+    "title": "Archive · {{name}}",
+    "restore": "Back to board",
+    "delete": "Delete “{{title}}” for good",
+    "empty": {
+      "title": "The archive is empty",
+      "description": "Archived cards appear here and can be brought back at any time."
+    }
   }
 }

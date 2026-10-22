@@ -112,3 +112,14 @@
   margin-block-start: auto;
   padding: var(--space-4) var(--space-4) var(--space-2);
 }
+
+.archive {
+  flex: none;
+  margin-block-start: var(--space-5);
+  padding-inline-end: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.archive[aria-current="page"] {
+  color: var(--color-text-primary);
+}

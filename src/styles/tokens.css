@@ -44,10 +44,20 @@
   --color-warning: #9a6b1f;
   --color-danger: #a8473f;
 
-  /* Priority (always shown with a symbol, never by colour alone) */
+  /* Priority: tinted card tile plus a coloured edge that widens with the
+     priority, so it does not rely on colour alone. Screen readers get text. */
   --color-priority-low: #4a6a95;
   --color-priority-medium: #9a6b1f;
   --color-priority-high: #a8473f;
+  --color-priority-low-bg: #eef3fa;
+  --color-priority-medium-bg: #fbf3e2;
+  --color-priority-high-bg: #fbeceb;
+  --color-priority-low-edge: #7d9cc8;
+  --color-priority-medium-edge: #d1a24a;
+  --color-priority-high-edge: #c8635a;
+  --priority-edge-low: 3px;
+  --priority-edge-medium: 4px;
+  --priority-edge-high: 6px;
 
   /* Tag palette: keys match TAG_COLORS in src/api/types.ts */
   --tag-gray-bg: #e8e8e5;
@@ -90,6 +100,7 @@
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04);
   --shadow-card-hover: 0 2px 6px rgb(0 0 0 / 0.07);
   --shadow-drag: 0 12px 28px rgb(0 0 0 / 0.16);
+  --shadow-panel: -4px 0 16px rgb(0 0 0 / 0.04);
 
   /* Typography */
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, sans-serif;
@@ -110,6 +121,7 @@
   --toolbar-height: 3.25rem;
   --column-width: 17.5rem;
   --icon-button-size: 1.75rem;
+  --panel-width: 26rem;
 
   /* Motion */
   --duration-fast: 120ms;

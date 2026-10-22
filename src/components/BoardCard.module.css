@@ -38,3 +38,25 @@
   box-shadow: var(--shadow-drag);
   transform: rotate(1.5deg);
 }
+
+/* The card open in the detail panel. */
+.card[data-selected] {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* Priority tints the tile; it comes last so hover and selection keep it. */
+.card[data-priority="low"] {
+  background: var(--color-priority-low-bg);
+  border-inline-start: var(--priority-edge-low) solid var(--color-priority-low-edge);
+}
+
+.card[data-priority="medium"] {
+  background: var(--color-priority-medium-bg);
+  border-inline-start: var(--priority-edge-medium) solid var(--color-priority-medium-edge);
+}
+
+.card[data-priority="high"] {
+  background: var(--color-priority-high-bg);
+  border-inline-start: var(--priority-edge-high) solid var(--color-priority-high-edge);
+}

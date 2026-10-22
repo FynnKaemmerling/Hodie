@@ -28,6 +28,7 @@ import type { BoardView, Id } from "../api";
 import { findCard, locateCard, moveCard, neighbourCard } from "../board/boardState";
 import type { Direction } from "../board/boardState";
 import { dndId, parseDndId, type DragData } from "../board/dnd";
+import { focusCard, focusColumn } from "../board/focus";
 import type { BoardActions } from "../board/useBoard";
 import { CardOverlay } from "./BoardCard";
 import BoardColumn, { ColumnOverlay } from "./BoardColumn";
@@ -72,23 +73,13 @@ const collisionDetection: CollisionDetection = (args) => {
   return [{ id: overId }];
 };
 
-function focusCard(cardId: Id) {
-  requestAnimationFrame(() => {
-    document.querySelector<HTMLElement>(`[data-card-id="${cardId}"]`)?.focus();
-  });
-}
-
-function focusColumn(columnId: Id) {
-  requestAnimationFrame(() => {
-    document.querySelector<HTMLElement>(`[data-column-id="${columnId}"]`)?.focus();
-  });
-}
-
 interface Props {
   board: BoardActions;
+  selectedCardId: Id | null;
+  onOpenCard: (cardId: Id) => void;
 }
 
-function BoardCanvas({ board }: Props) {
+function BoardCanvas({ board, selectedCardId, onOpenCard }: Props) {
   const { t } = useTranslation();
   const { view, tags } = board;
   // While dragging, cards moved between columns live in this draft until drop.
@@ -270,6 +261,9 @@ function BoardCanvas({ board }: Props) {
               onRenameCard={board.renameCard}
               onDeleteCard={board.deleteCard}
               onNavigate={navigate}
+              onOpenCard={onOpenCard}
+              onArchiveDone={board.archiveDoneCards}
+              selectedCardId={selectedCardId}
             />
           ))}
         </SortableContext>

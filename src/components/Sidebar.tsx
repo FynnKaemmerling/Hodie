@@ -13,9 +13,20 @@ interface Props {
   onCreate: (name: string) => void;
   onRename: (id: Id, name: string) => void;
   onDelete: (board: Board) => void;
+  showingArchive: boolean;
+  onShowArchive: () => void;
 }
 
-function Sidebar({ boards, selectedId, onSelect, onCreate, onRename, onDelete }: Props) {
+function Sidebar({
+  boards,
+  selectedId,
+  onSelect,
+  onCreate,
+  onRename,
+  onDelete,
+  showingArchive,
+  onShowArchive,
+}: Props) {
   const { t } = useTranslation();
   const [creating, setCreating] = useState(false);
   const [renamingId, setRenamingId] = useState<Id | null>(null);
@@ -42,7 +53,7 @@ function Sidebar({ boards, selectedId, onSelect, onCreate, onRename, onDelete }:
                 <button
                   type="button"
                   className={styles.item}
-                  aria-current={board.id === selectedId ? "page" : undefined}
+                  aria-current={board.id === selectedId && !showingArchive ? "page" : undefined}
                   onClick={() => onSelect(board.id)}
                   onDoubleClick={() => setRenamingId(board.id)}
                   onKeyDown={(event) => {
@@ -88,6 +99,17 @@ function Sidebar({ boards, selectedId, onSelect, onCreate, onRename, onDelete }:
       ) : (
         <button type="button" className={styles.add} onClick={() => setCreating(true)}>
           <span aria-hidden="true">+</span> {t("board.add")}
+        </button>
+      )}
+
+      {selectedId !== null && (
+        <button
+          type="button"
+          className={`${styles.item} ${styles.archive}`}
+          aria-current={showingArchive ? "page" : undefined}
+          onClick={onShowArchive}
+        >
+          {t("nav.archive")}
         </button>
       )}
 

@@ -49,7 +49,7 @@ Die vollständige Festlegung mit Abgrenzung und Meilensteinen steht in [`MVP.md`
 │ Boards     │ Offen     3  │ In Arbeit 2  │ Erledigt  4  │
 │  ● Arbeit  │ ┌──────────┐ │ ┌──────────┐ │ ┌──────────┐ │
 │  ○ Privat  │ │ Titel    │ │ │ Titel    │ │ │ Titel    │ │
-│            │ │ #tag  !! │ │ │ ☑ 2/5    │ │ │          │ │
+│            │ │ #tag     │ │ │ ☑ 2/5    │ │ │          │ │
 │ ＋ Board   │ └──────────┘ │ └──────────┘ │ └──────────┘ │
 └────────────┴──────────────┴──────────────┴──────────────┘
 ```

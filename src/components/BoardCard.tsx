@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useTranslation } from "react-i18next";
@@ -23,11 +23,17 @@ interface Props {
   onRename: (cardId: Id, title: string) => void;
   onDelete: (card: CardSummary) => void;
   onNavigate: (cardId: Id, direction: Direction) => void;
+  onOpen: (cardId: Id) => void;
+  selected: boolean;
 }
 
-function BoardCard({ card, tags, onRename, onDelete, onNavigate }: Props) {
+// A drop can end with a click on the card; that click must not open it.
+const CLICK_AFTER_DRAG_MS = 250;
+
+function BoardCard({ card, tags, onRename, onDelete, onNavigate, onOpen, selected }: Props) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
+  const lastDrag = useRef(0);
   const data: DragData = { kind: "card", id: card.id, columnId: card.columnId };
   const {
     attributes,
@@ -38,6 +44,11 @@ function BoardCard({ card, tags, onRename, onDelete, onNavigate }: Props) {
     transition,
     isDragging,
   } = useSortable({ id: dndId("card", card.id), data, disabled: editing });
+
+  useEffect(() => {
+    if (isDragging) lastDrag.current = Number.POSITIVE_INFINITY;
+    else if (lastDrag.current === Number.POSITIVE_INFINITY) lastDrag.current = Date.now();
+  }, [isDragging]);
 
   return (
     <li
@@ -60,9 +71,13 @@ function BoardCard({ card, tags, onRename, onDelete, onNavigate }: Props) {
           ref={setActivatorNodeRef}
           className={styles.card}
           data-card-id={card.id}
+          data-selected={selected || undefined}
+          data-priority={card.priority}
           {...attributes}
           {...listeners}
-          onDoubleClick={() => setEditing(true)}
+          onClick={() => {
+            if (Date.now() - lastDrag.current > CLICK_AFTER_DRAG_MS) onOpen(card.id);
+          }}
           onKeyDown={(event) => {
             listeners?.onKeyDown?.(event);
             // While the card is picked up, the keys belong to drag and drop.
@@ -71,6 +86,9 @@ function BoardCard({ card, tags, onRename, onDelete, onNavigate }: Props) {
             if (direction) {
               event.preventDefault();
               onNavigate(card.id, direction);
+            } else if (event.key === "Enter") {
+              event.preventDefault();
+              onOpen(card.id);
             } else if (event.key === "F2") {
               event.preventDefault();
               setEditing(true);
@@ -90,7 +108,7 @@ function BoardCard({ card, tags, onRename, onDelete, onNavigate }: Props) {
 /** The copy of a card that follows the pointer while dragging. */
 export function CardOverlay({ card, tags }: { card: CardSummary; tags: Tag[] }) {
   return (
-    <div className={`${styles.card} ${styles.overlay}`}>
+    <div className={`${styles.card} ${styles.overlay}`} data-priority={card.priority}>
       <CardContent card={card} tags={tags} />
     </div>
   );

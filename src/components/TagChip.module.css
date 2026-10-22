@@ -1,0 +1,27 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.75;
+}
+
+.chip[data-size="small"] {
+  font-size: var(--font-size-xs);
+  line-height: 1.6;
+}
+
+.chip[data-size="medium"] {
+  font-size: var(--font-size-sm);
+}
+
+.chip[data-color="gray"] { background: var(--tag-gray-bg); color: var(--tag-gray-fg); }
+.chip[data-color="red"] { background: var(--tag-red-bg); color: var(--tag-red-fg); }
+.chip[data-color="orange"] { background: var(--tag-orange-bg); color: var(--tag-orange-fg); }
+.chip[data-color="yellow"] { background: var(--tag-yellow-bg); color: var(--tag-yellow-fg); }
+.chip[data-color="green"] { background: var(--tag-green-bg); color: var(--tag-green-fg); }
+.chip[data-color="teal"] { background: var(--tag-teal-bg); color: var(--tag-teal-fg); }
+.chip[data-color="blue"] { background: var(--tag-blue-bg); color: var(--tag-blue-fg); }
+.chip[data-color="purple"] { background: var(--tag-purple-bg); color: var(--tag-purple-fg); }

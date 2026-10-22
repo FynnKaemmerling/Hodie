@@ -19,7 +19,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 │ Boards     │ Offen     3  │ In Arbeit 2  │ Erledigt  4  │ ＋    │
 │  ● Arbeit  │ ┌──────────┐ │ ┌──────────┐ │ ┌──────────┐ │Spalte │
 │  ○ Privat  │ │ Titel    │ │ │ Titel    │ │ │ Titel    │ │       │
-│            │ │ #tag  !! │ │ │ ☑ 2/5    │ │ │          │ │       │
+│            │ │ #tag     │ │ │ ☑ 2/5    │ │ │          │ │       │
 │ ＋ Board   │ └──────────┘ │ └──────────┘ │ └──────────┘ │       │
 │            │ ┌──────────┐ │              │              │       │
 │ Archiv     │ │ Titel    │ │              │              │       │
@@ -30,7 +30,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 
 - **Seitenleiste links:** Boards, Archiv, Einstellungen (Sprache, Theme). Einklappbar.
 - **Board:** Spalten nebeneinander mit fester Breite, horizontal scrollbar. Jede Spalte zeigt die Anzahl ihrer Karten.
-- **Karte:** Titel, darunter nur, was vorhanden ist: Tags, Prioritätsmarkierung, Fortschritt der Teilaufgaben, Hinweis auf Notizen. Leere Felder nehmen keinen Platz ein.
+- **Karte:** Titel, darunter nur, was vorhanden ist: Tags und Fortschritt der Teilaufgaben. Die Priorität steckt in der Farbe der Kachel. Leere Felder nehmen keinen Platz ein.
 - **Kartendetails** öffnen sich in einem **Seitenpanel rechts**. Das Board bleibt sichtbar und bedienbar. `Esc` schließt das Panel.
 - **Schnelleingabe:** kleines, randloses Fenster mit einem Eingabefeld, mittig auf dem Bildschirm. `Enter` legt die Karte an, `Esc` schließt.
 
@@ -60,7 +60,8 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 
 ## Priorität und Tags
 
-- **Priorität** wird als kleine Markierung an der Karte gezeigt, mit Symbol **und** Farbe (nie nur Farbe). „Keine“ zeigt nichts an.
+- **Priorität** färbt die ganze Kachel leicht ein (niedrig blau, mittel gelb, hoch rot) und gibt ihr links einen farbigen Rand, der mit der Priorität breiter wird. So ist sie auch ohne Farbwahrnehmung unterscheidbar, Screenreader lesen sie als Text vor. „Keine“ zeigt nichts an.
+- Notizen werden auf der Karte nicht angezeigt, nur im Panel.
 - **Tags** sind kleine, abgerundete Etiketten. Ihre Farben stammen aus einer festen Palette von etwa acht Tönen, die in beiden Themes ausreichend Kontrast haben. Jeder Ton ist ein eigener Token.
 
 ## Design-Tokens
