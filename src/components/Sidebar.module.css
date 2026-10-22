@@ -18,6 +18,23 @@
   margin-block-end: var(--space-4);
 }
 
+.header {
+  gap: var(--space-3);
+}
+
+/* macOS draws its traffic lights over the start of the header. */
+:global(html[data-platform="mac"]) .header {
+  padding-inline-start: var(--mac-traffic-light-inset);
+}
+
+.logo {
+  width: var(--logo-size);
+  height: var(--logo-size);
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 .appName {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);

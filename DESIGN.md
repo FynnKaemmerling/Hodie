@@ -38,6 +38,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 
 - **Drag & Drop** für Karten und Spalten, mit sichtbarer Einfügemarke und weicher Animation der verdrängten Karten.
 - **Tastatur gleichwertig:** Pfeiltasten bewegen den Fokus zwischen Karten und Spalten, `Leertaste` hebt eine Karte auf, Pfeiltasten verschieben sie, `Leertaste` legt sie ab, `Esc` bricht ab. `Enter` öffnet die Details.
+- **Rechtsklick** auf Board, Spalte oder Karte öffnet an der Maus dieselben Aktionen wie die drei Punkte (Karten: Öffnen, Umbenennen, Archivieren, Löschen). Auch die Kontextmenü-Taste und `Umschalt+F10` funktionieren. Das Browser-Menü (Zurück, Aktualisieren, Untersuchen …) gibt es nicht; nur Textfelder behalten das Systemmenü für Ausschneiden, Kopieren und Einfügen.
 - **Inline bearbeiten:** Titel von Karten, Spalten und Boards per Doppelklick oder `F2` direkt umbenennen.
 - **Sofort speichern:** Es gibt keinen Speichern-Button. Jede Änderung wird direkt übernommen.
 - **Rückgängig statt Nachfrage:** Löschen fragt nicht nach, sondern zeigt kurz einen Hinweis mit „Rückgängig“ (auch `Mod+Z`). Bestätigungsdialoge nur, wenn viel auf einmal verloren ginge (Board oder Spalte mit Karten löschen).
@@ -114,6 +115,8 @@ Feste Regeln, keine spätere Verbesserung:
 ## Plattform
 
 - Die Oberfläche sieht auf allen drei Systemen gleich aus, passt sich im Verhalten an (Tastenkürzel, Menüleiste, Fenstersteuerung).
+- **Titelleiste:** Unter Windows und Linux ist das Hauptfenster rahmenlos. Minimieren, Maximieren und Schließen sitzen rechts in der Kopfzeile (nach „Filter“), das Logo steht links neben „Hodie“. Freie Flächen der Kopfzeilen und der Seitenleistenkopf verschieben das Fenster, Doppelklick maximiert. Unter macOS bleiben die Ampelknöpfe des Systems links, die Titelleiste geht ins App-Design über (`tauri.macos.conf.json`).
+- Öffnet sich eine Karte, bekommt das Panel den Fokus, nicht das Titelfeld. Bearbeiten beginnt erst mit einem Klick oder Tab.
 - Neue CSS-Funktionen erst nutzen, wenn WebView2, WKWebView und WebKitGTK sie unterstützen.
 - Logische CSS-Eigenschaften (`margin-inline-start` statt `margin-left`) verwenden.
 

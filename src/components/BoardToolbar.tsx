@@ -1,5 +1,5 @@
 import { Check, ListFilter, Search } from "lucide-react";
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import {
   Button,
   Checkbox,
@@ -26,15 +26,20 @@ interface Props {
   /** Visible and total cards while a filter is active. */
   counts: { visible: number; total: number } | null;
   searchRef: RefObject<HTMLInputElement | null>;
+  /** Shown after the filter, e.g. the window controls. */
+  trailing?: ReactNode;
 }
 
-function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef }: Props) {
+function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef, trailing }: Props) {
   const { t } = useTranslation();
   const choices = filter.tagIds.length + filter.priorities.length;
 
   return (
-    <header className={styles.toolbar}>
-      <h1 className={styles.title}>{title}</h1>
+    // The free space of the toolbar moves the frameless window.
+    <header className={styles.toolbar} data-tauri-drag-region>
+      <h1 className={styles.title} data-tauri-drag-region>
+        {title}
+      </h1>
 
       {counts && (
         <span className={styles.counts} role="status">
@@ -110,6 +115,7 @@ function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef }
           </Dialog>
         </Popover>
       </DialogTrigger>
+      {trailing}
     </header>
   );
 }

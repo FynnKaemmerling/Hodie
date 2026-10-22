@@ -29,9 +29,18 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
     timeStyle: "short",
   });
   const subtasksDone = card?.subtasks.filter((s) => s.done).length ?? 0;
+  const panel = useRef<HTMLElement>(null);
+
+  // Focus the panel itself, not a field: opening a card should not start editing.
+  // Escape and Tab still work from here.
+  useEffect(() => {
+    panel.current?.focus();
+  }, []);
 
   return (
     <aside
+      ref={panel}
+      tabIndex={-1}
       className={styles.panel}
       aria-label={t("panel.title")}
       onKeyDown={(event) => {
@@ -186,7 +195,6 @@ function TitleField({ value, onSave }: { value: string; onSave: (title: string) 
       aria-label={t("card.title")}
       rows={1}
       value={draft}
-      autoFocus
       onFocus={() => (focused.current = true)}
       onChange={(event) => setDraft(event.target.value.replace(/\n/g, " "))}
       onBlur={() => {

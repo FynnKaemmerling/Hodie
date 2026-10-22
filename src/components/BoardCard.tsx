@@ -6,6 +6,7 @@ import type { CardSummary, Id, Tag } from "../api";
 import type { Direction } from "../board/boardState";
 import { dndId, type DragData } from "../board/dnd";
 import { isMac } from "../platform";
+import { useContextMenu } from "./ActionMenu";
 import CardContent from "./CardContent";
 import InlineInput from "./InlineInput";
 import styles from "./BoardCard.module.css";
@@ -22,6 +23,7 @@ interface Props {
   tags: Tag[];
   onRename: (cardId: Id, title: string) => void;
   onDelete: (card: CardSummary) => void;
+  onArchive: (card: CardSummary) => void;
   onNavigate: (cardId: Id, direction: Direction) => void;
   onOpen: (cardId: Id) => void;
   selected: boolean;
@@ -36,6 +38,7 @@ function BoardCard({
   tags,
   onRename,
   onDelete,
+  onArchive,
   onNavigate,
   onOpen,
   selected,
@@ -54,6 +57,13 @@ function BoardCard({
     transition,
     isDragging,
   } = useSortable({ id: dndId("card", card.id), data, disabled: editing || dragDisabled });
+
+  const contextMenu = useContextMenu([
+    { id: "open", label: t("card.open"), onAction: () => onOpen(card.id) },
+    { id: "rename", label: t("actions.rename"), onAction: () => setEditing(true) },
+    { id: "archive", label: t("panel.archive"), onAction: () => onArchive(card) },
+    { id: "delete", label: t("actions.delete"), danger: true, onAction: () => onDelete(card) },
+  ]);
 
   useEffect(() => {
     if (isDragging) lastDrag.current = Number.POSITIVE_INFINITY;
@@ -85,6 +95,7 @@ function BoardCard({
           data-priority={card.priority}
           {...attributes}
           {...listeners}
+          onContextMenu={contextMenu.onContextMenu}
           onClick={() => {
             if (Date.now() - lastDrag.current > CLICK_AFTER_DRAG_MS) onOpen(card.id);
           }}
@@ -111,6 +122,7 @@ function BoardCard({
           <CardContent card={card} tags={tags} />
         </div>
       )}
+      {contextMenu.menu}
     </li>
   );
 }

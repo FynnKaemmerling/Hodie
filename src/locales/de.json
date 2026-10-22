@@ -46,7 +46,8 @@
       "medium": "Priorität mittel",
       "high": "Priorität hoch"
     },
-    "subtasks": "{{done}} von {{total}} Teilaufgaben erledigt"
+    "subtasks": "{{done}} von {{total}} Teilaufgaben erledigt",
+    "open": "Öffnen"
   },
   "actions": {
     "more": "Weitere Aktionen für {{name}}",
@@ -226,5 +227,11 @@
     "target": "→ {{board}} · {{column}}",
     "hint": "Enter speichert · Esc schließt",
     "noBoard": "Lege zuerst im Hauptfenster ein Board an."
+  },
+  "window": {
+    "minimize": "Minimieren",
+    "maximize": "Maximieren",
+    "restore": "Verkleinern",
+    "close": "Schließen"
   }
 }

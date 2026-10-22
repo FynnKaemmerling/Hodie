@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { CardSummary, ColumnView, Id, Tag } from "../api";
 import type { Direction } from "../board/boardState";
 import { dndId, type DragData } from "../board/dnd";
-import ActionMenu from "./ActionMenu";
+import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
 import BoardCard from "./BoardCard";
 import InlineInput from "./InlineInput";
 import styles from "./BoardColumn.module.css";
@@ -20,6 +20,7 @@ interface Props {
   onCreateCard: (columnId: Id, title: string) => void;
   onRenameCard: (cardId: Id, title: string) => void;
   onDeleteCard: (card: CardSummary) => void;
+  onArchiveCard: (card: CardSummary) => void;
   onNavigate: (cardId: Id, direction: Direction) => void;
   onOpenCard: (cardId: Id) => void;
   onArchiveDone: () => void;
@@ -39,6 +40,7 @@ function BoardColumn({
   onCreateCard,
   onRenameCard,
   onDeleteCard,
+  onArchiveCard,
   onNavigate,
   onOpenCard,
   onArchiveDone,
@@ -60,8 +62,37 @@ function BoardColumn({
     isDragging,
   } = useSortable({ id: dndId("column", column.id), data, disabled: renaming || dragDisabled });
 
+  const menuItems: ActionMenuItem[] = [
+    { id: "rename", label: t("actions.rename"), onAction: () => setRenaming(true) },
+    {
+      id: "done",
+      label: t("column.setDone"),
+      disabled: column.isDone,
+      onAction: () => onSetDone(column.id),
+    },
+    ...(column.isDone
+      ? [
+          {
+            id: "archiveDone",
+            label: t("column.archiveDone"),
+            disabled: column.cards.length === 0,
+            onAction: onArchiveDone,
+          },
+        ]
+      : []),
+    {
+      id: "delete",
+      label: column.isDone ? t("column.deleteDoneHint") : t("actions.delete"),
+      danger: true,
+      disabled: column.isDone,
+      onAction: () => onDelete(column),
+    },
+  ];
+  const contextMenu = useContextMenu(menuItems);
+
   return (
     <section
+      onContextMenu={contextMenu.onContextMenu}
       ref={setNodeRef}
       className={styles.column}
       style={{ transform: CSS.Translate.toString(transform), transition }}
@@ -111,32 +142,7 @@ function BoardColumn({
             </div>
             <ActionMenu
               label={t("actions.more", { name: column.name })}
-              items={[
-                { id: "rename", label: t("actions.rename"), onAction: () => setRenaming(true) },
-                {
-                  id: "done",
-                  label: t("column.setDone"),
-                  disabled: column.isDone,
-                  onAction: () => onSetDone(column.id),
-                },
-                ...(column.isDone
-                  ? [
-                      {
-                        id: "archiveDone",
-                        label: t("column.archiveDone"),
-                        disabled: column.cards.length === 0,
-                        onAction: onArchiveDone,
-                      },
-                    ]
-                  : []),
-                {
-                  id: "delete",
-                  label: column.isDone ? t("column.deleteDoneHint") : t("actions.delete"),
-                  danger: true,
-                  disabled: column.isDone,
-                  onAction: () => onDelete(column),
-                },
-              ]}
+              items={menuItems}
             />
           </>
         )}
@@ -154,6 +160,7 @@ function BoardColumn({
               tags={tags}
               onRename={onRenameCard}
               onDelete={onDeleteCard}
+              onArchive={onArchiveCard}
               onNavigate={onNavigate}
               onOpen={onOpenCard}
               selected={card.id === selectedCardId}
@@ -178,6 +185,7 @@ function BoardColumn({
           </button>
         )}
       </div>
+      {contextMenu.menu}
     </section>
   );
 }

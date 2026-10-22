@@ -20,6 +20,13 @@ pub fn run() {
             quick_add::setup(app, shortcut)?;
             Ok(())
         })
+        // The hidden quick entry window would otherwise keep the app running
+        // invisibly after the main window is closed.
+        .on_window_event(|window, event| {
+            if window.label() == "main" && matches!(event, tauri::WindowEvent::Destroyed) {
+                window.app_handle().exit(0);
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::list_boards,
             commands::get_board,

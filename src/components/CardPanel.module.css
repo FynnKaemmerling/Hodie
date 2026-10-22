@@ -223,3 +223,8 @@
   width: var(--icon-size-lg);
   height: var(--icon-size-lg);
 }
+
+/* The panel takes focus when it opens; it needs no visible ring for that. */
+.panel:focus {
+  outline: none;
+}

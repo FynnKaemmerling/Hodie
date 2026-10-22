@@ -1,0 +1,41 @@
+.controls {
+  display: flex;
+  flex-shrink: 0;
+  align-self: stretch;
+  margin-inline: var(--space-3) calc(-1 * var(--space-5));
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--window-button-width);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: default;
+  transition:
+    background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+.button:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.button[data-close]:hover {
+  background: var(--color-window-close);
+  color: var(--color-window-close-text);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.button :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  stroke-width: var(--icon-stroke-thin);
+}

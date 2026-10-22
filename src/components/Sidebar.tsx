@@ -20,7 +20,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { Archive, GripVertical, Plus, Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Board, Id } from "../api";
-import ActionMenu from "./ActionMenu";
+import logo from "../../src-tauri/icons/app-icon.svg";
+import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
 import InlineInput from "./InlineInput";
 import styles from "./Sidebar.module.css";
 
@@ -83,8 +84,11 @@ function Sidebar({
 
   return (
     <nav className={styles.sidebar} aria-label={t("nav.title")}>
-      <div className={styles.header}>
-        <span className={styles.appName}>{t("app.name")}</span>
+      <div className={styles.header} data-tauri-drag-region>
+        <img className={styles.logo} src={logo} alt="" data-tauri-drag-region />
+        <span className={styles.appName} data-tauri-drag-region>
+          {t("app.name")}
+        </span>
       </div>
 
       <h2 className={styles.sectionTitle}>{t("nav.boards")}</h2>
@@ -161,10 +165,21 @@ function BoardRow({ board, current, onSelect, onRename, onDelete }: RowProps) {
   const [renaming, setRenaming] = useState(false);
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
     useSortable({ id: board.id, disabled: renaming });
+  const menuItems: ActionMenuItem[] = [
+    { id: "rename", label: t("actions.rename"), onAction: () => setRenaming(true) },
+    {
+      id: "delete",
+      label: t("actions.delete"),
+      danger: true,
+      onAction: () => onDelete(board),
+    },
+  ];
+  const contextMenu = useContextMenu(menuItems);
 
   return (
     <li
       ref={setNodeRef}
+      onContextMenu={contextMenu.onContextMenu}
       className={styles.row}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       data-dragging={isDragging || undefined}
@@ -206,19 +221,12 @@ function BoardRow({ board, current, onSelect, onRename, onDelete }: RowProps) {
           <div className={styles.menu}>
             <ActionMenu
               label={t("actions.more", { name: board.name })}
-              items={[
-                { id: "rename", label: t("actions.rename"), onAction: () => setRenaming(true) },
-                {
-                  id: "delete",
-                  label: t("actions.delete"),
-                  danger: true,
-                  onAction: () => onDelete(board),
-                },
-              ]}
+              items={menuItems}
             />
           </div>
         </>
       )}
+      {contextMenu.menu}
     </li>
   );
 }

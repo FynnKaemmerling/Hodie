@@ -291,6 +291,7 @@ function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabl
               onCreateCard={board.createCard}
               onRenameCard={board.renameCard}
               onDeleteCard={board.deleteCard}
+              onArchiveCard={board.archiveCard}
               onNavigate={navigate}
               onOpenCard={onOpenCard}
               onArchiveDone={board.archiveDoneCards}

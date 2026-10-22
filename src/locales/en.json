@@ -46,7 +46,8 @@
       "medium": "Medium priority",
       "high": "High priority"
     },
-    "subtasks": "{{done}} of {{total}} subtasks done"
+    "subtasks": "{{done}} of {{total}} subtasks done",
+    "open": "Open"
   },
   "actions": {
     "more": "More actions for {{name}}",
@@ -226,5 +227,11 @@
     "target": "→ {{board}} · {{column}}",
     "hint": "Enter saves · Esc closes",
     "noBoard": "Create a board in the main window first."
+  },
+  "window": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close"
   }
 }

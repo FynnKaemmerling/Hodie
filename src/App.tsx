@@ -8,6 +8,7 @@ import BoardCanvas from "./components/BoardCanvas";
 import BoardToolbar from "./components/BoardToolbar";
 import CardPanel from "./components/CardPanel";
 import SettingsDialog from "./components/SettingsDialog";
+import WindowControls from "./components/WindowControls";
 import Sidebar from "./components/Sidebar";
 import { focusCard } from "./board/focus";
 import { useArchive } from "./board/useArchive";
@@ -151,6 +152,13 @@ function App() {
       />
 
       <main className={styles.main}>
+        {!selected && (
+          <header className={styles.toolbar} data-tauri-drag-region>
+            <span className={styles.spacer} data-tauri-drag-region />
+            <WindowControls />
+          </header>
+        )}
+
         {boards.boards?.length === 0 && (
           <div className={styles.empty}>
             <h1 className={styles.emptyTitle}>{t("home.empty.title")}</h1>
@@ -168,8 +176,11 @@ function App() {
         {selected && (
           <>
             {showingArchive ? (
-              <header className={styles.toolbar}>
-                <h1 className={styles.title}>{t("archive.title", { name: selected.name })}</h1>
+              <header className={styles.toolbar} data-tauri-drag-region>
+                <h1 className={styles.title} data-tauri-drag-region>
+                  {t("archive.title", { name: selected.name })}
+                </h1>
+                <WindowControls />
               </header>
             ) : (
               <BoardToolbar
@@ -179,6 +190,7 @@ function App() {
                 onFilterChange={setFilter}
                 counts={counts}
                 searchRef={searchRef}
+                trailing={<WindowControls />}
               />
             )}
             <div className={styles.content}>

@@ -15,6 +15,9 @@
   --color-bg-selected: #f7e6dc;
   --color-overlay-hover: rgb(0 0 0 / 0.08);
   --color-backdrop: rgb(20 22 24 / 0.35);
+  /* Close button hover, as on Windows */
+  --color-window-close: #c42b1c;
+  --color-window-close-text: #ffffff;
 
   /* Text */
   --color-text-primary: #33373b;
@@ -134,6 +137,11 @@
   --panel-width: 26rem;
   --field-width: 12rem;
   --dialog-width: 34rem;
+  --window-button-width: 2.875rem;
+  --logo-size: 1.5rem;
+  /* Room for the macOS traffic lights at the start of the sidebar header */
+  --mac-traffic-light-inset: 4.5rem;
+  --icon-stroke-thin: 1.5;
   --priority-edge-low: 3px;
   --priority-edge-medium: 4px;
   --priority-edge-high: 6px;
