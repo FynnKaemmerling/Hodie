@@ -108,5 +108,25 @@ export function useBoards() {
     [notify, reload, select, t],
   );
 
-  return { boards, selectedId, select, create, rename, remove };
+  /** Moves a board to `index` in the sidebar. */
+  const reorder = useCallback(
+    async (id: Id, index: number) => {
+      setBoards((current) => {
+        if (!current) return current;
+        const board = current.find((b) => b.id === id);
+        if (!board) return current;
+        const rest = current.filter((b) => b.id !== id);
+        return [...rest.slice(0, index), board, ...rest.slice(index)];
+      });
+      try {
+        await api.reorderBoard(id, index);
+      } catch (error) {
+        notify.error(error);
+        await reload();
+      }
+    },
+    [notify, reload],
+  );
+
+  return { boards, selectedId, select, create, rename, reorder, remove };
 }

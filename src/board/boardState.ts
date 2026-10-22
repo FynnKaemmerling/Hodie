@@ -80,6 +80,21 @@ export function updateCard(
   }));
 }
 
+/** Takes a deleted tag off every card. */
+export function removeTagFromCards(view: BoardView, tagId: Id): BoardView {
+  return {
+    ...view,
+    columns: view.columns.map((column) => ({
+      ...column,
+      cards: column.cards.map((card) =>
+        card.tagIds.includes(tagId)
+          ? { ...card, tagIds: card.tagIds.filter((id) => id !== tagId) }
+          : card,
+      ),
+    })),
+  };
+}
+
 export function insertColumn(
   view: BoardView,
   column: ColumnView,

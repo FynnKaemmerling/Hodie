@@ -8,6 +8,7 @@ import type {
   Column,
   Id,
   NewCard,
+  ShortcutInfo,
   Subtask,
   SubtaskPatch,
   Tag,
@@ -65,5 +66,10 @@ export const api = {
   listTags: () => invoke<Tag[]>("list_tags"),
   createTag: (name: string, color: TagColor) => invoke<Tag>("create_tag", { name, color }),
   updateTag: (tagId: Id, patch: TagPatch) => invoke<void>("update_tag", { tagId, patch }),
+  countTagCards: (tagId: Id) => invoke<number>("count_tag_cards", { tagId }),
   deleteTag: (tagId: Id) => invoke<void>("delete_tag", { tagId }),
+
+  getQuickAddShortcut: () => invoke<ShortcutInfo>("get_quick_add_shortcut"),
+  setQuickAddShortcut: (shortcut: string) =>
+    invoke<ShortcutInfo>("set_quick_add_shortcut", { shortcut }),
 };

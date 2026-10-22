@@ -1,17 +1,11 @@
 import { Check, Plus, X } from "lucide-react";
 import { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  Popover,
-  Radio,
-  RadioGroup,
-} from "react-aria-components";
+import { Button, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { TAG_COLORS, type Id, type Tag, type TagColor } from "../api";
+import type { Id, Tag, TagColor } from "../api";
 import { filterTags, findTagByName, nextTagColor } from "../board/cardState";
 import TagChip from "./TagChip";
+import TagColorPicker from "./TagColorPicker";
 import styles from "./TagPicker.module.css";
 
 interface Props {
@@ -121,17 +115,7 @@ function TagSearch({ tags, selectedIds, onToggle, onCreate }: Props) {
 
       {canCreate && (
         <div className={styles.create}>
-          <RadioGroup
-            className={styles.colors}
-            orientation="horizontal"
-            aria-label={t("tags.color")}
-            value={color}
-            onChange={(value) => setColor(value as TagColor)}
-          >
-            {TAG_COLORS.map((c) => (
-              <Radio key={c} value={c} className={styles.swatch} data-color={c} aria-label={t(`tags.colors.${c}`)} />
-            ))}
-          </RadioGroup>
+          <TagColorPicker label={t("tags.color")} value={color} onChange={setColor} />
           <button type="button" className={styles.createButton} onClick={create}>
             {t("tags.create", { name })}
           </button>

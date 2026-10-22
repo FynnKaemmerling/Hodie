@@ -110,7 +110,7 @@
 
 .footer {
   margin-block-start: auto;
-  padding: var(--space-4) var(--space-4) var(--space-2);
+  padding-block-start: var(--space-4);
 }
 
 .archive {
@@ -129,4 +129,45 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+/* Drag handle sits at the start of the row and shows on hover or focus. */
+.handle {
+  position: absolute;
+  inset-inline-start: var(--space-1);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--icon-size-md) + var(--space-2));
+  height: var(--icon-button-size);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+.handle :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.row:hover .handle,
+.handle:focus-visible,
+.row[data-dragging] .handle {
+  opacity: 1;
+}
+
+.row .item {
+  padding-inline-start: calc(var(--icon-size-md) + var(--space-4));
+}
+
+.row[data-dragging] {
+  z-index: 2;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-md);
 }

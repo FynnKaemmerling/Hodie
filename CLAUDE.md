@@ -6,11 +6,11 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Alle sechs MVP-Meilensteine sind umgesetzt, zuletzt Dunkelmodus, Lucide-Icons, App-Icon und Release-Build (Meilenstein 6). Offene Restpunkte stehen in [`MVP.md`](MVP.md) bei den Meilensteinen.
+**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Weitere Funktionen nur nach Absprache, Ideen stehen unter „Später“ in der README.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
-**Zielplattformen:** Windows, macOS und Linux gleichberechtigt. Keine Lösung darf nur auf einem System funktionieren.
+**Zielplattformen:** Windows, macOS und Linux gleichberechtigt. Keine Lösung darf nur auf einem System funktionieren. Mobile Plattformen sind nicht vorgesehen; Desktop-Plugins werden deshalb ohne Plattform-Weiche eingebunden.
 
 ## Tech-Stack
 
@@ -59,6 +59,8 @@ src/api/                Typed wrappers for the Tauri commands, error codes
 src/board/              Board, card and archive state: pure update functions (tested), hooks
 src/notifications/      Toasts with undo (also Mod+Z)
 src/quickAdd/           The quick entry window (label "quick-add", opened by the global shortcut)
+src/theme.ts            Theme preference (system/light/dark) and data-theme
+src/shortcut.ts         Recording and displaying global shortcuts (tested)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
@@ -69,6 +71,7 @@ src-tauri/src/commands.rs     Tauri commands (the only interface to the frontend
 src-tauri/src/model.rs        Types exchanged with the frontend (camelCase JSON)
 src-tauri/src/error.rs        Error codes sent to the frontend
 src-tauri/src/position.rs     Fractional-index sort keys
+src-tauri/src/quick_add.rs    Global shortcut: registration, settings commands
 src-tauri/src/store/          Storage layer, one module per entity
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
 src-tauri/capabilities/ Tauri permissions for the frontend
@@ -79,7 +82,7 @@ Styling: CSS Modules (`*.module.css`) neben der Komponente, ausschließlich mit 
 
 Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit einer reinen Funktion aus `boardState.ts` geändert, dann der Befehl aufgerufen. Schlägt er fehl, erscheint der übersetzte Fehler und das Board wird neu geladen. Das Kartenpanel arbeitet genauso über `useCardDetail` (`cardState.ts`) und spiegelt jede Änderung per `patchCard` in Board und Archiv. Notizen werden kurz nach dem Tippen, beim Verlassen des Felds und beim Schließen des Panels gespeichert.
 
-**Zwei Fenster, ein Frontend:** `main.tsx` zeigt je nach Fensterlabel (`main` oder `quick-add`, siehe `tauri.conf.json`) die App oder die Schnelleingabe. Das Tastenkürzel registriert das Backend (`lib.rs`, Modul `quick_add`). Ist es von einem anderen Programm belegt, läuft die App ohne es weiter. Legt die Schnelleingabe eine Karte an, sendet sie das Ereignis `cards-changed` (`src/api/events.ts`), und das Hauptfenster lädt neu.
+**Zwei Fenster, ein Frontend:** `main.tsx` zeigt je nach Fensterlabel (`main` oder `quick-add`, siehe `tauri.conf.json`) die App oder die Schnelleingabe. Das Tastenkürzel registriert das Backend (`quick_add.rs`) beim Start aus der Tabelle `settings`, Standard ist `Mod+Umschalt+Leertaste`. Es lässt sich in den Einstellungen ändern; ist ein neues Kürzel belegt, bleibt das alte aktiv (`shortcut.unavailable`). Ist es schon beim Start belegt, läuft die App ohne es weiter und die Einstellungen zeigen einen Hinweis. Legt die Schnelleingabe eine Karte an, sendet sie das Ereignis `cards-changed` (`src/api/events.ts`), und das Hauptfenster lädt neu.
 
 **Suche und Filter:** Die Textsuche läuft im Backend (`search_cards`), weil Notizen nicht in den Kartenübersichten stecken. Tag- und Prioritätsfilter wirken im Frontend (`filter.ts`). Solange ein Filter aktiv ist, ist Drag & Drop gesperrt, weil Positionen unter den sichtbaren Karten nicht den echten entsprechen.
 
@@ -87,7 +90,9 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **App-Icon:** Quelle ist `src-tauri/icons/app-icon.svg`. Nach Änderungen alle Größen mit `npx tauri icon src-tauri/icons/app-icon.svg` neu erzeugen und die Ordner `android/` und `ios/` wieder löschen.
 
-Sprache, Theme und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
+**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste): Sprache, Darstellung, Tastenkürzel und Tags. Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
+
+Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme und das zuletzt geöffnete Board liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
 
 ## Sprache
 
@@ -125,7 +130,7 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 - **Löschen und Rückgängig:** Boards, Spalten und Karten werden nur markiert (`deleted_at`) und lassen sich mit `restore_*` zurückholen. Beim nächsten Start werden markierte Zeilen endgültig gelöscht. Teilaufgaben und Tags werden sofort gelöscht.
 - **Archiv:** Archivierte Karten (`archived_at`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
 - **Reihenfolge:** Verschiebe-Befehle bekommen den Zielindex. Das Backend berechnet daraus den Sortierschlüssel zwischen den Nachbarn.
-- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `db.too_new`, `db.error`, `internal`.
+- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`.
 
 ## Plattformübergreifend
 

@@ -4,6 +4,7 @@
 pub mod boards;
 pub mod cards;
 pub mod columns;
+pub mod settings;
 pub mod subtasks;
 pub mod tags;
 
@@ -16,7 +17,10 @@ use crate::error::{AppError, Result};
 
 /// Applied in order; the database's `user_version` is the number applied.
 /// Never edit a released migration, always append a new one.
-const MIGRATIONS: &[&str] = &[include_str!("migrations/001_initial.sql")];
+const MIGRATIONS: &[&str] = &[
+    include_str!("migrations/001_initial.sql"),
+    include_str!("migrations/002_settings.sql"),
+];
 
 pub fn open(path: &Path) -> Result<Connection> {
     let mut conn = Connection::open(path)?;

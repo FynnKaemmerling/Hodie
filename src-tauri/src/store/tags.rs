@@ -76,6 +76,24 @@ pub fn update(conn: &mut Connection, id: Id, patch: &TagPatch) -> Result<()> {
     Ok(())
 }
 
+/// How many cards (active or archived) carry the tag, to warn before deleting.
+pub fn card_count(conn: &Connection, id: Id) -> Result<u32> {
+    let exists: bool = conn.query_row(
+        "SELECT EXISTS (SELECT 1 FROM tags WHERE id = ?1)",
+        [id],
+        |row| row.get(0),
+    )?;
+    if !exists {
+        return Err(AppError::NotFound);
+    }
+    Ok(conn.query_row(
+        "SELECT COUNT(*) FROM card_tags ct JOIN cards c ON c.id = ct.card_id
+         WHERE ct.tag_id = ?1 AND c.deleted_at IS NULL",
+        [id],
+        |row| row.get(0),
+    )?)
+}
+
 /// Removes the tag from every card.
 pub fn delete(conn: &Connection, id: Id) -> Result<()> {
     expect_changed(conn.execute("DELETE FROM tags WHERE id = ?1", [id])?)
@@ -211,6 +229,12 @@ mod tests {
         ));
         // The failed call must not have removed the existing tag.
         assert_eq!(cards::get(&f.conn, other).unwrap().tag_ids, [urgent.id]);
+
+        assert_eq!(card_count(&f.conn, urgent.id).unwrap(), 2);
+        cards::delete(&f.conn, other).unwrap();
+        assert_eq!(card_count(&f.conn, urgent.id).unwrap(), 1);
+        cards::restore(&mut f.conn, other).unwrap();
+        assert!(matches!(card_count(&f.conn, 999), Err(AppError::NotFound)));
 
         delete(&f.conn, urgent.id).unwrap();
         let view = boards::view(&f.conn, f.board_id).unwrap();

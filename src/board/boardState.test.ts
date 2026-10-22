@@ -7,6 +7,7 @@ import {
   moveColumn,
   neighbourCard,
   removeCard,
+  removeTagFromCards,
   setDoneColumn,
   updateCard,
 } from "./boardState";
@@ -80,6 +81,13 @@ describe("boardState", () => {
   it("updates card fields", () => {
     const view = updateCard(board(), 30, { title: "Renamed", priority: "high" });
     expect(view.columns[2].cards[0]).toMatchObject({ title: "Renamed", priority: "high" });
+  });
+
+  it("takes a deleted tag off every card", () => {
+    const tagged = updateCard(updateCard(board(), 10, { tagIds: [1, 2] }), 30, { tagIds: [2] });
+    const view = removeTagFromCards(tagged, 2);
+    expect(view.columns[0].cards[0].tagIds).toEqual([1]);
+    expect(view.columns[2].cards[0].tagIds).toEqual([]);
   });
 
   it("moves columns and sets the done column", () => {

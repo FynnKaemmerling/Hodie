@@ -14,6 +14,7 @@
   --color-bg-hover: #ececea;
   --color-bg-selected: #f7e6dc;
   --color-overlay-hover: rgb(0 0 0 / 0.08);
+  --color-backdrop: rgb(20 22 24 / 0.35);
 
   /* Text */
   --color-text-primary: #33373b;
@@ -131,6 +132,8 @@
   --column-width: 17.5rem;
   --icon-button-size: 1.75rem;
   --panel-width: 26rem;
+  --field-width: 12rem;
+  --dialog-width: 34rem;
   --priority-edge-low: 3px;
   --priority-edge-medium: 4px;
   --priority-edge-high: 6px;
@@ -151,6 +154,7 @@
   --color-bg-hover: #2f3338;
   --color-bg-selected: #3d2c22;
   --color-overlay-hover: rgb(255 255 255 / 0.1);
+  --color-backdrop: rgb(0 0 0 / 0.6);
 
   --color-text-primary: #e4e5e7;
   --color-text-secondary: #a3a8ae;

@@ -1,0 +1,33 @@
+.colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.swatch[data-selected] {
+  border-color: var(--color-text-primary);
+  box-shadow: inset 0 0 0 2px var(--color-bg-surface);
+}
+
+.swatch[data-focus-visible] {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Each swatch shows the strong (text) shade of its tag colour. */
+.swatch[data-color="gray"] { background: var(--tag-gray-fg); }
+.swatch[data-color="red"] { background: var(--tag-red-fg); }
+.swatch[data-color="orange"] { background: var(--tag-orange-fg); }
+.swatch[data-color="yellow"] { background: var(--tag-yellow-fg); }
+.swatch[data-color="green"] { background: var(--tag-green-fg); }
+.swatch[data-color="teal"] { background: var(--tag-teal-fg); }
+.swatch[data-color="blue"] { background: var(--tag-blue-fg); }
+.swatch[data-color="purple"] { background: var(--tag-purple-fg); }

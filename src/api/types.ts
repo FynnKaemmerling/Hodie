@@ -73,6 +73,14 @@ export interface Tag {
   color: TagColor;
 }
 
+/** The quick entry shortcut, in the format "Control+Shift+Space". */
+export interface ShortcutInfo {
+  shortcut: string;
+  defaultShortcut: string;
+  /** False when another program owns the shortcut. */
+  registered: boolean;
+}
+
 export interface NewCard {
   columnId: Id;
   title: string;

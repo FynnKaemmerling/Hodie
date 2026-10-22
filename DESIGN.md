@@ -28,7 +28,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 └────────────┴──────────────┴──────────────┴──────────────┴───────┘
 ```
 
-- **Seitenleiste links:** Boards, Archiv, Einstellungen (Sprache, Theme). Einklappbar.
+- **Seitenleiste links:** Boards (per Griff ⠿ sortierbar), Archiv, Knopf „Einstellungen“. Die Einstellungen öffnen sich als Dialog mit Sprache, Darstellung, Tastenkürzel und Tag-Verwaltung.
 - **Board:** Spalten nebeneinander mit fester Breite, horizontal scrollbar. Jede Spalte zeigt die Anzahl ihrer Karten.
 - **Karte:** Titel, darunter nur, was vorhanden ist: Tags und Fortschritt der Teilaufgaben. Die Priorität steckt in der Farbe der Kachel. Leere Felder nehmen keinen Platz ein.
 - **Kartendetails** öffnen sich in einem **Seitenpanel rechts**. Das Board bleibt sichtbar und bedienbar. `Esc` schließt das Panel.
@@ -48,7 +48,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 | Kürzel | Aktion |
 |---|---|
 | `Mod+N` | Neue Karte in der fokussierten Spalte |
-| `Mod+Umschalt+Leertaste` (systemweit) | Schnelleingabe öffnen (später einstellbar) |
+| `Mod+Umschalt+Leertaste` (systemweit, in den Einstellungen änderbar) | Schnelleingabe öffnen |
 | `Mod+F` | Suche |
 | `Enter` | Kartendetails öffnen |
 | `F2` | Umbenennen |

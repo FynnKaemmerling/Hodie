@@ -23,7 +23,8 @@
       "open": "Offen",
       "doing": "In Arbeit",
       "done": "Erledigt"
-    }
+    },
+    "move": "„{{name}}“ verschieben"
   },
   "column": {
     "name": "Name der Spalte",
@@ -61,7 +62,9 @@
     "doneArchived_one": "{{count}} Karte archiviert",
     "doneArchived_other": "{{count}} Karten archiviert",
     "cardRestored": "Karte „{{title}}“ ist wieder auf dem Board",
-    "subtaskDeleted": "Teilaufgabe „{{title}}“ gelöscht"
+    "subtaskDeleted": "Teilaufgabe „{{title}}“ gelöscht",
+    "tagDeleted": "Tag „{{name}}“ gelöscht",
+    "shortcutSaved": "Neues Kürzel: {{shortcut}}"
   },
   "dnd": {
     "instructions": "Leertaste drücken, um das Element aufzunehmen. Mit den Pfeiltasten verschieben, mit der Leertaste ablegen, mit Escape abbrechen.",
@@ -81,6 +84,34 @@
       "system": "Wie System",
       "light": "Hell",
       "dark": "Dunkel"
+    },
+    "title": "Einstellungen",
+    "open": "Einstellungen",
+    "close": "Schließen",
+    "general": "Allgemein",
+    "shortcut": {
+      "title": "Schnelleingabe",
+      "description": "Öffnet von überall ein kleines Fenster, um schnell eine Aufgabe anzulegen.",
+      "label": "Tastenkürzel",
+      "change": "Ändern",
+      "recording": "Neue Kombination drücken … (Esc bricht ab)",
+      "needsModifier": "Bitte eine Taste zusammen mit Strg, Alt oder Win bzw. ⌘ drücken.",
+      "reset": "Standard wiederherstellen",
+      "unavailable": "Das Kürzel ist gerade von einem anderen Programm belegt und deshalb inaktiv."
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Tags gelten für alle Boards. Umbenennen und Umfärben wirkt auf allen Karten.",
+      "empty": "Noch keine Tags.",
+      "add": "Neuer Tag",
+      "name": "Name des Tags",
+      "rename": "„{{name}}“ umbenennen",
+      "color": "Farbe von „{{name}}“",
+      "delete": "„{{name}}“ löschen",
+      "confirm_one": "Von {{count}} Karte entfernen und löschen?",
+      "confirm_other": "Von {{count}} Karten entfernen und löschen?",
+      "confirmDelete": "Löschen",
+      "cancel": "Abbrechen"
     }
   },
   "languages": {
@@ -111,7 +142,11 @@
       "error": "Die Änderung konnte nicht gespeichert werden."
     },
     "internal": "Ein interner Fehler ist aufgetreten.",
-    "unknown": "Etwas ist schiefgelaufen."
+    "unknown": "Etwas ist schiefgelaufen.",
+    "shortcut": {
+      "invalid": "Dieses Tastenkürzel wird nicht unterstützt.",
+      "unavailable": "Dieses Tastenkürzel ist von einem anderen Programm belegt. Das bisherige bleibt aktiv."
+    }
   },
   "panel": {
     "title": "Kartendetails",
@@ -171,7 +206,10 @@
     }
   },
   "keys": {
-    "ctrl": "Strg"
+    "ctrl": "Strg",
+    "shift": "Umschalt",
+    "space": "Leertaste",
+    "enter": "Enter"
   },
   "filter": {
     "search": "Karten durchsuchen",

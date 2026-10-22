@@ -9,6 +9,8 @@ export const ERROR_CODES = [
   "card.not_archived",
   "tag.duplicate_name",
   "tag.invalid_color",
+  "shortcut.invalid",
+  "shortcut.unavailable",
   "db.too_new",
   "db.error",
   "internal",

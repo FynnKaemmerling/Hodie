@@ -20,7 +20,7 @@ impl Db {
         Db(Mutex::new(conn))
     }
 
-    fn with<T>(&self, f: impl FnOnce(&mut Connection) -> Result<T>) -> Result<T> {
+    pub(crate) fn with<T>(&self, f: impl FnOnce(&mut Connection) -> Result<T>) -> Result<T> {
         let mut conn = self
             .0
             .lock()
@@ -193,6 +193,11 @@ pub async fn create_tag(db: State<'_, Db>, name: String, color: String) -> Resul
 #[tauri::command]
 pub async fn update_tag(db: State<'_, Db>, tag_id: Id, patch: TagPatch) -> Result<()> {
     db.with(|conn| tags::update(conn, tag_id, &patch))
+}
+
+#[tauri::command]
+pub async fn count_tag_cards(db: State<'_, Db>, tag_id: Id) -> Result<u32> {
+    db.with(|conn| tags::card_count(conn, tag_id))
 }
 
 #[tauri::command]

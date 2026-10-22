@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
-import type { BoardView, CardDetail, Id } from "./api";
+import type { BoardView, CardDetail, Id, Tag } from "./api";
 import { CARDS_CHANGED } from "./api/events";
 import ArchiveView from "./components/ArchiveView";
 import BoardCanvas from "./components/BoardCanvas";
 import BoardToolbar from "./components/BoardToolbar";
 import CardPanel from "./components/CardPanel";
+import SettingsDialog from "./components/SettingsDialog";
 import Sidebar from "./components/Sidebar";
 import { focusCard } from "./board/focus";
 import { useArchive } from "./board/useArchive";
@@ -25,6 +26,7 @@ function App() {
   const [showingArchive, setShowingArchive] = useState(false);
   const archive = useArchive(showingArchive ? boards.selectedId : null, board.reload);
   const [openCardId, setOpenCardId] = useState<Id | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const selected = boards.boards?.find((b) => b.id === boards.selectedId);
   const [filter, setFilter] = useState<CardFilter>(NO_FILTER);
   const searchMatches = useCardSearch(boards.selectedId, filter.query, board.view);
@@ -117,6 +119,13 @@ function App() {
     void (card.archivedAt == null ? board.deleteCard(card) : archive.remove(card));
   }
 
+  async function deleteTag(tag: Tag) {
+    await board.deleteTag(tag);
+    // The open card may carry the tag; reload it so it no longer refers to it.
+    if (detail.card?.tagIds.includes(tag.id)) await detail.reload();
+    void archive.reload();
+  }
+
   return (
     <div className={styles.app}>
       <Sidebar
@@ -125,9 +134,20 @@ function App() {
         onSelect={selectBoard}
         onCreate={boards.create}
         onRename={boards.rename}
+        onReorder={boards.reorder}
         onDelete={boards.remove}
         showingArchive={showingArchive}
         onShowArchive={showArchive}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
+
+      <SettingsDialog
+        isOpen={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        tags={board.tags}
+        onCreateTag={board.createTag}
+        onUpdateTag={board.updateTag}
+        onDeleteTag={deleteTag}
       />
 
       <main className={styles.main}>

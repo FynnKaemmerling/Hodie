@@ -206,6 +206,8 @@ export function useCardDetail(cardId: Id | null, callbacks: Callbacks) {
 
   return {
     card,
+    /** Reloads the card, e.g. after one of its tags was deleted elsewhere. */
+    reload: load,
     setTitle,
     setNotes,
     setPriority,

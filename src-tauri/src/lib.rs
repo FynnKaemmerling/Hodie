@@ -2,12 +2,10 @@ mod commands;
 mod error;
 mod model;
 mod position;
+mod quick_add;
 mod store;
 
 use tauri::Manager;
-
-/// Label of the small window for quick entry (see tauri.conf.json).
-const QUICK_ADD_WINDOW: &str = "quick-add";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -17,9 +15,9 @@ pub fn run() {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
             let conn = store::open(&dir.join("hodie.db"))?;
+            let shortcut = store::settings::get(&conn, quick_add::SETTING_KEY)?;
             app.manage(commands::Db::new(conn));
-            #[cfg(desktop)]
-            quick_add::setup(app)?;
+            quick_add::setup(app, shortcut)?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -55,56 +53,11 @@ pub fn run() {
             commands::list_tags,
             commands::create_tag,
             commands::update_tag,
+            commands::count_tag_cards,
             commands::delete_tag,
+            quick_add::get_quick_add_shortcut,
+            quick_add::set_quick_add_shortcut,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-/// A system-wide shortcut that opens the quick entry window, even while the
-/// main window is minimised or in the background.
-#[cfg(desktop)]
-mod quick_add {
-    use tauri::{App, AppHandle, Manager};
-    use tauri_plugin_global_shortcut::{
-        Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState,
-    };
-
-    use super::QUICK_ADD_WINDOW;
-
-    /// Cmd+Shift+Space on macOS, Ctrl+Shift+Space elsewhere.
-    fn shortcut() -> Shortcut {
-        let modifier = if cfg!(target_os = "macos") {
-            Modifiers::SUPER
-        } else {
-            Modifiers::CONTROL
-        };
-        Shortcut::new(Some(modifier | Modifiers::SHIFT), Code::Space)
-    }
-
-    pub fn setup(app: &App) -> tauri::Result<()> {
-        let quick_add = shortcut();
-        app.handle().plugin(
-            tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(move |app, pressed, event| {
-                    if pressed == &quick_add && event.state() == ShortcutState::Pressed {
-                        show(app);
-                    }
-                })
-                .build(),
-        )?;
-        // Another program may own the shortcut; the app still works without it.
-        if let Err(error) = app.global_shortcut().register(quick_add) {
-            eprintln!("quick add shortcut unavailable: {error}");
-        }
-        Ok(())
-    }
-
-    fn show(app: &AppHandle) {
-        if let Some(window) = app.get_webview_window(QUICK_ADD_WINDOW) {
-            let _ = window.center();
-            let _ = window.show();
-            let _ = window.set_focus();
-        }
-    }
 }

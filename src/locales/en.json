@@ -23,7 +23,8 @@
       "open": "To do",
       "doing": "In progress",
       "done": "Done"
-    }
+    },
+    "move": "Move “{{name}}”"
   },
   "column": {
     "name": "Column name",
@@ -61,7 +62,9 @@
     "doneArchived_one": "{{count}} card archived",
     "doneArchived_other": "{{count}} cards archived",
     "cardRestored": "Card “{{title}}” is back on the board",
-    "subtaskDeleted": "Subtask “{{title}}” deleted"
+    "subtaskDeleted": "Subtask “{{title}}” deleted",
+    "tagDeleted": "Tag “{{name}}” deleted",
+    "shortcutSaved": "New shortcut: {{shortcut}}"
   },
   "dnd": {
     "instructions": "Press space to pick up the item. Use the arrow keys to move it, space to drop it, and escape to cancel.",
@@ -81,6 +84,34 @@
       "system": "Match system",
       "light": "Light",
       "dark": "Dark"
+    },
+    "title": "Settings",
+    "open": "Settings",
+    "close": "Close",
+    "general": "General",
+    "shortcut": {
+      "title": "Quick entry",
+      "description": "Opens a small window from anywhere to add a task quickly.",
+      "label": "Shortcut",
+      "change": "Change",
+      "recording": "Press the new combination … (Esc cancels)",
+      "needsModifier": "Please press a key together with Ctrl, Alt, or Win/⌘.",
+      "reset": "Restore default",
+      "unavailable": "Another program currently uses this shortcut, so it is inactive."
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Tags apply to all boards. Renaming and recolouring affects every card.",
+      "empty": "No tags yet.",
+      "add": "New tag",
+      "name": "Tag name",
+      "rename": "Rename “{{name}}”",
+      "color": "Colour of “{{name}}”",
+      "delete": "Delete “{{name}}”",
+      "confirm_one": "Remove from {{count}} card and delete?",
+      "confirm_other": "Remove from {{count}} cards and delete?",
+      "confirmDelete": "Delete",
+      "cancel": "Cancel"
     }
   },
   "languages": {
@@ -111,7 +142,11 @@
       "error": "The change could not be saved."
     },
     "internal": "An internal error occurred.",
-    "unknown": "Something went wrong."
+    "unknown": "Something went wrong.",
+    "shortcut": {
+      "invalid": "This shortcut is not supported.",
+      "unavailable": "Another program already uses this shortcut. The previous one stays active."
+    }
   },
   "panel": {
     "title": "Card details",
@@ -171,7 +206,10 @@
     }
   },
   "keys": {
-    "ctrl": "Ctrl"
+    "ctrl": "Ctrl",
+    "shift": "Shift",
+    "space": "Space",
+    "enter": "Enter"
   },
   "filter": {
     "search": "Search cards",

@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { api, type BoardView, type CardSummary, type ColumnView, type Id, type Tag } from "../api";
+import {
+  api,
+  type BoardView,
+  type CardSummary,
+  type ColumnView,
+  type Id,
+  type Tag,
+  type TagColor,
+  type TagPatch,
+} from "../api";
 import { useNotifications } from "../notifications/Notifications";
 import * as state from "./boardState";
 import { createCardFromEntry } from "./quickEntry";
@@ -225,12 +234,56 @@ export function useBoard(boardId: Id | null) {
     setTags((current) => sortTags([...current, tag]));
   }, []);
 
+  const createTag = useCallback(
+    async (name: string, color: TagColor) => {
+      try {
+        addTag(await api.createTag(name, color));
+      } catch (error) {
+        notify.error(error);
+      }
+    },
+    [addTag, notify],
+  );
+
+  /** Renames or recolours a tag everywhere. */
+  const updateTag = useCallback(
+    async (tagId: Id, patch: TagPatch) => {
+      setTags((current) => sortTags(current.map((t) => (t.id === tagId ? { ...t, ...patch } : t))));
+      try {
+        await api.updateTag(tagId, patch);
+      } catch (error) {
+        notify.error(error);
+        await reload();
+      }
+    },
+    [notify, reload],
+  );
+
+  /** Deletes a tag and takes it off every card. */
+  const deleteTag = useCallback(
+    async (tag: Tag) => {
+      setTags((current) => current.filter((t) => t.id !== tag.id));
+      setView((current) => current && state.removeTagFromCards(current, tag.id));
+      try {
+        await api.deleteTag(tag.id);
+        notify.info(t("toast.tagDeleted", { name: tag.name }));
+      } catch (error) {
+        notify.error(error);
+        await reload();
+      }
+    },
+    [notify, reload, t],
+  );
+
   return {
     view,
     tags,
     reload,
     patchCard,
     addTag,
+    createTag,
+    updateTag,
+    deleteTag,
     createCard,
     renameCard,
     moveCard,
