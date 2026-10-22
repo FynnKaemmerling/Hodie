@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "Hodie"
+  },
+  "nav": {
+    "title": "Navigation",
+    "home": "Start"
+  },
+  "toolbar": {
+    "search": "Suchen"
+  },
+  "settings": {
+    "language": "Sprache"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "home": {
+    "empty": {
+      "title": "Willkommen bei Hodie",
+      "description": "Hier entsteht bald etwas."
+    }
+  },
+  "status": {
+    "ready": "Bereit"
+  }
+}

@@ -1,0 +1,82 @@
+/*
+ * Design tokens. Components use only these variables, never raw values.
+ * Light theme only for now; a dark theme will be a second set of the same
+ * variables. Contrast stays soft but never below WCAG AA (see DESIGN.md).
+ */
+:root {
+  /* Surfaces */
+  --color-bg-app: #f6f6f4;
+  --color-bg-surface: #ffffff;
+  --color-bg-sunken: #efefec;
+  --color-bg-hover: #ececea;
+  --color-bg-selected: #e4e9f1;
+
+  /* Text */
+  --color-text-primary: #33373b;
+  --color-text-secondary: #62676c;
+  --color-text-disabled: #9a9ea2;
+  --color-text-on-accent: #ffffff;
+
+  /* Lines */
+  --color-border: #e3e3df;
+  --color-border-strong: #cfd0cc;
+
+  /* Accent (placeholder, still to be decided) */
+  --color-accent: #4a6a95;
+  --color-accent-hover: #3f5c82;
+  --color-focus-ring: #6f8fbf;
+
+  /* Status */
+  --color-success: #3f7d5a;
+  --color-warning: #9a6b1f;
+  --color-danger: #a8473f;
+
+  /* Spacing */
+  --space-1: 0.125rem;
+  --space-2: 0.25rem;
+  --space-3: 0.5rem;
+  --space-4: 0.75rem;
+  --space-5: 1rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  /* Shadows (use sparingly) */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.07);
+
+  /* Typography */
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.25rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.45;
+
+  /* Density */
+  --list-row-height: 2.25rem;
+  --sidebar-width: 15rem;
+  --toolbar-height: 3rem;
+  --statusbar-height: 1.75rem;
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+  }
+}
