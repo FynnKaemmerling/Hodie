@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Meilenstein 1 (Gerüst) ist aufgesetzt: Tauri-2-App mit React/TypeScript, i18n und Design-Tokens. Es gibt noch keine fachlichen Funktionen.
+**Status:** Meilenstein 2 (Datenmodell und Speicher) ist fertig: SQLite-Schema mit Migrationen und alle Tauri-Befehle für Boards, Spalten, Karten, Teilaufgaben und Tags. Die Oberfläche nutzt sie noch nicht, sie ist noch das Gerüst aus Meilenstein 1.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -19,7 +19,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | App-Gerüst | Tauri 2 |
 | Backend | Rust |
 | Frontend | React + TypeScript + Vite |
-| Lokaler Speicher | SQLite über `rusqlite` (gebündelt) *(geplant)* |
+| Lokaler Speicher | SQLite über `rusqlite` (gebündelt) |
 | Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) *(geplant)* |
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` *(geplant)* |
 | i18n | i18next / react-i18next |
@@ -58,7 +58,13 @@ src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
 src/styles/tokens.css   Design tokens (the only place for raw colors, sizes, etc.)
 src/styles/global.css   Global base styles
-src-tauri/              Rust backend (storage, commands)
+src-tauri/              Rust backend
+src-tauri/src/commands.rs     Tauri commands (the only interface to the frontend)
+src-tauri/src/model.rs        Types exchanged with the frontend (camelCase JSON)
+src-tauri/src/error.rs        Error codes sent to the frontend
+src-tauri/src/position.rs     Fractional-index sort keys
+src-tauri/src/store/          Storage layer, one module per entity
+src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
 src-tauri/capabilities/ Tauri permissions for the frontend
 .github/workflows/      CI builds for all three platforms
 ```
@@ -96,6 +102,14 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 5. **Kein Datenverlust:** Jede Änderung wird sofort gespeichert. Gelöschtes bleibt kurz wiederherstellbar (Rückgängig). Schema-Änderungen nur über Migrationen, nie durch Neuanlegen der Datenbank.
 6. **Reine Logik testbar halten:** Kurzschreibweise der Schnelleingabe, Sortierlogik und Filter als reine Funktionen mit Tests.
 7. **Datenbankpfad** über Tauris Pfad-API (App-Datenverzeichnis), nie fest eintragen.
+
+### Speicher im Detail
+
+- **Migrationen:** `src-tauri/src/store/migrations/NNN_name.sql`, in `MIGRATIONS` (`store/mod.rs`) eingetragen. Veröffentlichte Migrationen nie ändern, nur neue anhängen. Eine Datenbank aus einer neueren Version wird mit `db.too_new` abgelehnt.
+- **Löschen und Rückgängig:** Boards, Spalten und Karten werden nur markiert (`deleted_at`) und lassen sich mit `restore_*` zurückholen. Beim nächsten Start werden markierte Zeilen endgültig gelöscht. Teilaufgaben und Tags werden sofort gelöscht.
+- **Archiv:** Archivierte Karten (`archived_at`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
+- **Reihenfolge:** Verschiebe-Befehle bekommen den Zielindex. Das Backend berechnet daraus den Sortierschlüssel zwischen den Nachbarn.
+- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `db.too_new`, `db.error`, `internal`.
 
 ## Plattformübergreifend
 

@@ -58,7 +58,7 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 ## Meilensteine
 
 1. **Gerüst:** Tauri-2-App mit React/TypeScript, i18n, Design-Tokens und CI für Windows, macOS und Linux. ✅
-2. **Datenmodell und Speicher:** SQLite-Schema, Migrationen, Tauri-Befehle für Boards, Spalten, Karten, Teilaufgaben und Tags, mit Rust-Tests.
+2. **Datenmodell und Speicher:** SQLite-Schema, Migrationen, Tauri-Befehle für Boards, Spalten, Karten, Teilaufgaben und Tags, mit Rust-Tests. ✅
 3. **Board-Ansicht:** Seitenleiste mit Boards, Spalten mit Karten, Drag & Drop und Tastaturbedienung.
 4. **Kartendetails:** Seitenpanel mit Notizen, Teilaufgaben, Priorität und Tags, Archiv, Rückgängig.
 5. **Schnelleingabe und Finden:** `Mod+N`, globales Tastenkürzel mit Eingabefenster, Kurzschreibweise, Suche und Filter.
