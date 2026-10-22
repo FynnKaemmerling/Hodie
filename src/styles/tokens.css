@@ -1,15 +1,19 @@
 /*
  * Design tokens. Components use only these variables, never raw values.
- * Light theme only for now; a dark theme will be a second set of the same
- * variables. Contrast stays soft but never below WCAG AA (see DESIGN.md).
+ * Colours come in two sets of the same names: light (default) and dark
+ * (`<html data-theme="dark">`, set by src/theme.ts). Contrast stays soft
+ * but never below WCAG AA (see DESIGN.md).
  */
 :root {
+  color-scheme: light;
+
   /* Surfaces */
   --color-bg-app: #f6f6f4;
   --color-bg-surface: #ffffff;
   --color-bg-sunken: #efefec;
   --color-bg-hover: #ececea;
-  --color-bg-selected: #e4e9f1;
+  --color-bg-selected: #f7e6dc;
+  --color-overlay-hover: rgb(0 0 0 / 0.08);
 
   /* Text */
   --color-text-primary: #33373b;
@@ -26,18 +30,18 @@
   --color-bg-inverse: #2d3135;
   --color-bg-inverse-hover: #41464b;
   --color-text-inverse: #f3f3f1;
-  --color-accent-on-inverse: #a9c3ea;
+  --color-accent-on-inverse: #f5a77a;
 
   /* Lines */
   --color-border: #e3e3df;
   --color-border-strong: #cfd0cc;
   --color-border-card: #e6e6e2;
 
-  /* Accent (placeholder, still to be decided) */
-  --color-accent: #4a6a95;
-  --color-accent-hover: #3f5c82;
-  --color-focus-ring: #6f8fbf;
-  --color-focus-ring-soft: rgb(111 143 191 / 0.25);
+  /* Accent: warm orange, kept redder than the amber of medium priority */
+  --color-accent: #c0501c;
+  --color-accent-hover: #a64417;
+  --color-focus-ring: #d9773f;
+  --color-focus-ring-soft: rgb(217 119 63 / 0.25);
 
   /* Status */
   --color-success: #3f7d5a;
@@ -47,7 +51,7 @@
   /* Priority: tinted card tile plus a coloured edge that widens with the
      priority, so it does not rely on colour alone. Screen readers get text. */
   --color-priority-low: #4a6a95;
-  --color-priority-medium: #9a6b1f;
+  --color-priority-medium: #8a6418;
   --color-priority-high: #a8473f;
   --color-priority-low-bg: #eef3fa;
   --color-priority-medium-bg: #fbf3e2;
@@ -55,9 +59,6 @@
   --color-priority-low-edge: #7d9cc8;
   --color-priority-medium-edge: #d1a24a;
   --color-priority-high-edge: #c8635a;
-  --priority-edge-low: 3px;
-  --priority-edge-medium: 4px;
-  --priority-edge-high: 6px;
 
   /* Tag palette: keys match TAG_COLORS in src/api/types.ts */
   --tag-gray-bg: #e8e8e5;
@@ -77,6 +78,15 @@
   --tag-purple-bg: #ebe3f3;
   --tag-purple-fg: #5d4282;
 
+  /* Shadows (use sparingly) */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.07);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.12);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 2px 6px rgb(0 0 0 / 0.07);
+  --shadow-drag: 0 12px 28px rgb(0 0 0 / 0.16);
+  --shadow-panel: -4px 0 16px rgb(0 0 0 / 0.04);
+
   /* Spacing */
   --space-1: 0.125rem;
   --space-2: 0.25rem;
@@ -93,15 +103,6 @@
   --radius-xl: 14px;
   --radius-pill: 999px;
 
-  /* Shadows (use sparingly) */
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
-  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.07);
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.12);
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-card-hover: 0 2px 6px rgb(0 0 0 / 0.07);
-  --shadow-drag: 0 12px 28px rgb(0 0 0 / 0.16);
-  --shadow-panel: -4px 0 16px rgb(0 0 0 / 0.04);
-
   /* Typography */
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, sans-serif;
   --font-size-xs: 0.75rem;
@@ -115,6 +116,14 @@
   --line-height-tight: 1.25;
   --line-height-normal: 1.45;
 
+  /* Icons (Lucide); sized by CSS, not by props */
+  --icon-size-xs: 0.75rem;
+  --icon-size-sm: 0.875rem;
+  --icon-size-md: 1rem;
+  --icon-size-lg: 1.25rem;
+  --icon-stroke: 2;
+  --icon-stroke-bold: 3;
+
   /* Density */
   --list-row-height: 2.25rem;
   --sidebar-width: 15rem;
@@ -122,11 +131,88 @@
   --column-width: 17.5rem;
   --icon-button-size: 1.75rem;
   --panel-width: 26rem;
+  --priority-edge-low: 3px;
+  --priority-edge-medium: 4px;
+  --priority-edge-high: 6px;
 
   /* Motion */
   --duration-fast: 120ms;
   --duration-normal: 200ms;
   --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Dark: same names, darker surfaces, lighter text and accents. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg-app: #1b1d20;
+  --color-bg-surface: #212428;
+  --color-bg-sunken: #2a2d32;
+  --color-bg-hover: #2f3338;
+  --color-bg-selected: #3d2c22;
+  --color-overlay-hover: rgb(255 255 255 / 0.1);
+
+  --color-text-primary: #e4e5e7;
+  --color-text-secondary: #a3a8ae;
+  --color-text-disabled: #6c7177;
+  --color-text-on-accent: #1d1f22;
+
+  --color-bg-column: #26292d;
+  --color-bg-card: #2e3237;
+  --color-bg-count: #3a3e44;
+
+  --color-bg-inverse: #e9eaec;
+  --color-bg-inverse-hover: #d6d8db;
+  --color-text-inverse: #1f2226;
+  --color-accent-on-inverse: #a8471a;
+
+  --color-border: #34383d;
+  --color-border-strong: #4a4f56;
+  --color-border-card: #3a3f45;
+
+  --color-accent: #f0a06a;
+  --color-accent-hover: #f5b585;
+  --color-focus-ring: #f0a06a;
+  --color-focus-ring-soft: rgb(240 160 106 / 0.3);
+
+  --color-success: #7cc39a;
+  --color-warning: #e0b45e;
+  --color-danger: #ef8a80;
+
+  --color-priority-low: #9bb8e6;
+  --color-priority-medium: #e3bc6b;
+  --color-priority-high: #ef8a80;
+  --color-priority-low-bg: #26303d;
+  --color-priority-medium-bg: #373024;
+  --color-priority-high-bg: #3d2a2a;
+  --color-priority-low-edge: #6d8fc4;
+  --color-priority-medium-edge: #c79a45;
+  --color-priority-high-edge: #d4675d;
+
+  --tag-gray-bg: #3a3d42;
+  --tag-gray-fg: #d0d3d7;
+  --tag-red-bg: #4a2a28;
+  --tag-red-fg: #f2aaa3;
+  --tag-orange-bg: #4a3222;
+  --tag-orange-fg: #f3bb8e;
+  --tag-yellow-bg: #463c1c;
+  --tag-yellow-fg: #ead48a;
+  --tag-green-bg: #233d2e;
+  --tag-green-fg: #9fd8b3;
+  --tag-teal-bg: #1f3d3c;
+  --tag-teal-fg: #94d6d2;
+  --tag-blue-bg: #263449;
+  --tag-blue-fg: #a9c4ee;
+  --tag-purple-bg: #362c4a;
+  --tag-purple-fg: #c9b5f0;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.25);
+  --shadow-card-hover: 0 2px 6px rgb(0 0 0 / 0.35);
+  --shadow-drag: 0 12px 28px rgb(0 0 0 / 0.5);
+  --shadow-panel: -4px 0 16px rgb(0 0 0 / 0.3);
 }
 
 @media (prefers-reduced-motion: reduce) {

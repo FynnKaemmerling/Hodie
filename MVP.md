@@ -62,4 +62,4 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 3. **Board-Ansicht:** Seitenleiste mit Boards, Spalten mit Karten, Drag & Drop und Tastaturbedienung. ✅ (offen: Boards in der Seitenleiste umsortieren)
 4. **Kartendetails:** Seitenpanel mit Notizen, Teilaufgaben, Priorität und Tags, Archiv, Rückgängig. ✅ (offen: Tags global umbenennen, umfärben und löschen)
 5. **Schnelleingabe und Finden:** `Mod+N`, globales Tastenkürzel mit Eingabefenster, Kurzschreibweise, Suche und Filter. ✅ (offen: Tastenkürzel einstellbar machen)
-6. **Dunkelmodus und Feinschliff:** zweiter Token-Satz, Theme-Umschalter, Icons, App-Icon, Animationen, Release-Build.
+6. **Dunkelmodus und Feinschliff:** zweiter Token-Satz, Theme-Umschalter, Icons, App-Icon, Animationen, Release-Build. ✅

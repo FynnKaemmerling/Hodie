@@ -44,6 +44,13 @@ i18n.on("languageChanged", (language) => {
   document.documentElement.lang = language;
 });
 
+// Follow a language change made in the other window.
+window.addEventListener("storage", (event) => {
+  if (event.key === STORAGE_KEY && isSupported(event.newValue)) {
+    void i18n.changeLanguage(event.newValue);
+  }
+});
+
 void i18n.use(initReactI18next).init({
   resources: {
     de: { translation: de },

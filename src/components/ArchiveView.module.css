@@ -99,3 +99,14 @@
   background: var(--color-priority-high-bg);
   border-inline-start: var(--priority-edge-high) solid var(--color-priority-high-edge);
 }
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.action :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}

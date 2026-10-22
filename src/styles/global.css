@@ -30,6 +30,14 @@ textarea {
   color: inherit;
 }
 
+/* Lucide icons: size and stroke come from tokens, colour from the text. */
+.lucide {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  flex-shrink: 0;
+  stroke-width: var(--icon-stroke);
+}
+
 /* Text for screen readers only. */
 .visually-hidden {
   position: absolute;

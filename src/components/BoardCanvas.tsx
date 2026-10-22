@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   closestCenter,
@@ -311,7 +312,7 @@ function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabl
             />
           ) : (
             <button type="button" className={styles.add} onClick={() => setAddingColumn(true)}>
-              <span aria-hidden="true">+</span> {t("column.add")}
+              <Plus aria-hidden="true" /> {t("column.add")}
             </button>
           )}
         </div>

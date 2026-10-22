@@ -1,3 +1,4 @@
+import { ListChecks } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CardSummary, Tag } from "../api";
 import TagChip from "./TagChip";
@@ -36,8 +37,9 @@ function CardContent({ card, tags }: Props) {
           ))}
           {card.subtasksTotal > 0 && (
             <span className={styles.badge} data-complete={allSubtasksDone || undefined}>
-              <span aria-hidden="true">
-                ✓ {card.subtasksDone}/{card.subtasksTotal}
+              <span className={styles.progress} aria-hidden="true">
+                <ListChecks />
+                {card.subtasksDone}/{card.subtasksTotal}
               </span>
               <span className="visually-hidden">
                 {t("card.subtasks", { done: card.subtasksDone, total: card.subtasksTotal })}

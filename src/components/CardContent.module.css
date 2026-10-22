@@ -16,3 +16,14 @@
 .badge[data-complete] {
   color: var(--color-success);
 }
+
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.progress :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}

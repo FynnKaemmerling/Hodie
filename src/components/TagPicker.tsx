@@ -1,3 +1,4 @@
+import { Check, Plus, X } from "lucide-react";
 import { useState } from "react";
 import {
   Button,
@@ -38,13 +39,13 @@ function TagPicker({ tags, selectedIds, onToggle, onCreate }: Props) {
             aria-label={t("tags.remove", { name: tag.name })}
             onClick={() => onToggle(tag.id)}
           >
-            <span aria-hidden="true">×</span>
+            <X aria-hidden="true" />
           </button>
         </TagChip>
       ))}
       <DialogTrigger>
         <Button className={styles.addButton}>
-          <span aria-hidden="true">+</span> {t("tags.add")}
+          <Plus aria-hidden="true" /> {t("tags.add")}
         </Button>
         <Popover className={styles.popover} placement="bottom start" offset={4}>
           <Dialog className={styles.dialog} aria-label={t("tags.title")}>
@@ -106,7 +107,7 @@ function TagSearch({ tags, selectedIds, onToggle, onCreate }: Props) {
                   onClick={() => onToggle(tag.id)}
                 >
                   <span className={styles.check} aria-hidden="true">
-                    {isSelected ? "✓" : ""}
+                    {isSelected && <Check />}
                   </span>
                   <TagChip color={tag.color}>{tag.name}</TagChip>
                 </button>

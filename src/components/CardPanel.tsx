@@ -1,3 +1,4 @@
+import { Archive, ArchiveRestore, Trash2, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Radio, RadioGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -48,7 +49,7 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
           aria-label={t("panel.close")}
           onClick={onClose}
         >
-          <span aria-hidden="true">×</span>
+          <X aria-hidden="true" />
         </button>
       </header>
 
@@ -121,10 +122,12 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
             <div className={styles.actions}>
               {card.archivedAt == null ? (
                 <button type="button" className={styles.action} onClick={() => onArchive(card)}>
+                  <Archive aria-hidden="true" />
                   {t("panel.archive")}
                 </button>
               ) : (
                 <button type="button" className={styles.action} onClick={() => onUnarchive(card)}>
+                  <ArchiveRestore aria-hidden="true" />
                   {t("panel.unarchive")}
                 </button>
               )}
@@ -134,6 +137,7 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
                 data-danger
                 onClick={() => onDelete(card)}
               >
+                <Trash2 aria-hidden="true" />
                 {t("actions.delete")}
               </button>
             </div>

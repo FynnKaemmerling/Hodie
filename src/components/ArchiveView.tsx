@@ -1,3 +1,4 @@
+import { ArchiveRestore, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CardSummary, Id, Tag } from "../api";
 import type { CardRef } from "../board/useBoard";
@@ -46,6 +47,7 @@ function ArchiveView({ cards, tags, selectedCardId, onOpen, onRestore, onDelete 
           </button>
           <div className={styles.actions}>
             <button type="button" className={styles.action} onClick={() => onRestore(card)}>
+              <ArchiveRestore aria-hidden="true" />
               {t("archive.restore")}
             </button>
             <button
@@ -55,6 +57,7 @@ function ArchiveView({ cards, tags, selectedCardId, onOpen, onRestore, onDelete 
               aria-label={t("archive.delete", { title: card.title })}
               onClick={() => onDelete(card)}
             >
+              <Trash2 aria-hidden="true" />
               {t("actions.delete")}
             </button>
           </div>

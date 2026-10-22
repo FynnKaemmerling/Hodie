@@ -1,9 +1,10 @@
+import { Archive, Plus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Board, Id } from "../api";
 import ActionMenu from "./ActionMenu";
 import InlineInput from "./InlineInput";
-import LanguageSwitcher from "./LanguageSwitcher";
+import Preferences from "./Preferences";
 import styles from "./Sidebar.module.css";
 
 interface Props {
@@ -98,7 +99,7 @@ function Sidebar({
         />
       ) : (
         <button type="button" className={styles.add} onClick={() => setCreating(true)}>
-          <span aria-hidden="true">+</span> {t("board.add")}
+          <Plus aria-hidden="true" /> {t("board.add")}
         </button>
       )}
 
@@ -109,12 +110,13 @@ function Sidebar({
           aria-current={showingArchive ? "page" : undefined}
           onClick={onShowArchive}
         >
+          <Archive aria-hidden="true" />
           {t("nav.archive")}
         </button>
       )}
 
       <div className={styles.footer}>
-        <LanguageSwitcher />
+        <Preferences />
       </div>
     </nav>
   );

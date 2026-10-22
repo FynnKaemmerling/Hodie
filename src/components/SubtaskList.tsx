@@ -1,3 +1,4 @@
+import { Check, GripVertical, Plus, X } from "lucide-react";
 import { useState } from "react";
 import {
   closestCenter,
@@ -101,7 +102,7 @@ function SubtaskList({ subtasks, onAdd, onToggle, onRename, onMove, onDelete }: 
         />
       ) : (
         <button type="button" className={styles.add} onClick={() => setAdding(true)}>
-          <span aria-hidden="true">+</span> {t("subtasks.add")}
+          <Plus aria-hidden="true" /> {t("subtasks.add")}
         </button>
       )}
     </div>
@@ -136,7 +137,7 @@ function SubtaskRow({ subtask, onToggle, onRename, onDelete }: RowProps) {
         {...listeners}
         aria-label={t("subtasks.move", { title: subtask.title })}
       >
-        <span aria-hidden="true">⠿</span>
+        <GripVertical aria-hidden="true" />
       </button>
 
       <Checkbox
@@ -146,7 +147,7 @@ function SubtaskRow({ subtask, onToggle, onRename, onDelete }: RowProps) {
         aria-label={subtask.title}
       >
         <span className={styles.box} aria-hidden="true">
-          ✓
+          <Check />
         </span>
       </Checkbox>
 
@@ -175,7 +176,7 @@ function SubtaskRow({ subtask, onToggle, onRename, onDelete }: RowProps) {
         aria-label={t("subtasks.delete", { title: subtask.title })}
         onClick={() => onDelete(subtask)}
       >
-        <span aria-hidden="true">×</span>
+        <X aria-hidden="true" />
       </button>
     </li>
   );

@@ -136,3 +136,19 @@
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
+
+.box :global(.lucide) {
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
+  stroke-width: var(--icon-stroke-bold);
+}
+
+.checkbox[data-selected] .box {
+  animation: check-pop var(--duration-normal) var(--easing-standard);
+}
+
+@keyframes check-pop {
+  50% {
+    transform: scale(1.15);
+  }
+}

@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Meilenstein 5 (Schnelleingabe und Finden) ist umgesetzt: Kurzschreibweise `#tag` und `!`/`!!`/`!!!`, `Mod+N`, globales Tastenkürzel `Mod+Umschalt+Leertaste` mit eigenem Eingabefenster, Suche über Titel und Notizen, Filter nach Priorität und Tags. Als Nächstes folgen Dunkelmodus und Feinschliff (Meilenstein 6).
+**Status:** Alle sechs MVP-Meilensteine sind umgesetzt, zuletzt Dunkelmodus, Lucide-Icons, App-Icon und Release-Build (Meilenstein 6). Offene Restpunkte stehen in [`MVP.md`](MVP.md) bei den Meilensteinen.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -21,6 +21,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Frontend | React + TypeScript + Vite |
 | Lokaler Speicher | SQLite über `rusqlite` (gebündelt) |
 | UI-Bausteine | React Aria Components (Verhalten und Barrierefreiheit, kein eigenes Aussehen) |
+| Icons | Lucide (`lucide-react`), Größe und Strichstärke über Tokens |
 | Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) |
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
 | i18n | i18next / react-i18next |
@@ -82,7 +83,11 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **Suche und Filter:** Die Textsuche läuft im Backend (`search_cards`), weil Notizen nicht in den Kartenübersichten stecken. Tag- und Prioritätsfilter wirken im Frontend (`filter.ts`). Solange ein Filter aktiv ist, ist Drag & Drop gesperrt, weil Positionen unter den sichtbaren Karten nicht den echten entsprechen.
 
-Die Sprachwahl und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Beide Fenster teilen ihn. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
+**Themes:** `tokens.css` enthält einen hellen Satz in `:root` und einen dunklen unter `:root[data-theme="dark"]` mit denselben Namen. `src/theme.ts` setzt `data-theme` aus der Einstellung (Wie System, Hell, Dunkel), folgt bei „Wie System“ der Systemeinstellung und färbt auch den Fensterrahmen. Neue Farben immer in **beiden** Sätzen anlegen.
+
+**App-Icon:** Quelle ist `src-tauri/icons/app-icon.svg`. Nach Änderungen alle Größen mit `npx tauri icon src-tauri/icons/app-icon.svg` neu erzeugen und die Ordner `android/` und `ios/` wieder löschen.
+
+Sprache, Theme und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
 
 ## Sprache
 

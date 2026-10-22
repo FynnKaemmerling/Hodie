@@ -5,7 +5,10 @@ import App from "./App";
 import { NotificationsProvider } from "./notifications/Notifications";
 import QuickAdd from "./quickAdd/QuickAdd";
 import "./i18n";
+import { initTheme } from "./theme";
 import "./styles/global.css";
+
+initTheme();
 
 // Both windows load this bundle; the label from tauri.conf.json decides which UI shows.
 function windowLabel(): string {

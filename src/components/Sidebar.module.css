@@ -123,3 +123,10 @@
 .archive[aria-current="page"] {
   color: var(--color-text-primary);
 }
+
+.archive,
+.add {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}

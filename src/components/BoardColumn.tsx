@@ -1,3 +1,4 @@
+import { CircleCheck, Plus } from "lucide-react";
 import { useState } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -103,7 +104,7 @@ function BoardColumn({
               </span>
               {column.isDone && (
                 <span className={styles.done}>
-                  <span aria-hidden="true">✓</span>
+                  <CircleCheck aria-hidden="true" />
                   <span className="visually-hidden">{t("column.isDone")}</span>
                 </span>
               )}
@@ -173,7 +174,7 @@ function BoardColumn({
           />
         ) : (
           <button type="button" className={styles.add} onClick={() => onAddingCardChange(true)}>
-            <span aria-hidden="true">+</span> {t("card.add")}
+            <Plus aria-hidden="true" /> {t("card.add")}
           </button>
         )}
       </div>

@@ -96,3 +96,12 @@
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
+
+.done {
+  display: inline-flex;
+}
+
+.done :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}

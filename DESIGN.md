@@ -79,7 +79,7 @@ Alle visuellen Grundwerte sind **CSS-Variablen** in `src/styles/tokens.css`. Kom
 | Bewegung | Dauer und Kurven von Animationen |
 
 - Bedeutungen statt Farbnamen: `--color-text-secondary` statt `--gray-600`.
-- **Akzentfarbe:** noch offen. Sie ist ein einzelner Token und lässt sich jederzeit austauschen.
+- **Akzentfarbe:** warmes Orange (`#c0501c` hell, `#f0a06a` dunkel), bewusst röter als das Ocker der mittleren Priorität. Sie ist ein einzelner Token und lässt sich jederzeit austauschen.
 
 ## Themes
 
@@ -117,8 +117,7 @@ Feste Regeln, keine spätere Verbesserung:
 - Neue CSS-Funktionen erst nutzen, wenn WebView2, WKWebView und WebKitGTK sie unterstützen.
 - Logische CSS-Eigenschaften (`margin-inline-start` statt `margin-left`) verwenden.
 
-## Noch offen
+## Icons und App-Icon
 
-- Akzentfarbe und Gesamtstimmung der Farbpalette
-- Icon-Set (Vorschlag: Lucide)
-- Logo und App-Icon
+- **Icons:** Lucide, als Linien-Icons in Textfarbe. Größe und Strichstärke kommen aus Tokens (`--icon-size-*`, `--icon-stroke`), nicht aus Props. Icons neben Text sind `aria-hidden`, reine Icon-Buttons haben eine Beschriftung.
+- **App-Icon:** Häkchen vor einer aufgehenden Sonne („heute erledigt“) auf orangem Verlauf. Quelle: `src-tauri/icons/app-icon.svg`.

@@ -212,3 +212,14 @@
     transform: translateX(var(--space-6));
   }
 }
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.close :global(.lucide) {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+}

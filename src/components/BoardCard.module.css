@@ -60,3 +60,15 @@
   background: var(--color-priority-high-bg);
   border-inline-start: var(--priority-edge-high) solid var(--color-priority-high-edge);
 }
+
+/* New or moved cards fade in; tokens drop to 0ms for reduced motion. */
+.slot {
+  animation: card-in var(--duration-normal) var(--easing-standard);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}

@@ -22,7 +22,7 @@
 
 .remove:hover {
   opacity: 1;
-  background: rgb(0 0 0 / 0.08);
+  background: var(--color-overlay-hover);
 }
 
 .addButton {
@@ -176,4 +176,26 @@
 
 .swatch[data-selected] {
   box-shadow: inset 0 0 0 2px var(--color-bg-surface);
+}
+
+.check {
+  display: inline-flex;
+}
+
+.check :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  stroke-width: var(--icon-stroke-bold);
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.addButton :global(.lucide),
+.remove :global(.lucide) {
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
 }

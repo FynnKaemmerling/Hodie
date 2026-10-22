@@ -1,3 +1,4 @@
+import { Check, ListFilter, Search } from "lucide-react";
 import type { RefObject } from "react";
 import {
   Button,
@@ -47,9 +48,7 @@ function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef }
       )}
 
       <div className={styles.search}>
-        <span className={styles.searchIcon} aria-hidden="true">
-          ⌕
-        </span>
+        <Search className={styles.searchIcon} aria-hidden="true" />
         <input
           ref={searchRef}
           type="search"
@@ -69,6 +68,7 @@ function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef }
 
       <DialogTrigger>
         <Button className={styles.filterButton} data-active={choices > 0 || undefined}>
+          <ListFilter aria-hidden="true" />
           {t("filter.button")}
           {choices > 0 && <span className={styles.badge}>{choices}</span>}
         </Button>
@@ -83,7 +83,7 @@ function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef }
               {PRIORITIES.map((priority) => (
                 <Checkbox key={priority} value={priority} className={styles.option}>
                   <span className={styles.box} aria-hidden="true">
-                    ✓
+                    <Check />
                   </span>
                   <span className={styles.swatch} data-priority={priority} aria-hidden="true" />
                   {t(`panel.priorities.${priority}`)}
@@ -101,7 +101,7 @@ function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef }
               {tags.map((tag) => (
                 <Checkbox key={tag.id} value={String(tag.id)} className={styles.option}>
                   <span className={styles.box} aria-hidden="true">
-                    ✓
+                    <Check />
                   </span>
                   <TagChip color={tag.color}>{tag.name}</TagChip>
                 </Checkbox>

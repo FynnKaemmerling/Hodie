@@ -1,3 +1,4 @@
+import { Ellipsis } from "lucide-react";
 import { Button, Menu, MenuItem, MenuTrigger, Popover } from "react-aria-components";
 import styles from "./ActionMenu.module.css";
 
@@ -14,12 +15,12 @@ interface Props {
   items: ActionMenuItem[];
 }
 
-/** A "⋯" button that opens a menu of actions. */
+/** A "more" button that opens a menu of actions. */
 function ActionMenu({ label, items }: Props) {
   return (
     <MenuTrigger>
       <Button className={styles.trigger} aria-label={label}>
-        <span aria-hidden="true">⋯</span>
+        <Ellipsis aria-hidden="true" />
       </Button>
       <Popover className={styles.popover} placement="bottom end" offset={4}>
         <Menu

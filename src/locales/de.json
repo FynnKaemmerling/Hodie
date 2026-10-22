@@ -75,7 +75,13 @@
     "listPosition": "an Position {{position}} von {{total}}"
   },
   "settings": {
-    "language": "Sprache"
+    "language": "Sprache",
+    "theme": "Darstellung",
+    "themes": {
+      "system": "Wie System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
   },
   "languages": {
     "de": "Deutsch",

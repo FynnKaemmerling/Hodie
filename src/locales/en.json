@@ -75,7 +75,13 @@
     "listPosition": "at position {{position}} of {{total}}"
   },
   "settings": {
-    "language": "Language"
+    "language": "Language",
+    "theme": "Appearance",
+    "themes": {
+      "system": "Match system",
+      "light": "Light",
+      "dark": "Dark"
+    }
   },
   "languages": {
     "de": "Deutsch",

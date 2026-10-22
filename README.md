@@ -4,7 +4,7 @@ Eine To-Do-App als Kanban-Board: intuitiv, modern und funktional.
 
 Läuft unter **Windows**, **macOS** und **Linux**.
 
-> **Status:** In Entwicklung. Das App-Gerüst steht, fachliche Funktionen fehlen noch.
+> **Status:** Der MVP ist fertig: Boards, Karten mit Details, Archiv, Schnelleingabe, Suche und Filter, Hell- und Dunkelmodus.
 
 ## Über den Namen
 
