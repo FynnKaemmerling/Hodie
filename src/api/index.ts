@@ -40,6 +40,7 @@ export const api = {
   deleteColumn: (columnId: Id) => invoke<void>("delete_column", { columnId }),
   restoreColumn: (columnId: Id) => invoke<void>("restore_column", { columnId }),
 
+  searchCards: (boardId: Id, query: string) => invoke<Id[]>("search_cards", { boardId, query }),
   getCard: (cardId: Id) => invoke<CardDetail>("get_card", { cardId }),
   createCard: (card: NewCard) => invoke<CardSummary>("create_card", { card }),
   updateCard: (cardId: Id, patch: CardPatch) => invoke<void>("update_card", { cardId, patch }),

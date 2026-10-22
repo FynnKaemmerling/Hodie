@@ -123,6 +123,33 @@ pub fn archived(conn: &Connection, board_id: Id) -> Result<Vec<CardSummary>> {
     )
 }
 
+/// Ids of active cards on a board whose title or notes contain `query`,
+/// ignoring case. Compared in Rust because SQLite's LIKE only folds ASCII.
+pub fn search(conn: &Connection, board_id: Id, query: &str) -> Result<Vec<Id>> {
+    let needle = query.trim().to_lowercase();
+    let mut stmt = conn.prepare(
+        "SELECT c.id, c.title, c.notes FROM cards c
+         JOIN board_columns col ON col.id = c.column_id
+         WHERE col.board_id = ?1 AND col.deleted_at IS NULL
+           AND c.deleted_at IS NULL AND c.archived_at IS NULL
+         ORDER BY c.position, c.id",
+    )?;
+    let mut ids = Vec::new();
+    for row in stmt.query_map([board_id], |row| {
+        Ok((
+            row.get::<_, Id>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?,
+        ))
+    })? {
+        let (id, title, notes) = row?;
+        if title.to_lowercase().contains(&needle) || notes.to_lowercase().contains(&needle) {
+            ids.push(id);
+        }
+    }
+    Ok(ids)
+}
+
 pub fn get(conn: &Connection, id: Id) -> Result<CardDetail> {
     live_card(conn, id)?;
     let mut card = conn.query_row(
@@ -555,6 +582,28 @@ pub(crate) mod tests {
         assert_eq!(ids, [d1, d2]);
         assert_eq!(board_titles(&f), [vec!["Open"], vec![], vec![]]);
         assert_eq!(archived(&f.conn, f.board_id).unwrap().len(), 2);
+    }
+
+    #[test]
+    fn search_matches_title_and_notes_ignoring_case() {
+        let mut f = fixture();
+        let a = add(&mut f.conn, f.columns[0], "Über das Angebot sprechen");
+        let b = add(&mut f.conn, f.columns[1], "Call");
+        let archived = add(&mut f.conn, f.columns[0], "Angebot alt");
+        update(
+            &mut f.conn,
+            b,
+            &CardPatch {
+                notes: Some("Thema: ANGEBOT".into()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        archive(&f.conn, archived).unwrap();
+
+        assert_eq!(search(&f.conn, f.board_id, "angebot").unwrap(), [a, b]);
+        assert_eq!(search(&f.conn, f.board_id, " über ").unwrap(), [a]);
+        assert!(search(&f.conn, f.board_id, "nichts").unwrap().is_empty());
     }
 
     #[test]

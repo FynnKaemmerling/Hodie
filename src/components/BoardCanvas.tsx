@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   closestCenter,
   closestCorners,
@@ -32,6 +32,7 @@ import { focusCard, focusColumn } from "../board/focus";
 import type { BoardActions } from "../board/useBoard";
 import { CardOverlay } from "./BoardCard";
 import BoardColumn, { ColumnOverlay } from "./BoardColumn";
+import { isModKey } from "../platform";
 import InlineInput from "./InlineInput";
 import styles from "./BoardCanvas.module.css";
 
@@ -73,13 +74,26 @@ const collisionDetection: CollisionDetection = (args) => {
   return [{ id: overId }];
 };
 
+/** The column Mod+N adds to: the focused one, the open card's, or the first. */
+function targetColumn(view: BoardView, focused: Element | null, selectedCardId: Id | null): Id {
+  const section = focused?.closest<HTMLElement>("[data-column-section]");
+  const fromFocus = Number(section?.dataset.columnSection);
+  if (view.columns.some((column) => column.id === fromFocus)) return fromFocus;
+  const selected = selectedCardId === null ? null : locateCard(view, selectedCardId);
+  return selected ? view.columns[selected.columnIndex].id : view.columns[0].id;
+}
+
 interface Props {
   board: BoardActions;
   selectedCardId: Id | null;
   onOpenCard: (cardId: Id) => void;
+  /** Hides cards that do not match the current search and filter. */
+  filterView: (view: BoardView) => BoardView;
+  /** While filtering, positions among the visible cards would be wrong. */
+  dragDisabled: boolean;
 }
 
-function BoardCanvas({ board, selectedCardId, onOpenCard }: Props) {
+function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabled }: Props) {
   const { t } = useTranslation();
   const { view, tags } = board;
   // While dragging, cards moved between columns live in this draft until drop.
@@ -87,6 +101,22 @@ function BoardCanvas({ board, selectedCardId, onOpenCard }: Props) {
   const draftRef = useRef<BoardView | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [addingColumn, setAddingColumn] = useState(false);
+  const [addingCardIn, setAddingCardIn] = useState<Id | null>(null);
+  const latest = useRef({ view, selectedCardId });
+  latest.current = { view, selectedCardId };
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (!isModKey(event) || event.shiftKey || event.altKey) return;
+      if (event.key.toLowerCase() !== "n") return;
+      const { view, selectedCardId } = latest.current;
+      if (!view || view.columns.length === 0) return;
+      event.preventDefault();
+      setAddingCardIn(targetColumn(view, document.activeElement, selectedCardId));
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const updateDraft = useCallback((next: BoardView | null) => {
     draftRef.current = next;
@@ -103,7 +133,7 @@ function BoardCanvas({ board, selectedCardId, onOpenCard }: Props) {
   );
 
   if (!view) return null;
-  const shown = draft ?? view;
+  const shown = filterView(draft ?? view);
 
   function nameOf(id: UniqueIdentifier): string {
     const parsed = parseDndId(id);
@@ -222,7 +252,7 @@ function BoardCanvas({ board, selectedCardId, onOpenCard }: Props) {
 
   function navigate(cardId: Id, direction: Direction) {
     if (!view) return;
-    const target = neighbourCard(view, cardId, direction);
+    const target = neighbourCard(shown, cardId, direction);
     if (target !== null) focusCard(target);
   }
 
@@ -264,6 +294,9 @@ function BoardCanvas({ board, selectedCardId, onOpenCard }: Props) {
               onOpenCard={onOpenCard}
               onArchiveDone={board.archiveDoneCards}
               selectedCardId={selectedCardId}
+              dragDisabled={dragDisabled}
+              addingCard={addingCardIn === column.id}
+              onAddingCardChange={(open) => setAddingCardIn(open ? column.id : null)}
             />
           ))}
         </SortableContext>

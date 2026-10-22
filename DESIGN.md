@@ -48,7 +48,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 | Kürzel | Aktion |
 |---|---|
 | `Mod+N` | Neue Karte in der fokussierten Spalte |
-| global (einstellbar) | Schnelleingabe öffnen |
+| `Mod+Umschalt+Leertaste` (systemweit) | Schnelleingabe öffnen (später einstellbar) |
 | `Mod+F` | Suche |
 | `Enter` | Kartendetails öffnen |
 | `F2` | Umbenennen |

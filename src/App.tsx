@@ -1,15 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
-import type { CardDetail, Id } from "./api";
+import type { BoardView, CardDetail, Id } from "./api";
+import { CARDS_CHANGED } from "./api/events";
 import ArchiveView from "./components/ArchiveView";
 import BoardCanvas from "./components/BoardCanvas";
+import BoardToolbar from "./components/BoardToolbar";
 import CardPanel from "./components/CardPanel";
 import Sidebar from "./components/Sidebar";
 import { focusCard } from "./board/focus";
 import { useArchive } from "./board/useArchive";
 import { useBoard } from "./board/useBoard";
 import { useBoards } from "./board/useBoards";
+import { applyFilter, countCards, isFilterActive, NO_FILTER, type CardFilter } from "./board/filter";
 import { useCardDetail } from "./board/useCardDetail";
+import { useCardSearch } from "./board/useCardSearch";
+import { isModKey } from "./platform";
 import styles from "./App.module.css";
 
 function App() {
@@ -20,6 +26,43 @@ function App() {
   const archive = useArchive(showingArchive ? boards.selectedId : null, board.reload);
   const [openCardId, setOpenCardId] = useState<Id | null>(null);
   const selected = boards.boards?.find((b) => b.id === boards.selectedId);
+  const [filter, setFilter] = useState<CardFilter>(NO_FILTER);
+  const searchMatches = useCardSearch(boards.selectedId, filter.query, board.view);
+  const filtering = isFilterActive(filter);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const filterView = useCallback(
+    (view: BoardView) => (filtering ? applyFilter(view, filter, searchMatches) : view),
+    [filter, filtering, searchMatches],
+  );
+  const counts =
+    filtering && board.view
+      ? { visible: countCards(filterView(board.view)), total: countCards(board.view) }
+      : null;
+
+  // Each board starts unfiltered.
+  useEffect(() => setFilter(NO_FILTER), [boards.selectedId]);
+
+  // Mod+F jumps to the search field.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (!isModKey(event) || event.shiftKey || event.key.toLowerCase() !== "f") return;
+      if (!searchRef.current) return;
+      event.preventDefault();
+      searchRef.current.focus();
+      searchRef.current.select();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  // The quick entry window adds cards behind this window's back.
+  const reloadBoard = useRef(board.reload);
+  reloadBoard.current = board.reload;
+  useEffect(() => {
+    const unlisten = listen(CARDS_CHANGED, () => void reloadBoard.current());
+    return () => void unlisten.then((stop) => stop());
+  }, []);
 
   const closeCard = useCallback(() => {
     if (openCardId !== null) focusCard(openCardId);
@@ -104,11 +147,20 @@ function App() {
 
         {selected && (
           <>
-            <header className={styles.toolbar}>
-              <h1 className={styles.title}>
-                {showingArchive ? t("archive.title", { name: selected.name }) : selected.name}
-              </h1>
-            </header>
+            {showingArchive ? (
+              <header className={styles.toolbar}>
+                <h1 className={styles.title}>{t("archive.title", { name: selected.name })}</h1>
+              </header>
+            ) : (
+              <BoardToolbar
+                title={selected.name}
+                tags={board.tags}
+                filter={filter}
+                onFilterChange={setFilter}
+                counts={counts}
+                searchRef={searchRef}
+              />
+            )}
             <div className={styles.content}>
               <div className={styles.view}>
                 {showingArchive ? (
@@ -125,6 +177,8 @@ function App() {
                     board={board}
                     selectedCardId={openCardId}
                     onOpenCard={setOpenCardId}
+                    filterView={filterView}
+                    dragDisabled={filtering}
                   />
                 )}
               </div>

@@ -101,6 +101,11 @@ pub async fn restore_column(db: State<'_, Db>, column_id: Id) -> Result<()> {
 }
 
 #[tauri::command]
+pub async fn search_cards(db: State<'_, Db>, board_id: Id, query: String) -> Result<Vec<Id>> {
+    db.with(|conn| cards::search(conn, board_id, &query))
+}
+
+#[tauri::command]
 pub async fn get_card(db: State<'_, Db>, card_id: Id) -> Result<CardDetail> {
     db.with(|conn| cards::get(conn, card_id))
 }

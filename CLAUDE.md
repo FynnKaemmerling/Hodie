@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Meilenstein 4 (Kartendetails) ist umgesetzt: Seitenpanel mit Titel, Notizen (reiner Text), Priorität, Tags und Teilaufgaben, Archiv mit Wiederherstellen, „Erledigte archivieren“. Als Nächstes folgen Schnelleingabe und Suche (Meilenstein 5).
+**Status:** Meilenstein 5 (Schnelleingabe und Finden) ist umgesetzt: Kurzschreibweise `#tag` und `!`/`!!`/`!!!`, `Mod+N`, globales Tastenkürzel `Mod+Umschalt+Leertaste` mit eigenem Eingabefenster, Suche über Titel und Notizen, Filter nach Priorität und Tags. Als Nächstes folgen Dunkelmodus und Feinschliff (Meilenstein 6).
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -22,7 +22,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Lokaler Speicher | SQLite über `rusqlite` (gebündelt) |
 | UI-Bausteine | React Aria Components (Verhalten und Barrierefreiheit, kein eigenes Aussehen) |
 | Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) |
-| Globales Tastenkürzel | `tauri-plugin-global-shortcut` *(geplant)* |
+| Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
 
@@ -57,6 +57,7 @@ src/                    React frontend
 src/api/                Typed wrappers for the Tauri commands, error codes
 src/board/              Board, card and archive state: pure update functions (tested), hooks
 src/notifications/      Toasts with undo (also Mod+Z)
+src/quickAdd/           The quick entry window (label "quick-add", opened by the global shortcut)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
@@ -77,7 +78,11 @@ Styling: CSS Modules (`*.module.css`) neben der Komponente, ausschließlich mit 
 
 Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit einer reinen Funktion aus `boardState.ts` geändert, dann der Befehl aufgerufen. Schlägt er fehl, erscheint der übersetzte Fehler und das Board wird neu geladen. Das Kartenpanel arbeitet genauso über `useCardDetail` (`cardState.ts`) und spiegelt jede Änderung per `patchCard` in Board und Archiv. Notizen werden kurz nach dem Tippen, beim Verlassen des Felds und beim Schließen des Panels gespeichert.
 
-Die Sprachwahl und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
+**Zwei Fenster, ein Frontend:** `main.tsx` zeigt je nach Fensterlabel (`main` oder `quick-add`, siehe `tauri.conf.json`) die App oder die Schnelleingabe. Das Tastenkürzel registriert das Backend (`lib.rs`, Modul `quick_add`). Ist es von einem anderen Programm belegt, läuft die App ohne es weiter. Legt die Schnelleingabe eine Karte an, sendet sie das Ereignis `cards-changed` (`src/api/events.ts`), und das Hauptfenster lädt neu.
+
+**Suche und Filter:** Die Textsuche läuft im Backend (`search_cards`), weil Notizen nicht in den Kartenübersichten stecken. Tag- und Prioritätsfilter wirken im Frontend (`filter.ts`). Solange ein Filter aktiv ist, ist Drag & Drop gesperrt, weil Positionen unter den sichtbaren Karten nicht den echten entsprechen.
+
+Die Sprachwahl und das zuletzt geöffnete Board werden vorerst im `localStorage` gespeichert. Beide Fenster teilen ihn. Sobald es Einstellungen im Rust-Backend gibt, zieht sie dorthin um.
 
 ## Sprache
 

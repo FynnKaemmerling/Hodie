@@ -1,0 +1,77 @@
+.window {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-inline-start: var(--priority-edge-low) solid var(--color-border-strong);
+  background: var(--color-bg-surface);
+  transition: background var(--duration-fast) var(--easing-standard);
+}
+
+/* Shows the priority the way the card will look. */
+.window[data-priority="low"] {
+  border-inline-start: var(--priority-edge-low) solid var(--color-priority-low-edge);
+  background: var(--color-priority-low-bg);
+}
+
+.window[data-priority="medium"] {
+  border-inline-start: var(--priority-edge-medium) solid var(--color-priority-medium-edge);
+  background: var(--color-priority-medium-bg);
+}
+
+.window[data-priority="high"] {
+  border-inline-start: var(--priority-edge-high) solid var(--color-priority-high-edge);
+  background: var(--color-priority-high-bg);
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-2) 0;
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-xl);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 1.5rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.target {
+  flex-shrink: 0;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.preview {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.priority {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.hint {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}

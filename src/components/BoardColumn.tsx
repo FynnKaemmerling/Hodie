@@ -23,6 +23,10 @@ interface Props {
   onOpenCard: (cardId: Id) => void;
   onArchiveDone: () => void;
   selectedCardId: Id | null;
+  dragDisabled: boolean;
+  /** The "add card" field is controlled so Mod+N can open it. */
+  addingCard: boolean;
+  onAddingCardChange: (open: boolean) => void;
 }
 
 function BoardColumn({
@@ -38,10 +42,12 @@ function BoardColumn({
   onOpenCard,
   onArchiveDone,
   selectedCardId,
+  dragDisabled,
+  addingCard,
+  onAddingCardChange,
 }: Props) {
   const { t } = useTranslation();
   const [renaming, setRenaming] = useState(false);
-  const [adding, setAdding] = useState(false);
   const data: DragData = { kind: "column", id: column.id, columnId: column.id };
   const {
     attributes,
@@ -51,7 +57,7 @@ function BoardColumn({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: dndId("column", column.id), data, disabled: renaming });
+  } = useSortable({ id: dndId("column", column.id), data, disabled: renaming || dragDisabled });
 
   return (
     <section
@@ -59,6 +65,7 @@ function BoardColumn({
       className={styles.column}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       data-dragging={isDragging || undefined}
+      data-column-section={column.id}
       aria-label={column.name}
     >
       <header className={styles.header}>
@@ -149,22 +156,23 @@ function BoardColumn({
               onNavigate={onNavigate}
               onOpen={onOpenCard}
               selected={card.id === selectedCardId}
+              dragDisabled={dragDisabled}
             />
           ))}
         </ul>
       </SortableContext>
 
       <div className={styles.footer}>
-        {adding ? (
+        {addingCard ? (
           <InlineInput
             label={t("card.title")}
             placeholder={t("card.titlePlaceholder")}
             keepOpen
             onSubmit={(title) => onCreateCard(column.id, title)}
-            onClose={() => setAdding(false)}
+            onClose={() => onAddingCardChange(false)}
           />
         ) : (
-          <button type="button" className={styles.add} onClick={() => setAdding(true)}>
+          <button type="button" className={styles.add} onClick={() => onAddingCardChange(true)}>
             <span aria-hidden="true">+</span> {t("card.add")}
           </button>
         )}

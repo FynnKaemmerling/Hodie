@@ -1,0 +1,219 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--toolbar-height);
+  padding-inline: var(--space-6) var(--space-5);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.counts {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.reset {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.reset:hover {
+  background: var(--color-bg-hover);
+}
+
+.search {
+  position: relative;
+  width: 16rem;
+  flex-shrink: 1;
+  min-width: 9rem;
+}
+
+.searchIcon {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + 1.25em);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-sunken);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.searchInput:hover {
+  border-color: var(--color-border);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-focus-ring);
+  background: var(--color-bg-surface);
+  box-shadow: 0 0 0 2px var(--color-focus-ring-soft);
+}
+
+.filterButton {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+}
+
+.filterButton[data-hovered] {
+  background: var(--color-bg-hover);
+}
+
+.filterButton[data-active] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.filterButton[data-focus-visible] {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.badge {
+  min-width: 1.4em;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.popover {
+  width: 16rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-height: 70vh;
+  padding: var(--space-4);
+  overflow-y: auto;
+  outline: none;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.groupLabel {
+  padding-block-end: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.option[data-hovered] {
+  background: var(--color-bg-hover);
+}
+
+.box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: transparent;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.option[data-selected] .box {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.option[data-focus-visible] .box {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Small sample of the card tint for each priority. */
+.swatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+}
+
+.swatch[data-priority="low"] {
+  border-color: var(--color-priority-low-edge);
+  background: var(--color-priority-low-bg);
+}
+
+.swatch[data-priority="medium"] {
+  border-color: var(--color-priority-medium-edge);
+  background: var(--color-priority-medium-bg);
+}
+
+.swatch[data-priority="high"] {
+  border-color: var(--color-priority-high-edge);
+  background: var(--color-priority-high-bg);
+}
+
+.hint {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

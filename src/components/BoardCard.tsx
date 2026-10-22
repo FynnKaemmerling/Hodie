@@ -25,12 +25,22 @@ interface Props {
   onNavigate: (cardId: Id, direction: Direction) => void;
   onOpen: (cardId: Id) => void;
   selected: boolean;
+  dragDisabled: boolean;
 }
 
 // A drop can end with a click on the card; that click must not open it.
 const CLICK_AFTER_DRAG_MS = 250;
 
-function BoardCard({ card, tags, onRename, onDelete, onNavigate, onOpen, selected }: Props) {
+function BoardCard({
+  card,
+  tags,
+  onRename,
+  onDelete,
+  onNavigate,
+  onOpen,
+  selected,
+  dragDisabled,
+}: Props) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const lastDrag = useRef(0);
@@ -43,7 +53,7 @@ function BoardCard({ card, tags, onRename, onDelete, onNavigate, onOpen, selecte
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: dndId("card", card.id), data, disabled: editing });
+  } = useSortable({ id: dndId("card", card.id), data, disabled: editing || dragDisabled });
 
   useEffect(() => {
     if (isDragging) lastDrag.current = Number.POSITIVE_INFINITY;

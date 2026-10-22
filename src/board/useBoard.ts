@@ -3,6 +3,11 @@ import { useTranslation } from "react-i18next";
 import { api, type BoardView, type CardSummary, type ColumnView, type Id, type Tag } from "../api";
 import { useNotifications } from "../notifications/Notifications";
 import * as state from "./boardState";
+import { createCardFromEntry } from "./quickEntry";
+
+function sortTags(tags: Tag[]): Tag[] {
+  return tags.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+}
 
 /** Enough of a card to act on it and name it in a message. */
 export type CardRef = Pick<CardSummary, "id" | "title">;
@@ -53,10 +58,17 @@ export function useBoard(boardId: Id | null) {
     [notify, reload],
   );
 
+  const tagsRef = useRef(tags);
+  tagsRef.current = tags;
+
+  /** Creates a card from shorthand text such as "Call Anna #work !!". */
   const createCard = useCallback(
-    async (columnId: Id, title: string) => {
+    async (columnId: Id, text: string) => {
       try {
-        const card = await api.createCard({ columnId, title });
+        const { card, createdTags } = await createCardFromEntry(columnId, text, tagsRef.current);
+        if (createdTags.length > 0) {
+          setTags((current) => sortTags([...current, ...createdTags]));
+        }
         setView((current) => current && state.insertCard(current, card, columnId));
       } catch (error) {
         notify.error(error);
@@ -210,9 +222,7 @@ export function useBoard(boardId: Id | null) {
   }, [boardId, notify, reload, t]);
 
   const addTag = useCallback((tag: Tag) => {
-    setTags((current) =>
-      [...current, tag].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" })),
-    );
+    setTags((current) => sortTags([...current, tag]));
   }, []);
 
   return {

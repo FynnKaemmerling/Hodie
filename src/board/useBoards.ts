@@ -6,7 +6,7 @@ import { useNotifications } from "../notifications/Notifications";
 // Temporary storage until settings live in the Rust backend.
 const STORAGE_KEY = "hodie.board";
 
-function readStoredBoard(): Id | null {
+export function readStoredBoard(): Id | null {
   try {
     const value = Number(localStorage.getItem(STORAGE_KEY));
     return Number.isInteger(value) && value > 0 ? value : null;

@@ -163,5 +163,24 @@
       "title": "The archive is empty",
       "description": "Archived cards appear here and can be brought back at any time."
     }
+  },
+  "keys": {
+    "ctrl": "Ctrl"
+  },
+  "filter": {
+    "search": "Search cards",
+    "searchPlaceholder": "Search ({{shortcut}})",
+    "button": "Filter",
+    "title": "Filter cards",
+    "reset": "Clear filters",
+    "counts": "{{visible}} of {{total}} cards",
+    "noTags": "No tags yet."
+  },
+  "quickAdd": {
+    "label": "New task",
+    "placeholder": "New task … #tag, ! !! !!! for priority",
+    "target": "→ {{board}} · {{column}}",
+    "hint": "Enter saves · Esc closes",
+    "noBoard": "Create a board in the main window first."
   }
 }
