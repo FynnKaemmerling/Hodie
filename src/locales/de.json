@@ -167,6 +167,16 @@
       "duplicate_name": "Einen Tag mit diesem Namen gibt es schon.",
       "invalid_color": "Diese Farbe ist für Tags nicht vorgesehen."
     },
+    "vault": {
+      "not_found": "Der Vault-Ordner wurde nicht gefunden. Ist das Laufwerk verbunden?",
+      "not_a_vault": "Der Ordner enthält andere Dateien und ist kein Hodie-Vault.",
+      "too_new": "Der Vault stammt aus einer neueren Version von Hodie. Bitte aktualisiere die App.",
+      "read_only": "Hodie darf in den Vault-Ordner nicht schreiben.",
+      "io": "Auf den Vault-Ordner konnte nicht zugegriffen werden."
+    },
+    "file": {
+      "invalid": "Eine Datei im Vault ist unlesbar und wurde nicht überschrieben."
+    },
     "db": {
       "too_new": "Die Daten stammen aus einer neueren Version von Hodie. Bitte aktualisiere die App.",
       "error": "Die Änderung konnte nicht gespeichert werden."

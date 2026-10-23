@@ -1,5 +1,5 @@
 //! Tauri commands: the only interface between frontend and backend.
-//! Each command locks the database and delegates to the storage layer.
+//! Each command locks the vault or the database and delegates to it.
 
 use std::sync::Mutex;
 
@@ -7,11 +7,12 @@ use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
 
 use crate::error::{AppError, Result};
+use crate::library::Library;
 use crate::model::{
     Board, BoardView, CardDetail, CardPatch, CardSummary, ColorPreset, ColorPresetPatch, Column,
-    Id, NewCard, PresetColors, Subtask, SubtaskPatch, Tag, TagPatch,
+    Id, NewCard, PresetColors, PresetId, Subtask, SubtaskPatch, Tag, TagPatch,
 };
-use crate::store::{boards, cards, columns, presets, subtasks, tags};
+use crate::store::presets;
 
 pub struct Db(Mutex<Connection>);
 
@@ -29,180 +30,216 @@ impl Db {
     }
 }
 
-// Async so that database work runs off the main (UI) thread.
+// Async so that file and database work runs off the main (UI) thread.
 
 #[tauri::command]
-pub async fn list_boards(db: State<'_, Db>) -> Result<Vec<Board>> {
-    db.with(|conn| boards::list(conn))
+pub async fn list_boards(library: State<'_, Library>) -> Result<Vec<Board>> {
+    library.with(|store| Ok(store.list_boards()))
 }
 
 #[tauri::command]
-pub async fn get_board(db: State<'_, Db>, board_id: Id) -> Result<BoardView> {
-    db.with(|conn| boards::view(conn, board_id))
+pub async fn get_board(library: State<'_, Library>, board_id: Id) -> Result<BoardView> {
+    library.with(|store| store.view(&board_id))
 }
 
 #[tauri::command]
 pub async fn create_board(
-    db: State<'_, Db>,
+    library: State<'_, Library>,
     name: String,
     column_names: Vec<String>,
 ) -> Result<Board> {
-    db.with(|conn| boards::create(conn, &name, &column_names))
+    library.with(|store| store.create_board(&name, &column_names))
 }
 
 #[tauri::command]
-pub async fn rename_board(db: State<'_, Db>, board_id: Id, name: String) -> Result<()> {
-    db.with(|conn| boards::rename(conn, board_id, &name))
+pub async fn rename_board(library: State<'_, Library>, board_id: Id, name: String) -> Result<()> {
+    library.with(|store| store.rename_board(&board_id, &name))
 }
 
 #[tauri::command]
-pub async fn reorder_board(db: State<'_, Db>, board_id: Id, index: usize) -> Result<()> {
-    db.with(|conn| boards::reorder(conn, board_id, index))
+pub async fn reorder_board(library: State<'_, Library>, board_id: Id, index: usize) -> Result<()> {
+    library.with(|store| store.reorder_board(&board_id, index))
 }
 
 #[tauri::command]
-pub async fn delete_board(db: State<'_, Db>, board_id: Id) -> Result<()> {
-    db.with(|conn| boards::delete(conn, board_id))
+pub async fn delete_board(library: State<'_, Library>, board_id: Id) -> Result<()> {
+    library.with(|store| store.delete_board(&board_id))
 }
 
 #[tauri::command]
-pub async fn restore_board(db: State<'_, Db>, board_id: Id) -> Result<()> {
-    db.with(|conn| boards::restore(conn, board_id))
+pub async fn restore_board(library: State<'_, Library>, board_id: Id) -> Result<()> {
+    library.with(|store| store.restore_board(&board_id))
 }
 
 #[tauri::command]
-pub async fn create_column(db: State<'_, Db>, board_id: Id, name: String) -> Result<Column> {
-    db.with(|conn| columns::create(conn, board_id, &name))
+pub async fn create_column(
+    library: State<'_, Library>,
+    board_id: Id,
+    name: String,
+) -> Result<Column> {
+    library.with(|store| store.create_column(&board_id, &name))
 }
 
 #[tauri::command]
-pub async fn rename_column(db: State<'_, Db>, column_id: Id, name: String) -> Result<()> {
-    db.with(|conn| columns::rename(conn, column_id, &name))
+pub async fn rename_column(library: State<'_, Library>, column_id: Id, name: String) -> Result<()> {
+    library.with(|store| store.rename_column(&column_id, &name))
 }
 
 #[tauri::command]
-pub async fn reorder_column(db: State<'_, Db>, column_id: Id, index: usize) -> Result<()> {
-    db.with(|conn| columns::reorder(conn, column_id, index))
+pub async fn reorder_column(
+    library: State<'_, Library>,
+    column_id: Id,
+    index: usize,
+) -> Result<()> {
+    library.with(|store| store.reorder_column(&column_id, index))
 }
 
 #[tauri::command]
-pub async fn set_done_column(db: State<'_, Db>, column_id: Id) -> Result<()> {
-    db.with(|conn| columns::set_done(conn, column_id))
+pub async fn set_done_column(library: State<'_, Library>, column_id: Id) -> Result<()> {
+    library.with(|store| store.set_done_column(&column_id))
 }
 
 #[tauri::command]
-pub async fn delete_column(db: State<'_, Db>, column_id: Id) -> Result<()> {
-    db.with(|conn| columns::delete(conn, column_id))
+pub async fn delete_column(library: State<'_, Library>, column_id: Id) -> Result<()> {
+    library.with(|store| store.delete_column(&column_id))
 }
 
 #[tauri::command]
-pub async fn restore_column(db: State<'_, Db>, column_id: Id) -> Result<()> {
-    db.with(|conn| columns::restore(conn, column_id))
+pub async fn restore_column(library: State<'_, Library>, column_id: Id) -> Result<()> {
+    library.with(|store| store.restore_column(&column_id))
 }
 
 #[tauri::command]
-pub async fn search_cards(db: State<'_, Db>, board_id: Id, query: String) -> Result<Vec<Id>> {
-    db.with(|conn| cards::search(conn, board_id, &query))
+pub async fn search_cards(
+    library: State<'_, Library>,
+    board_id: Id,
+    query: String,
+) -> Result<Vec<Id>> {
+    library.with(|store| store.search_cards(&board_id, &query))
 }
 
 #[tauri::command]
-pub async fn get_card(db: State<'_, Db>, card_id: Id) -> Result<CardDetail> {
-    db.with(|conn| cards::get(conn, card_id))
+pub async fn get_card(library: State<'_, Library>, card_id: Id) -> Result<CardDetail> {
+    library.with(|store| store.get_card(&card_id))
 }
 
 #[tauri::command]
-pub async fn create_card(db: State<'_, Db>, card: NewCard) -> Result<CardSummary> {
-    db.with(|conn| cards::create(conn, &card))
+pub async fn create_card(library: State<'_, Library>, card: NewCard) -> Result<CardSummary> {
+    library.with(|store| store.create_card(&card))
 }
 
 #[tauri::command]
-pub async fn update_card(db: State<'_, Db>, card_id: Id, patch: CardPatch) -> Result<()> {
-    db.with(|conn| cards::update(conn, card_id, &patch))
+pub async fn update_card(library: State<'_, Library>, card_id: Id, patch: CardPatch) -> Result<()> {
+    library.with(|store| store.update_card(&card_id, &patch))
 }
 
 #[tauri::command]
-pub async fn move_card(db: State<'_, Db>, card_id: Id, column_id: Id, index: usize) -> Result<()> {
-    db.with(|conn| cards::move_to(conn, card_id, column_id, index))
+pub async fn move_card(
+    library: State<'_, Library>,
+    card_id: Id,
+    column_id: Id,
+    index: usize,
+) -> Result<()> {
+    library.with(|store| store.move_card(&card_id, &column_id, index))
 }
 
 #[tauri::command]
-pub async fn delete_card(db: State<'_, Db>, card_id: Id) -> Result<()> {
-    db.with(|conn| cards::delete(conn, card_id))
+pub async fn delete_card(library: State<'_, Library>, card_id: Id) -> Result<()> {
+    library.with(|store| store.delete_card(&card_id))
 }
 
 #[tauri::command]
-pub async fn restore_card(db: State<'_, Db>, card_id: Id) -> Result<()> {
-    db.with(|conn| cards::restore(conn, card_id))
+pub async fn restore_card(library: State<'_, Library>, card_id: Id) -> Result<()> {
+    library.with(|store| store.restore_card(&card_id))
 }
 
 #[tauri::command]
-pub async fn archive_card(db: State<'_, Db>, card_id: Id) -> Result<()> {
-    db.with(|conn| cards::archive(conn, card_id))
+pub async fn archive_card(library: State<'_, Library>, card_id: Id) -> Result<()> {
+    library.with(|store| store.archive_card(&card_id))
 }
 
 #[tauri::command]
-pub async fn unarchive_card(db: State<'_, Db>, card_id: Id) -> Result<()> {
-    db.with(|conn| cards::unarchive(conn, card_id))
+pub async fn unarchive_card(library: State<'_, Library>, card_id: Id) -> Result<()> {
+    library.with(|store| store.unarchive_card(&card_id))
 }
 
 #[tauri::command]
-pub async fn archive_done_cards(db: State<'_, Db>, board_id: Id) -> Result<Vec<Id>> {
-    db.with(|conn| cards::archive_done(conn, board_id))
+pub async fn archive_done_cards(library: State<'_, Library>, board_id: Id) -> Result<Vec<Id>> {
+    library.with(|store| store.archive_done_cards(&board_id))
 }
 
 #[tauri::command]
-pub async fn list_archived_cards(db: State<'_, Db>, board_id: Id) -> Result<Vec<CardSummary>> {
-    db.with(|conn| cards::archived(conn, board_id))
+pub async fn list_archived_cards(
+    library: State<'_, Library>,
+    board_id: Id,
+) -> Result<Vec<CardSummary>> {
+    library.with(|store| store.list_archived_cards(&board_id))
 }
 
 #[tauri::command]
-pub async fn set_card_tags(db: State<'_, Db>, card_id: Id, tag_ids: Vec<Id>) -> Result<Vec<Id>> {
-    db.with(|conn| cards::set_tags(conn, card_id, &tag_ids))
+pub async fn set_card_tags(
+    library: State<'_, Library>,
+    card_id: Id,
+    tag_ids: Vec<Id>,
+) -> Result<Vec<Id>> {
+    library.with(|store| store.set_card_tags(&card_id, &tag_ids))
 }
 
 #[tauri::command]
-pub async fn create_subtask(db: State<'_, Db>, card_id: Id, title: String) -> Result<Subtask> {
-    db.with(|conn| subtasks::create(conn, card_id, &title))
+pub async fn create_subtask(
+    library: State<'_, Library>,
+    card_id: Id,
+    title: String,
+) -> Result<Subtask> {
+    library.with(|store| store.create_subtask(&card_id, &title))
 }
 
 #[tauri::command]
-pub async fn update_subtask(db: State<'_, Db>, subtask_id: Id, patch: SubtaskPatch) -> Result<()> {
-    db.with(|conn| subtasks::update(conn, subtask_id, &patch))
+pub async fn update_subtask(
+    library: State<'_, Library>,
+    subtask_id: Id,
+    patch: SubtaskPatch,
+) -> Result<()> {
+    library.with(|store| store.update_subtask(&subtask_id, &patch))
 }
 
 #[tauri::command]
-pub async fn reorder_subtask(db: State<'_, Db>, subtask_id: Id, index: usize) -> Result<()> {
-    db.with(|conn| subtasks::reorder(conn, subtask_id, index))
+pub async fn reorder_subtask(
+    library: State<'_, Library>,
+    subtask_id: Id,
+    index: usize,
+) -> Result<()> {
+    library.with(|store| store.reorder_subtask(&subtask_id, index))
 }
 
 #[tauri::command]
-pub async fn delete_subtask(db: State<'_, Db>, subtask_id: Id) -> Result<()> {
-    db.with(|conn| subtasks::delete(conn, subtask_id))
+pub async fn delete_subtask(library: State<'_, Library>, subtask_id: Id) -> Result<()> {
+    library.with(|store| store.delete_subtask(&subtask_id))
 }
 
 #[tauri::command]
-pub async fn list_tags(db: State<'_, Db>) -> Result<Vec<Tag>> {
-    db.with(|conn| tags::list(conn))
+pub async fn list_tags(library: State<'_, Library>) -> Result<Vec<Tag>> {
+    library.with(|store| Ok(store.list_tags()))
 }
 
 #[tauri::command]
-pub async fn create_tag(db: State<'_, Db>, name: String, color: String) -> Result<Tag> {
-    db.with(|conn| tags::create(conn, &name, &color))
+pub async fn create_tag(library: State<'_, Library>, name: String, color: String) -> Result<Tag> {
+    library.with(|store| store.create_tag(&name, &color))
 }
 
 #[tauri::command]
-pub async fn update_tag(db: State<'_, Db>, tag_id: Id, patch: TagPatch) -> Result<()> {
-    db.with(|conn| tags::update(conn, tag_id, &patch))
+pub async fn update_tag(library: State<'_, Library>, tag_id: Id, patch: TagPatch) -> Result<()> {
+    library.with(|store| store.update_tag(&tag_id, &patch))
 }
 
 #[tauri::command]
-pub async fn count_tag_cards(db: State<'_, Db>, tag_id: Id) -> Result<u32> {
-    db.with(|conn| tags::card_count(conn, tag_id))
+pub async fn count_tag_cards(library: State<'_, Library>, tag_id: Id) -> Result<u32> {
+    library.with(|store| store.count_tag_cards(&tag_id))
 }
 
 #[tauri::command]
-pub async fn delete_tag(db: State<'_, Db>, tag_id: Id) -> Result<()> {
-    db.with(|conn| tags::delete(conn, tag_id))
+pub async fn delete_tag(library: State<'_, Library>, tag_id: Id) -> Result<()> {
+    library.with(|store| store.delete_tag(&tag_id))
 }
 
 #[tauri::command]
@@ -222,14 +259,14 @@ pub async fn create_color_preset(
 #[tauri::command]
 pub async fn update_color_preset(
     db: State<'_, Db>,
-    preset_id: Id,
+    preset_id: PresetId,
     patch: ColorPresetPatch,
 ) -> Result<()> {
     db.with(|conn| presets::update(conn, preset_id, &patch))
 }
 
 #[tauri::command]
-pub async fn delete_color_preset(db: State<'_, Db>, preset_id: Id) -> Result<()> {
+pub async fn delete_color_preset(db: State<'_, Db>, preset_id: PresetId) -> Result<()> {
     db.with(|conn| presets::delete(conn, preset_id))
 }
 
@@ -243,12 +280,15 @@ pub async fn set_color_preset_choice(db: State<'_, Db>, choice: String) -> Resul
     db.with(|conn| presets::set_choice(conn, &choice))
 }
 
-/// Bytes the app's data takes on disk.
+/// Bytes the app's data takes on disk: the vault and the app's own database.
 #[tauri::command]
-pub async fn get_storage_usage(app: AppHandle) -> Result<u64> {
+pub async fn get_storage_usage(app: AppHandle, library: State<'_, Library>) -> Result<u64> {
     let dir = app
         .path()
         .app_data_dir()
         .map_err(|_| AppError::Internal("no app data directory"))?;
-    Ok(crate::store::disk_usage(&dir))
+    let vault = library
+        .with(|store| Ok(store.vault().disk_usage()))
+        .unwrap_or(0);
+    Ok(crate::store::disk_usage(&dir) + vault)
 }

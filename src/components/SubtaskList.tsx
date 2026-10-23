@@ -63,7 +63,7 @@ function SubtaskList({ subtasks, onAdd, onToggle, onRename, onMove, onDelete }: 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (!over || over.id === active.id) return;
     const index = subtasks.findIndex((s) => s.id === over.id);
-    if (index !== -1) onMove(Number(active.id), index);
+    if (index !== -1) onMove(String(active.id), index);
   }
 
   return (

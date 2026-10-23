@@ -1,18 +1,15 @@
-//! Storage layer: the SQLite database and every read and write on it.
-//! Knows nothing about Tauri or the UI.
+//! The app's own SQLite database: settings and colour presets. Boards live in
+//! the vault (`crate::vault`); their old tables are only read once by
+//! `legacy` to move them there. Knows nothing about Tauri or the UI.
 
-pub mod boards;
-pub mod cards;
-pub mod columns;
+pub mod legacy;
 pub mod presets;
 pub mod settings;
-pub mod subtasks;
-pub mod tags;
 
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use rusqlite::{Connection, Params};
+use rusqlite::Connection;
 
 use crate::error::{AppError, Result};
 
@@ -81,29 +78,20 @@ fn purge_deleted(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-fn now_ms() -> i64 {
+pub(crate) fn now_ms() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_or(0, |duration| duration.as_millis() as i64)
 }
 
 /// Trims a user-entered name or title and rejects empty ones.
-fn require_text(value: &str) -> Result<String> {
+pub(crate) fn require_text(value: &str) -> Result<String> {
     let trimmed = value.trim();
     if trimmed.is_empty() {
         Err(AppError::Validation("validation.empty"))
     } else {
         Ok(trimmed.to_owned())
     }
-}
-
-/// Runs a query whose only column is a position key.
-fn position_keys(conn: &Connection, sql: &str, params: impl Params) -> Result<Vec<String>> {
-    let mut stmt = conn.prepare(sql)?;
-    let keys = stmt
-        .query_map(params, |row| row.get(0))?
-        .collect::<rusqlite::Result<_>>()?;
-    Ok(keys)
 }
 
 /// Turns "no row changed" into `NotFound`.
@@ -161,9 +149,12 @@ mod tests {
         let path = dir.join("purge.db");
         let _ = std::fs::remove_file(&path);
 
-        let mut conn = open(&path).unwrap();
-        let board = boards::create(&mut conn, "Board", &["A".into()]).unwrap();
-        boards::delete(&conn, board.id).unwrap();
+        let conn = open(&path).unwrap();
+        conn.execute(
+            "INSERT INTO boards (name, position, created_at, deleted_at) VALUES ('B', 'V', 1, 2)",
+            [],
+        )
+        .unwrap();
         drop(conn);
 
         let conn = open(&path).unwrap();

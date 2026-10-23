@@ -10,7 +10,7 @@ import {
   Popover,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { Id, Priority, Tag } from "../api";
+import type { Priority, Tag } from "../api";
 import { isFilterActive, NO_FILTER, type CardFilter } from "../board/filter";
 import { modShortcut } from "../platform";
 import { iconButtonClass } from "./IconButton";
@@ -132,8 +132,8 @@ function BoardToolbar({
 
               <CheckboxGroup
                 className={styles.group}
-                value={filter.tagIds.map(String)}
-                onChange={(values) => onFilterChange({ ...filter, tagIds: values.map(Number) as Id[] })}
+                value={filter.tagIds}
+                onChange={(tagIds) => onFilterChange({ ...filter, tagIds })}
               >
                 <Label className={styles.groupLabel}>{t("panel.tags")}</Label>
                 {tags.length === 0 && <p className={styles.hint}>{t("filter.noTags")}</p>}

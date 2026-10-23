@@ -4,7 +4,7 @@ use rusqlite::{Connection, Row, params};
 
 use super::{expect_changed, require_text, settings};
 use crate::error::{AppError, Result};
-use crate::model::{BUILTIN_PRESETS, ColorPreset, ColorPresetPatch, Id, PresetColors};
+use crate::model::{BUILTIN_PRESETS, ColorPreset, ColorPresetPatch, PresetColors, PresetId};
 
 const CHOICE_KEY: &str = "color_preset";
 const CUSTOM_PREFIX: &str = "custom:";
@@ -75,7 +75,7 @@ pub fn create(conn: &Connection, name: &str, colors: &PresetColors) -> Result<Co
     })
 }
 
-pub fn update(conn: &mut Connection, id: Id, patch: &ColorPresetPatch) -> Result<()> {
+pub fn update(conn: &mut Connection, id: PresetId, patch: &ColorPresetPatch) -> Result<()> {
     let name = patch.name.as_deref().map(require_text).transpose()?;
     let colors = patch.colors.as_ref().map(require_colors).transpose()?;
     let tx = conn.transaction()?;
@@ -112,7 +112,7 @@ pub fn update(conn: &mut Connection, id: Id, patch: &ColorPresetPatch) -> Result
 }
 
 /// Deleting the active preset switches back to the default one.
-pub fn delete(conn: &mut Connection, id: Id) -> Result<()> {
+pub fn delete(conn: &mut Connection, id: PresetId) -> Result<()> {
     let tx = conn.transaction()?;
     expect_changed(tx.execute("DELETE FROM color_presets WHERE id = ?1", [id])?)?;
     if settings::get(&tx, CHOICE_KEY)?.as_deref() == Some(&format!("{CUSTOM_PREFIX}{id}")) {
@@ -129,7 +129,7 @@ pub fn choice(conn: &Connection) -> Result<String> {
 
 pub fn set_choice(conn: &Connection, choice: &str) -> Result<()> {
     if !BUILTIN_PRESETS.contains(&choice) {
-        let id: Id = choice
+        let id: PresetId = choice
             .strip_prefix(CUSTOM_PREFIX)
             .and_then(|id| id.parse().ok())
             .ok_or(AppError::NotFound)?;

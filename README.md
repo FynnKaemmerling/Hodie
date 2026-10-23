@@ -67,7 +67,7 @@ Details zur Designrichtung stehen in [`DESIGN.md`](DESIGN.md).
 | App-Gerüst | [Tauri 2](https://tauri.app) |
 | Backend | Rust |
 | Oberfläche | React + TypeScript + Vite |
-| Lokaler Speicher | SQLite |
+| Lokaler Speicher | Vault-Ordner mit Markdown- und JSON-Dateien, SQLite für Einstellungen |
 | Mehrsprachigkeit | i18next |
 
 Tauri nutzt den Browser-Baustein des Betriebssystems statt eines mitgelieferten Chromium. Dadurch bleibt Hodie klein und sparsam, während die Oberfläche mit HTML und CSS frei gestaltet werden kann.

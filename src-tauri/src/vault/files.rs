@@ -37,6 +37,16 @@ pub fn is_temp_file(name: &str) -> bool {
     name.starts_with('.') && name.ends_with(".tmp")
 }
 
+/// Name under which a deleted file or board folder waits for undo. Hidden, so
+/// every app ignores it; removed when a vault is opened.
+pub fn trash_name(name: &str) -> String {
+    format!(".{name}.deleted")
+}
+
+fn is_trash(name: &str) -> bool {
+    name.starts_with('.') && name.ends_with(".deleted")
+}
+
 pub struct Entry {
     pub name: String,
     pub path: PathBuf,
@@ -65,11 +75,18 @@ pub fn visible_entries(dir: &Path) -> Result<Vec<Entry>> {
     Ok(entries)
 }
 
-/// Removes leftovers of interrupted `write_atomic` calls in `dir`.
-pub fn remove_temp_files(dir: &Path) -> Result<()> {
+/// Removes leftovers in `dir`: interrupted `write_atomic` calls and deleted
+/// entries whose undo time is over.
+pub fn remove_leftovers(dir: &Path) -> Result<()> {
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
-        if entry.file_name().to_str().is_some_and(is_temp_file) && entry.file_type()?.is_file() {
+        let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
+            continue;
+        };
+        let is_dir = entry.file_type()?.is_dir();
+        if is_trash(&name) && is_dir {
+            fs::remove_dir_all(entry.path())?;
+        } else if (is_trash(&name) || is_temp_file(&name)) && !is_dir {
             fs::remove_file(entry.path())?;
         }
     }
@@ -175,16 +192,20 @@ mod tests {
     }
 
     #[test]
-    fn listing_skips_hidden_entries_and_removes_temp_files() {
+    fn listing_skips_hidden_entries_and_leftovers_are_removed() {
         let dir = TestDir::new();
         fs::write(dir.path().join("b.md"), "").unwrap();
         fs::write(dir.path().join("a.md"), "").unwrap();
         fs::write(dir.path().join(".DS_Store"), "").unwrap();
         fs::write(dir.path().join(".a.md.tmp"), "").unwrap();
         fs::create_dir(dir.path().join("sub")).unwrap();
+        fs::write(dir.path().join(trash_name("c.md")), "").unwrap();
+        fs::create_dir_all(dir.path().join(trash_name("Alt")).join("cards")).unwrap();
 
-        remove_temp_files(dir.path()).unwrap();
+        remove_leftovers(dir.path()).unwrap();
         assert!(!dir.path().join(".a.md.tmp").exists());
+        assert!(!dir.path().join(".c.md.deleted").exists());
+        assert!(!dir.path().join(".Alt.deleted").exists());
         assert!(dir.path().join(".DS_Store").exists());
 
         let entries = visible_entries(dir.path()).unwrap();

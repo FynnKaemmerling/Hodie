@@ -4,6 +4,8 @@
 
 pub mod files;
 pub mod format;
+pub mod import;
+pub mod store;
 pub mod time;
 
 use std::fs;
@@ -12,14 +14,14 @@ use std::path::{Path, PathBuf};
 use ulid::Ulid;
 
 use crate::error::{AppError, Result};
-use files::{remove_temp_files, visible_entries, write_atomic};
+use files::{remove_leftovers, trash_name, visible_entries, write_atomic};
 use format::{BoardFile, Card, TagsFile, VaultFile};
 
 /// Highest `formatVersion` this app reads and writes.
 pub const FORMAT_VERSION: u32 = 1;
 
-const META_DIR: &str = ".hodie";
-const VAULT_FILE: &str = "vault.json";
+pub const META_DIR: &str = ".hodie";
+pub const VAULT_FILE: &str = "vault.json";
 const TAGS_FILE: &str = "tags.json";
 const BOARD_FILE: &str = "board.json";
 const CARDS_DIR: &str = "cards";
@@ -31,7 +33,6 @@ pub fn new_id() -> String {
 #[derive(Debug)]
 pub struct Vault {
     root: PathBuf,
-    id: String,
 }
 
 /// Everything in a vault, read into memory.
@@ -79,13 +80,12 @@ impl Vault {
         }
         let meta_dir = root.join(META_DIR);
         let vault_path = meta_dir.join(VAULT_FILE);
-        let file = if vault_path.is_file() {
+        if vault_path.is_file() {
             let file = format::parse_vault(&fs::read_to_string(&vault_path)?)
                 .ok_or(AppError::Vault("file.invalid"))?;
             if file.format_version > FORMAT_VERSION {
                 return Err(AppError::Vault("vault.too_new"));
             }
-            file
         } else if visible_entries(root)?.is_empty() {
             let file = VaultFile {
                 format_version: FORMAT_VERSION,
@@ -94,16 +94,14 @@ impl Vault {
             };
             fs::create_dir_all(&meta_dir)?;
             write_atomic(&vault_path, &format::write_json(&file)?)?;
-            file
         } else {
             return Err(AppError::Vault("vault.not_a_vault"));
-        };
+        }
 
         let vault = Vault {
             root: root.to_owned(),
-            id: file.id,
         };
-        vault.remove_temp_files()?;
+        vault.remove_leftovers()?;
         Ok(vault)
     }
 
@@ -111,22 +109,37 @@ impl Vault {
         &self.root
     }
 
-    pub fn id(&self) -> &str {
-        &self.id
-    }
-
-    fn remove_temp_files(&self) -> Result<()> {
-        remove_temp_files(&self.root.join(META_DIR))?;
+    fn remove_leftovers(&self) -> Result<()> {
+        remove_leftovers(&self.root)?;
+        remove_leftovers(&self.root.join(META_DIR))?;
         for entry in visible_entries(&self.root)? {
             if entry.is_dir && entry.path.join(BOARD_FILE).is_file() {
-                remove_temp_files(&entry.path)?;
+                remove_leftovers(&entry.path)?;
                 let cards = entry.path.join(CARDS_DIR);
                 if cards.is_dir() {
-                    remove_temp_files(&cards)?;
+                    remove_leftovers(&cards)?;
                 }
             }
         }
         Ok(())
+    }
+
+    /// Bytes all files in the vault take, hidden ones included.
+    pub fn disk_usage(&self) -> u64 {
+        fn walk(dir: &Path) -> u64 {
+            let Ok(entries) = fs::read_dir(dir) else {
+                return 0;
+            };
+            entries
+                .flatten()
+                .map(|entry| match entry.file_type() {
+                    Ok(kind) if kind.is_dir() => walk(&entry.path()),
+                    Ok(_) => entry.metadata().map_or(0, |meta| meta.len()),
+                    Err(_) => 0,
+                })
+                .sum()
+        }
+        walk(&self.root)
     }
 
     pub fn load(&self) -> Result<VaultData> {
@@ -266,10 +279,7 @@ impl Vault {
 
     /// Creates the folder for a new board and returns its name.
     pub fn create_board(&self, board: &BoardFile) -> Result<String> {
-        let taken: Vec<String> = fs::read_dir(&self.root)?
-            .filter_map(|entry| entry.ok()?.file_name().into_string().ok())
-            .collect();
-        let dir = files::board_dir_name(&board.name, &taken);
+        let dir = files::board_dir_name(&board.name, &self.taken_names()?);
         fs::create_dir_all(self.root.join(&dir).join(CARDS_DIR))?;
         self.write_board(&dir, board)?;
         Ok(dir)
@@ -280,9 +290,37 @@ impl Vault {
         replace(&path, &format::write_json(board)?, format::parse_board)
     }
 
-    /// Removes the board's folder with all its cards.
-    pub fn remove_board(&self, dir: &str) -> Result<()> {
-        Ok(fs::remove_dir_all(self.root.join(dir))?)
+    /// Hides the board's folder until the next start, so deleting can be
+    /// undone and files Hodie does not know survive that. Returns the name to
+    /// restore it from.
+    pub fn trash_board(&self, dir: &str) -> Result<String> {
+        let trash = trash_name(&format!("{dir}.{}", new_id()));
+        fs::rename(self.root.join(dir), self.root.join(&trash))?;
+        Ok(trash)
+    }
+
+    /// Moves a trashed board folder back under a free name derived from the
+    /// board's name, and returns that name.
+    pub fn restore_board(&self, trash: &str, name: &str) -> Result<String> {
+        let dir = files::board_dir_name(name, &self.taken_names()?);
+        fs::rename(self.root.join(trash), self.root.join(&dir))?;
+        Ok(dir)
+    }
+
+    fn taken_names(&self) -> Result<Vec<String>> {
+        Ok(fs::read_dir(&self.root)?
+            .filter_map(|entry| entry.ok()?.file_name().into_string().ok())
+            .collect())
+    }
+
+    pub fn trash_card(&self, dir: &str, file: &str) -> Result<()> {
+        let cards = self.root.join(dir).join(CARDS_DIR);
+        Ok(fs::rename(cards.join(file), cards.join(trash_name(file)))?)
+    }
+
+    pub fn restore_card(&self, dir: &str, file: &str) -> Result<()> {
+        let cards = self.root.join(dir).join(CARDS_DIR);
+        Ok(fs::rename(cards.join(trash_name(file)), cards.join(file))?)
     }
 
     /// Writes the card to `cards/<id>.md`. If it was loaded from a file with
@@ -413,11 +451,13 @@ pub(crate) mod tests {
     fn open_turns_an_empty_folder_into_a_vault() {
         let dir = TestDir::new();
         fs::write(dir.path().join(".DS_Store"), "").unwrap();
-        let vault = Vault::open(dir.path()).unwrap();
-        assert!(dir.path().join(".hodie/vault.json").is_file());
+        Vault::open(dir.path()).unwrap();
+        let vault_json = dir.path().join(".hodie/vault.json");
+        let created = fs::read_to_string(&vault_json).unwrap();
+        assert!(created.contains(r#""formatVersion": 1"#), "{created}");
 
         let again = Vault::open(dir.path()).unwrap();
-        assert_eq!(again.id(), vault.id());
+        assert_eq!(fs::read_to_string(&vault_json).unwrap(), created);
         let data = again.load().unwrap();
         assert!(data.boards.is_empty() && data.problems.is_empty());
         assert!(data.tags.tags.is_empty());
@@ -638,7 +678,7 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn removing_cards_and_boards_deletes_their_files() {
+    fn trashed_cards_and_boards_can_be_restored_until_reopening() {
         let dir = TestDir::new();
         let vault = Vault::open(dir.path()).unwrap();
         let work = board("Arbeit", "V");
@@ -646,14 +686,40 @@ pub(crate) mod tests {
         let task = card(&work, "Weg", "V");
         vault.write_card(&work_dir, &task).unwrap();
 
-        vault
-            .remove_card(&work_dir, &card_file_name(&task.meta.id))
-            .unwrap();
-        assert!(vault.load().unwrap().boards[0].cards.is_empty());
+        let file = card_file_name(&task.meta.id);
 
-        vault.remove_board(&work_dir).unwrap();
+        vault.trash_card(&work_dir, &file).unwrap();
+        assert!(vault.load().unwrap().boards[0].cards.is_empty());
+        vault.restore_card(&work_dir, &file).unwrap();
+        assert_eq!(vault.load().unwrap().boards[0].cards.len(), 1);
+
+        let trash = vault.trash_board(&work_dir).unwrap();
         assert!(vault.load().unwrap().boards.is_empty());
-        assert!(!dir.path().join("Arbeit").exists());
+        vault.create_board(&board("Arbeit", "k")).unwrap();
+        let restored = vault.restore_board(&trash, "Arbeit").unwrap();
+        assert_eq!(restored, "Arbeit 2");
+        assert_eq!(vault.load().unwrap().boards.len(), 2);
+
+        vault.trash_card(&restored, &file).unwrap();
+        let trash = vault.trash_board("Arbeit").unwrap();
+        Vault::open(dir.path()).unwrap();
+        assert!(!dir.path().join(trash).exists());
+        assert!(
+            !dir.path()
+                .join("Arbeit 2/cards")
+                .join(trash_name(&file))
+                .exists()
+        );
+    }
+
+    #[test]
+    fn disk_usage_counts_every_file() {
+        let dir = TestDir::new();
+        let vault = Vault::open(dir.path()).unwrap();
+        let before = vault.disk_usage();
+        assert!(before > 0);
+        fs::write(dir.path().join("notizen.txt"), [0u8; 100]).unwrap();
+        assert_eq!(vault.disk_usage(), before + 100);
     }
 
     #[test]

@@ -1,6 +1,6 @@
 # Vault-Format
 
-**Status:** Festgelegt (Meilenstein 7 in [`MVP.md`](MVP.md)). Lesen und Schreiben der Dateien ist umgesetzt (`src-tauri/src/vault/`), die App nutzt aber noch die SQLite-Datenbank. Ersetzt nach Umsetzung die SQLite-Datenbank als Speicher für Boards, Spalten, Karten, Teilaufgaben und Tags.
+**Status:** In Umsetzung (Meilenstein 7 in [`MVP.md`](MVP.md)). Die App speichert Boards, Spalten, Karten, Teilaufgaben und Tags im Vault (`src-tauri/src/vault/`). Noch offen: Ordner in den Einstellungen wählen, Änderungen von außen beobachten, Konflikte anzeigen.
 
 Ein **Vault** ist ein Ordner, den der Nutzer in der App auswählt, ähnlich wie bei Obsidian. Er enthält alle Boards als gewöhnliche Dateien. Der Ordner kann über Dropbox, iCloud Drive, OneDrive, Syncthing, ein Netzlaufwerk oder Git mit anderen geteilt werden. Hodie synchronisiert selbst nichts. Es liest und schreibt nur Dateien und bemerkt, wenn andere sie ändern.
 
@@ -164,17 +164,16 @@ Gilt nur für Board-Ordner, denn Karten heißen immer nach ihrer ID.
 Sync-Dienste legen bei gleichzeitigen Änderungen Kopien an, mit Namen je nach Dienst (`… (Konfliktkopie …).md`, `… 2.md`, `….sync-conflict-….md`). Hodie erkennt sie nicht am Namen, sondern am Inhalt: **Haben zwei Dateien dieselbe `id`, ist das ein Konflikt.**
 
 - Angezeigt wird die Datei, die `<id>.md` heißt. Die Karte bekommt einen Konflikt-Hinweis.
-- Im Kartenpanel lassen sich die Fassungen vergleichen. Man wählt eine aus, die andere Datei wird gelöscht und landet im lokalen Papierkorb (siehe unten).
+- Im Kartenpanel lassen sich die Fassungen vergleichen. Man wählt eine aus, die andere Datei wird gelöscht.
 - Für `board.json` und `tags.json` gilt dasselbe: Hodie liest die Hauptdatei und weist auf die Kopie hin.
 
 ## Löschen und Rückgängig
 
-Bisher werden Zeilen markiert und beim nächsten Start endgültig gelöscht. Im Vault wäre eine Markierung für die anderen Nutzer sichtbar, deshalb:
-
-- Gelöschte Karten, Spalten (mit ihren Karten) und Boards verschwinden **sofort aus dem Vault**. Eine Kopie kommt in einen **lokalen Papierkorb** im App-Datenverzeichnis (`trash/`, Pfad über Tauris Pfad-API).
-- **Rückgängig** schreibt die Kopie zurück in den Vault.
-- Der Papierkorb wird beim nächsten Start geleert, wie bisher die markierten Zeilen.
-- Teilaufgaben und Tags werden wie bisher sofort gelöscht.
+- Gelöschte Karten und Boards werden im Vault **versteckt umbenannt**: `cards/.<id>.md.deleted` bzw. der Board-Ordner zu `.<Ordner>.<ULID>.deleted`. Für alle anderen (und für Obsidian) sind sie damit sofort weg, weil versteckte Dateien ignoriert werden. Dateien im Board-Ordner, die Hodie nicht kennt, bleiben so ebenfalls erhalten.
+- Eine gelöschte Spalte verschwindet aus `board.json`, ihre Karten werden wie oben versteckt.
+- **Rückgängig** benennt zurück. Ein Board bekommt dabei einen freien Ordnernamen, falls inzwischen ein anderes Board den alten trägt.
+- Versteckte gelöschte Einträge werden beim nächsten Öffnen des Vaults endgültig entfernt, wie bisher die markierten Zeilen. Öffnet jemand anderes den Vault in dieser Zeit, entfernt dessen App sie schon früher; Rückgängig geht dann nicht mehr.
+- Teilaufgaben und Tags werden wie bisher sofort gelöscht. Ein Tag wird dabei auch aus allen Karten entfernt, die ihn tragen (nach Rückfrage mit der Anzahl).
 
 ## Vault öffnen und wechseln
 
@@ -195,17 +194,17 @@ Die SQLite-Datenbank bleibt dafür bestehen, enthält aber keine Boards mehr.
 
 ## Übernahme der bestehenden Daten
 
-Beim ersten Start der neuen Version, solange `hodie.db` noch Boards enthält:
+Beim ersten Start der neuen Version:
 
-1. Hodie fragt nach einem Ort für den Vault. Vorschlag ist `Dokumente/Hodie`, ermittelt über Tauris Pfad-API.
-2. Hodie schreibt alle Boards, Spalten, Karten, Teilaufgaben und Tags dorthin. Die bisherigen Zahlen-IDs werden auf neue ULIDs abgebildet, Positionsschlüssel bleiben unverändert, Zeitpunkte werden umgerechnet.
-3. Die alten Tabellen bleiben unverändert als Sicherung in `hodie.db`. Gelöscht werden sie frühestens in einer späteren Version.
+1. Ist noch kein Vault eingestellt, legt Hodie ohne Rückfrage `Dokumente/Hodie` an (über Tauris Pfad-API; ist der Name durch einen fremden Ordner belegt, `Hodie 2` usw.) und merkt sich den Pfad (`vault_path` in `settings`). Verschieben lässt er sich später in den Einstellungen.
+2. Enthält `hodie.db` noch Boards, schreibt Hodie alle Boards, Spalten, Karten, Teilaufgaben und Tags in den Vault. Die bisherigen Zahlen-IDs werden auf neue ULIDs abgebildet, Positionsschlüssel bleiben unverändert, Zeitpunkte werden umgerechnet. Tags mit gleichem Namen werden zusammengeführt. Schlägt das fehl, werden die schon geschriebenen Boards wieder entfernt und der nächste Start versucht es erneut.
+3. Danach wird `legacy_imported` in `settings` gesetzt, damit das nur einmal passiert. Die alten Tabellen bleiben unverändert als Sicherung in `hodie.db`. Gelöscht werden sie frühestens in einer späteren Version.
 
 ## Neue Fehlercodes
 
 | Code | Bedeutung |
 |---|---|
-| `vault.not_found` | Der Ordner existiert nicht (mehr), z. B. weil ein Laufwerk fehlt |
+| `vault.not_found` | Der Ordner existiert nicht (mehr), z. B. weil ein Laufwerk fehlt. Ließ sich der Vault beim Start nicht öffnen, antworten alle Board-Befehle mit diesem Code (bzw. dem Code, mit dem das Öffnen scheiterte) |
 | `vault.not_a_vault` | Der Ordner hat keine `.hodie/vault.json` und ist nicht leer |
 | `vault.too_new` | Formatversion höher als unterstützt |
 | `vault.read_only` | Keine Schreibrechte im Ordner |

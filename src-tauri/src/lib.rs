@@ -1,13 +1,12 @@
 mod commands;
 mod error;
+mod library;
 mod model;
 #[cfg(target_os = "macos")]
 mod panel;
 mod position;
 mod quick_add;
 mod store;
-// Not wired into the commands yet; replaces `store` for boards (milestone 7).
-#[allow(dead_code)]
 mod vault;
 
 use tauri::Manager;
@@ -21,6 +20,7 @@ pub fn run() {
             std::fs::create_dir_all(&dir)?;
             let conn = store::open(&dir.join(store::DB_FILE))?;
             let shortcut = store::settings::get(&conn, quick_add::SETTING_KEY)?;
+            app.manage(library::Library::open(app.handle(), &conn));
             app.manage(commands::Db::new(conn));
             quick_add::setup(app, shortcut)?;
             Ok(())

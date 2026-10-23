@@ -85,7 +85,7 @@ function Sidebar({
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (!over || over.id === active.id) return;
     const index = boards.findIndex((board) => board.id === over.id);
-    if (index !== -1) onReorder(Number(active.id), index);
+    if (index !== -1) onReorder(String(active.id), index);
   }
 
   return (

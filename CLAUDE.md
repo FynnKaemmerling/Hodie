@@ -19,7 +19,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | App-Gerüst | Tauri 2 |
 | Backend | Rust |
 | Frontend | React + TypeScript + Vite |
-| Lokaler Speicher | SQLite über `rusqlite` (gebündelt) |
+| Lokaler Speicher | Vault-Ordner mit Dateien pro Karte ([`VAULT.md`](VAULT.md)); SQLite über `rusqlite` (gebündelt) für Einstellungen und Farb-Presets |
 | UI-Bausteine | React Aria Components (Verhalten und Barrierefreiheit, kein eigenes Aussehen) |
 | Icons | Lucide (`lucide-react`), Größe und Strichstärke über Tokens |
 | Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) |
@@ -78,9 +78,11 @@ src-tauri/src/error.rs        Error codes sent to the frontend
 src-tauri/src/position.rs     Fractional-index sort keys
 src-tauri/src/quick_add.rs    Global shortcut: registration, settings commands
 src-tauri/src/panel.rs        macOS only: quick entry window as non-activating panel
-src-tauri/src/store/          Storage layer, one module per entity
+src-tauri/src/library.rs      Opens the vault at start-up (path from settings or Documents/Hodie), one-time import
+src-tauri/src/vault/          Vault (VAULT.md): file format, atomic writes, loading, trash, import
+src-tauri/src/vault/store.rs  The open vault in memory; answers all board, card and tag commands
+src-tauri/src/store/          App database: settings, colour presets; legacy.rs reads old board tables once
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
-src-tauri/src/vault/          Vault files (VAULT.md): format, atomic writes, loading; not wired in yet
 src-tauri/capabilities/ Tauri permissions for the frontend
 .github/workflows/      CI builds for all three platforms
 ```
@@ -101,7 +103,7 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **App-Icon:** Quelle ist `src-tauri/icons/app-icon.svg`. Nach Änderungen alle Größen mit `npx tauri icon src-tauri/icons/app-icon.svg` neu erzeugen und die Ordner `android/` und `ios/` wieder löschen.
 
-**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
+**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher von Vault und Datenbank über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
 
 Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme, das zuletzt geöffnete Board und die eingeklappte Seitenleiste liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
 
@@ -125,21 +127,23 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 ## Architektur-Leitlinien
 
 1. **Klare Schichten trennen**
-   - *Speicher-Schicht (Rust):* SQLite-Datenbank, Schema-Migrationen, alle Lese- und Schreibzugriffe. Keine UI-Abhängigkeiten.
+   - *Speicher-Schicht (Rust):* Vault-Dateien (`vault/`) und die SQLite-Datenbank der App (`store/`) mit Schema-Migrationen, alle Lese- und Schreibzugriffe. Keine UI-Abhängigkeiten.
    - *Befehls-Schicht (Rust):* Tauri-Befehle als einzige Schnittstelle zum Frontend. Sie validieren Eingaben und geben Daten oder Fehlercodes zurück.
-   - *UI-Schicht (React):* Spricht ausschließlich über diese Befehle mit dem Backend, nie direkt mit der Datenbank.
+   - *UI-Schicht (React):* Spricht ausschließlich über diese Befehle mit dem Backend, nie direkt mit Dateien oder der Datenbank.
 2. **Datenmodell:** Board → Spalte → Karte → Teilaufgabe. Tags gehören keinem Board und werden Karten über eine Zuordnungstabelle zugewiesen. Genau eine Spalte pro Board ist die Erledigt-Spalte.
 3. **Reihenfolge stabil speichern:** Position von Boards, Spalten, Karten und Teilaufgaben als eigenes Sortierfeld, das beim Verschieben nur die bewegte Zeile ändert (z. B. Fractional Indexing), nicht alle Geschwister neu nummeriert.
 4. **Optimistische Oberfläche:** Änderungen erscheinen sofort, werden im Hintergrund gespeichert und bei einem Fehler zurückgenommen, mit Hinweis an den Nutzer.
 5. **Kein Datenverlust:** Jede Änderung wird sofort gespeichert. Gelöschtes bleibt kurz wiederherstellbar (Rückgängig). Schema-Änderungen nur über Migrationen, nie durch Neuanlegen der Datenbank.
 6. **Reine Logik testbar halten:** Kurzschreibweise der Schnelleingabe, Sortierlogik und Filter als reine Funktionen mit Tests.
-7. **Datenbankpfad** über Tauris Pfad-API (App-Datenverzeichnis), nie fest eintragen.
+7. **Pfade** über Tauris Pfad-API: Datenbank im App-Datenverzeichnis, Standard-Vault im Dokumente-Ordner. Nie fest eintragen.
 
 ### Speicher im Detail
 
 - **Migrationen:** `src-tauri/src/store/migrations/NNN_name.sql`, in `MIGRATIONS` (`store/mod.rs`) eingetragen. Veröffentlichte Migrationen nie ändern, nur neue anhängen. Eine Datenbank aus einer neueren Version wird mit `db.too_new` abgelehnt.
-- **Löschen und Rückgängig:** Boards, Spalten und Karten werden nur markiert (`deleted_at`) und lassen sich mit `restore_*` zurückholen. Beim nächsten Start werden markierte Zeilen endgültig gelöscht. Teilaufgaben und Tags werden sofort gelöscht.
-- **Archiv:** Archivierte Karten (`archived_at`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
+- **Vault:** Boards, Spalten, Karten, Teilaufgaben und Tags liegen als Dateien im Vault, Format und Regeln in [`VAULT.md`](VAULT.md). `VaultStore` hält den Vault im Speicher und schreibt bei jeder Änderung nur die betroffenen Dateien, atomar. Dateien, die Hodie nicht lesen kann, werden nie überschrieben (`file.invalid`). Unbekannte Felder bleiben erhalten. IDs sind ULIDs (im Frontend `Id = string`), nur Farb-Presets behalten Zahlen-IDs (`PresetId`).
+- **Löschen und Rückgängig:** Boards und Karten werden im Vault versteckt umbenannt (`.….deleted`), Spalten verschwinden aus `board.json` und nehmen ihre Karten mit. `restore_*` holt sie zurück. Beim nächsten Öffnen des Vaults wird endgültig gelöscht. Teilaufgaben und Tags werden sofort gelöscht.
+- **Archiv:** Archivierte Karten (`archivedAt`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
+- **Alte Datenbank:** Die Tabellen für Boards, Spalten, Karten usw. bleiben im Schema, werden aber nur noch einmal von `store/legacy.rs` gelesen, um sie in den Vault zu übernehmen (`legacy_imported` in `settings`).
 - **Reihenfolge:** Verschiebe-Befehle bekommen den Zielindex. Das Backend berechnet daraus den Sortierschlüssel zwischen den Nachbarn.
 - **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `preset.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`, für den Vault außerdem `vault.not_found`, `vault.not_a_vault`, `vault.too_new`, `vault.read_only`, `vault.io`, `file.invalid`.
 

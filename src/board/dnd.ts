@@ -16,6 +16,6 @@ export function dndId(kind: DragKind, id: Id): string {
 }
 
 export function parseDndId(value: UniqueIdentifier): { kind: DragKind; id: Id } | null {
-  const match = /^(card|column)-(\d+)$/.exec(String(value));
-  return match ? { kind: match[1] as DragKind, id: Number(match[2]) } : null;
+  const match = /^(card|column)-(.+)$/.exec(String(value));
+  return match ? { kind: match[1] as DragKind, id: match[2] } : null;
 }

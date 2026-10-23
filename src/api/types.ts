@@ -1,6 +1,9 @@
 // Mirrors src-tauri/src/model.rs.
 
-export type Id = number;
+/** ULIDs of boards, columns, cards, subtasks and tags in the vault. */
+export type Id = string;
+/** Colour presets keep the row id of the app's database. */
+export type PresetId = number;
 
 export type Priority = "none" | "low" | "medium" | "high";
 
@@ -114,7 +117,7 @@ export interface PresetColors {
 
 /** A colour preset the user created. */
 export interface ColorPreset {
-  id: Id;
+  id: PresetId;
   name: string;
   colors: PresetColors;
 }

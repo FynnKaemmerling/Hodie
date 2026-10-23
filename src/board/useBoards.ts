@@ -8,8 +8,7 @@ const STORAGE_KEY = "hodie.board";
 
 export function readStoredBoard(): Id | null {
   try {
-    const value = Number(localStorage.getItem(STORAGE_KEY));
-    return Number.isInteger(value) && value > 0 ? value : null;
+    return localStorage.getItem(STORAGE_KEY) || null;
   } catch {
     return null;
   }
@@ -128,5 +127,9 @@ export function useBoards() {
     [notify, reload],
   );
 
-  return { boards, selectedId, select, create, rename, reorder, remove };
+  // Until the list is loaded, a stored id may belong to a board that is gone
+  // (or to the database of an earlier version), so nothing is open yet.
+  const openId = boards?.some((board) => board.id === selectedId) ? selectedId : null;
+
+  return { boards, selectedId: openId, select, create, rename, reorder, remove };
 }

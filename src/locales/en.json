@@ -167,6 +167,16 @@
       "duplicate_name": "A tag with this name already exists.",
       "invalid_color": "This colour is not available for tags."
     },
+    "vault": {
+      "not_found": "The vault folder was not found. Is the drive connected?",
+      "not_a_vault": "The folder contains other files and is not a Hodie vault.",
+      "too_new": "The vault comes from a newer version of Hodie. Please update the app.",
+      "read_only": "Hodie is not allowed to write to the vault folder.",
+      "io": "The vault folder could not be accessed."
+    },
+    "file": {
+      "invalid": "A file in the vault is unreadable and was not overwritten."
+    },
     "db": {
       "too_new": "The data comes from a newer version of Hodie. Please update the app.",
       "error": "The change could not be saved."

@@ -3,7 +3,10 @@
 use rusqlite::types::{FromSql, FromSqlError, FromSqlResult, ToSql, ToSqlOutput, ValueRef};
 use serde::{Deserialize, Serialize};
 
-pub type Id = i64;
+/// Boards, columns, cards, subtasks and tags carry ULIDs from the vault.
+pub type Id = String;
+/// Colour presets live in the app's database and keep its row ids.
+pub type PresetId = i64;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -163,7 +166,7 @@ pub struct PresetColors {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorPreset {
-    pub id: Id,
+    pub id: PresetId,
     pub name: String,
     pub colors: PresetColors,
 }

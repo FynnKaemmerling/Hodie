@@ -11,6 +11,7 @@ import type {
   Id,
   NewCard,
   PresetColors,
+  PresetId,
   ShortcutInfo,
   Subtask,
   SubtaskPatch,
@@ -75,9 +76,9 @@ export const api = {
   listColorPresets: () => invoke<ColorPreset[]>("list_color_presets"),
   createColorPreset: (name: string, colors: PresetColors) =>
     invoke<ColorPreset>("create_color_preset", { name, colors }),
-  updateColorPreset: (presetId: Id, patch: ColorPresetPatch) =>
+  updateColorPreset: (presetId: PresetId, patch: ColorPresetPatch) =>
     invoke<void>("update_color_preset", { presetId, patch }),
-  deleteColorPreset: (presetId: Id) => invoke<void>("delete_color_preset", { presetId }),
+  deleteColorPreset: (presetId: PresetId) => invoke<void>("delete_color_preset", { presetId }),
   getColorPresetChoice: () => invoke<string>("get_color_preset_choice"),
   setColorPresetChoice: (choice: string) => invoke<void>("set_color_preset_choice", { choice }),
 

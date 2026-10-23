@@ -78,8 +78,9 @@ const collisionDetection: CollisionDetection = (args) => {
 /** The column Mod+N adds to: the focused one, the open card's, or the first. */
 function targetColumn(view: BoardView, focused: Element | null, selectedCardId: Id | null): Id {
   const section = focused?.closest<HTMLElement>("[data-column-section]");
-  const fromFocus = Number(section?.dataset.columnSection);
-  if (view.columns.some((column) => column.id === fromFocus)) return fromFocus;
+  const fromFocus = section?.dataset.columnSection;
+  const focusedColumn = view.columns.find((column) => column.id === fromFocus);
+  if (focusedColumn) return focusedColumn.id;
   const selected = selectedCardId === null ? null : locateCard(view, selectedCardId);
   return selected ? view.columns[selected.columnIndex].id : view.columns[0].id;
 }

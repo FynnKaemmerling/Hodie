@@ -48,7 +48,7 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 - Boards, Spalten, Karten und Tags liegen als Dateien in einem frei wählbaren Ordner, dem **Vault**, eine Datei pro Karte. Das Format steht in [`VAULT.md`](VAULT.md).
 - Immer genau ein Vault geöffnet, wechselbar in den Einstellungen
 - Mehrere Personen können den Vault über einen Sync-Dienst (Dropbox, iCloud Drive, OneDrive, Syncthing, Netzlaufwerk, Git) gemeinsam nutzen. Hodie bemerkt Änderungen von außen und zeigt Konflikte an.
-- Bestehende Daten werden beim ersten Start einmalig aus der Datenbank übernommen
+- Bestehende Daten werden beim ersten Start einmalig aus der Datenbank in `Dokumente/Hodie` übernommen
 
 ## Nicht im Umfang
 

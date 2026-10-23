@@ -39,11 +39,14 @@ describe("parseQuickEntry", () => {
 
 describe("resolveTags", () => {
   const tags: Tag[] = [
-    { id: 1, name: "Arbeit", color: "blue" },
-    { id: 2, name: "Kunde", color: "red" },
+    { id: "1", name: "Arbeit", color: "blue" },
+    { id: "2", name: "Kunde", color: "red" },
   ];
 
   it("matches existing tags ignoring case and lists the rest", () => {
-    expect(resolveTags(["arbeit", "Neu", "KUNDE"], tags)).toEqual({ ids: [1, 2], missing: ["Neu"] });
+    expect(resolveTags(["arbeit", "Neu", "KUNDE"], tags)).toEqual({
+      ids: ["1", "2"],
+      missing: ["Neu"],
+    });
   });
 });

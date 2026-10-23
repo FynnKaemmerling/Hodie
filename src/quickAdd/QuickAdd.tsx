@@ -3,7 +3,7 @@ import { emit } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ArrowUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { api, type Tag } from "../api";
+import { api, type Id, type Tag } from "../api";
 import { errorMessageKey } from "../api/errors";
 import { CARDS_CHANGED, type CardsChangedPayload } from "../api/events";
 import { findTagByName } from "../board/cardState";
@@ -15,7 +15,7 @@ import styles from "./QuickAdd.module.css";
 
 interface Target {
   boardName: string;
-  columnId: number;
+  columnId: Id;
   columnName: string;
 }
 
