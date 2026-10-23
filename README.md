@@ -12,6 +12,7 @@
 ![Plattformen](https://img.shields.io/badge/Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-555?logo=tauri&logoColor=white)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20fertig-2ea44f)
+[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue)](LICENSE)
 
 <br>
 
@@ -166,4 +167,4 @@ Designrichtung und Gestaltungsregeln stehen in [`DESIGN.md`](DESIGN.md), Konvent
 
 ## Lizenz
 
-Noch nicht festgelegt.
+[MIT](LICENSE) © 2026 Fynn Kämmerling

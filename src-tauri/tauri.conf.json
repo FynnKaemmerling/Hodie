@@ -51,11 +51,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "publisher": "Fynn",
+    "publisher": "Fynn Kämmerling",
     "category": "Productivity",
+    "license": "MIT",
     "shortDescription": "To-do app as a Kanban board",
     "longDescription": "Hodie is a desktop to-do app built as a Kanban board: boards, columns and cards with notes, subtasks, priority and tags. All data stays on your computer.",
-    "copyright": "© 2026 Fynn",
+    "copyright": "© 2026 Fynn Kämmerling",
     "windows": {
       "nsis": {
         "languages": [
