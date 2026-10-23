@@ -1,6 +1,8 @@
 mod commands;
 mod error;
 mod model;
+#[cfg(target_os = "macos")]
+mod panel;
 mod position;
 mod quick_add;
 mod store;

@@ -72,6 +72,7 @@ src-tauri/src/model.rs        Types exchanged with the frontend (camelCase JSON)
 src-tauri/src/error.rs        Error codes sent to the frontend
 src-tauri/src/position.rs     Fractional-index sort keys
 src-tauri/src/quick_add.rs    Global shortcut: registration, settings commands
+src-tauri/src/panel.rs        macOS only: quick entry window as non-activating panel
 src-tauri/src/store/          Storage layer, one module per entity
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
 src-tauri/capabilities/ Tauri permissions for the frontend

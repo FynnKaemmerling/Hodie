@@ -87,6 +87,11 @@ pub fn setup(app: &App, stored: Option<String>) -> tauri::Result<()> {
             .build(),
     )?;
 
+    #[cfg(target_os = "macos")]
+    if let Some(window) = app.get_webview_window(WINDOW) {
+        crate::panel::make_panel(&window);
+    }
+
     let state = app.state::<QuickAddState>();
     let mut current = state.0.lock().expect("quick add state");
     if let Some(shortcut) = current.shortcut {
@@ -102,8 +107,13 @@ pub fn setup(app: &App, stored: Option<String>) -> tauri::Result<()> {
 fn show(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(WINDOW) {
         let _ = window.center();
-        let _ = window.show();
-        let _ = window.set_focus();
+        #[cfg(target_os = "macos")]
+        let _ = app.run_on_main_thread(move || crate::panel::show(&window));
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
     }
 }
 
