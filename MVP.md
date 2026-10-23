@@ -44,13 +44,19 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 - Lokale SQLite-Datenbank, jede Änderung wird sofort gespeichert
 - Kein Konto, keine Netzwerkverbindung
 
+### Vault (Erweiterung nach dem MVP)
+- Boards, Spalten, Karten und Tags liegen als Dateien in einem frei wählbaren Ordner, dem **Vault**, eine Datei pro Karte. Das Format steht in [`VAULT.md`](VAULT.md).
+- Immer genau ein Vault geöffnet, wechselbar in den Einstellungen
+- Mehrere Personen können den Vault über einen Sync-Dienst (Dropbox, iCloud Drive, OneDrive, Syncthing, Netzlaufwerk, Git) gemeinsam nutzen. Hodie bemerkt Änderungen von außen und zeigt Konflikte an.
+- Bestehende Daten werden beim ersten Start einmalig aus der Datenbank übernommen
+
 ## Nicht im Umfang
 
 - Fälligkeitsdaten, Kalender- oder „Heute“-Ansicht
 - Erinnerungen und Benachrichtigungen
 - Wiederkehrende Aufgaben
-- Synchronisation zwischen Geräten, Konten, Server
-- Zusammenarbeit mehrerer Personen
+- Eigene Synchronisation, Konten, Server (geteilt wird nur über den Vault-Ordner und einen fremden Sync-Dienst)
+- Zusammenarbeit in Echtzeit (gleichzeitiges Bearbeiten derselben Karte, Anzeige anderer Nutzer)
 - Anhänge und Bilder in Karten
 - Import und Export (auch Backup-Export)
 - Mobile Apps
@@ -63,3 +69,4 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 4. **Kartendetails:** Seitenpanel mit Notizen, Teilaufgaben, Priorität und Tags, Archiv, Rückgängig. ✅
 5. **Schnelleingabe und Finden:** `Mod+N`, globales Tastenkürzel mit Eingabefenster, Kurzschreibweise, Suche und Filter. ✅
 6. **Dunkelmodus und Feinschliff:** zweiter Token-Satz, Theme-Umschalter, Icons, App-Icon, Animationen, Release-Build. ✅
+7. **Vault:** Speicher-Schicht auf Dateien nach [`VAULT.md`](VAULT.md) umstellen, Vault wählen und Daten übernehmen, Änderungen von außen beobachten, Konflikte anzeigen.

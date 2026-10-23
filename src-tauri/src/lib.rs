@@ -6,6 +6,9 @@ mod panel;
 mod position;
 mod quick_add;
 mod store;
+// Not wired into the commands yet; replaces `store` for boards (milestone 7).
+#[allow(dead_code)]
+mod vault;
 
 use tauri::Manager;
 

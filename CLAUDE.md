@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Weitere Funktionen nur nach Absprache, Ideen stehen unter „Später“ in der README.
+**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Als Nächstes folgt der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)). Weitere Funktionen nur nach Absprache, Ideen stehen unter „Später“ in der README.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -26,6 +26,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
+| Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter); *(geplant)* `notify` (Ordner beobachten), `tauri-plugin-dialog` (Ordner wählen) |
 
 Mit *(geplant)* markierte Abhängigkeiten sind vorgeschlagen, aber noch nicht installiert.
 
@@ -79,6 +80,7 @@ src-tauri/src/quick_add.rs    Global shortcut: registration, settings commands
 src-tauri/src/panel.rs        macOS only: quick entry window as non-activating panel
 src-tauri/src/store/          Storage layer, one module per entity
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
+src-tauri/src/vault/          Vault files (VAULT.md): format, atomic writes, loading; not wired in yet
 src-tauri/capabilities/ Tauri permissions for the frontend
 .github/workflows/      CI builds for all three platforms
 ```
@@ -139,7 +141,7 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 - **Löschen und Rückgängig:** Boards, Spalten und Karten werden nur markiert (`deleted_at`) und lassen sich mit `restore_*` zurückholen. Beim nächsten Start werden markierte Zeilen endgültig gelöscht. Teilaufgaben und Tags werden sofort gelöscht.
 - **Archiv:** Archivierte Karten (`archived_at`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
 - **Reihenfolge:** Verschiebe-Befehle bekommen den Zielindex. Das Backend berechnet daraus den Sortierschlüssel zwischen den Nachbarn.
-- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `preset.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`.
+- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `preset.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`, für den Vault außerdem `vault.not_found`, `vault.not_a_vault`, `vault.too_new`, `vault.read_only`, `vault.io`, `file.invalid`.
 
 ## Plattformübergreifend
 

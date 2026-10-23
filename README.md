@@ -35,12 +35,16 @@ Die vollständige Festlegung mit Abgrenzung und Meilensteinen steht in [`MVP.md`
 - Hell- und Dunkelmodus
 - Deutsch und Englisch
 
+### Als Nächstes
+
+- Vault: Boards als Dateien in einem frei wählbaren Ordner, gemeinsam nutzbar über Dropbox, iCloud, Syncthing oder Git ([`VAULT.md`](VAULT.md))
+
 ### Später
 
 - Fälligkeitsdaten und Erinnerungen
 - Wiederkehrende Aufgaben
 - Import, Export und Backups
-- Synchronisation zwischen Geräten
+- Eigene Synchronisation ohne fremden Sync-Dienst
 
 ## Oberfläche
 

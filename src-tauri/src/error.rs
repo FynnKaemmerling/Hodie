@@ -13,6 +13,9 @@ pub enum AppError {
     Conflict(&'static str),
     DatabaseTooNew,
     Database(rusqlite::Error),
+    /// Vault problems such as `vault.not_found` or `file.invalid`.
+    Vault(&'static str),
+    Io(std::io::Error),
     Internal(&'static str),
 }
 
@@ -22,9 +25,13 @@ impl AppError {
     pub fn code(&self) -> &'static str {
         match self {
             AppError::NotFound => "not_found",
-            AppError::Validation(code) | AppError::Conflict(code) => code,
+            AppError::Validation(code) | AppError::Conflict(code) | AppError::Vault(code) => code,
             AppError::DatabaseTooNew => "db.too_new",
             AppError::Database(_) => "db.error",
+            AppError::Io(error) if error.kind() == std::io::ErrorKind::PermissionDenied => {
+                "vault.read_only"
+            }
+            AppError::Io(_) => "vault.io",
             AppError::Internal(_) => "internal",
         }
     }
@@ -34,6 +41,7 @@ impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             AppError::Database(error) => write!(f, "database error: {error}"),
+            AppError::Io(error) => write!(f, "file error: {error}"),
             AppError::Internal(detail) => write!(f, "internal error: {detail}"),
             other => f.write_str(other.code()),
         }
@@ -48,6 +56,12 @@ impl From<rusqlite::Error> for AppError {
     }
 }
 
+impl From<std::io::Error> for AppError {
+    fn from(error: std::io::Error) -> Self {
+        AppError::Io(error)
+    }
+}
+
 impl From<InvalidKeys> for AppError {
     fn from(_: InvalidKeys) -> Self {
         AppError::Internal("invalid position keys")
@@ -56,7 +70,10 @@ impl From<InvalidKeys> for AppError {
 
 impl Serialize for AppError {
     fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
-        if matches!(self, AppError::Database(_) | AppError::Internal(_)) {
+        if matches!(
+            self,
+            AppError::Database(_) | AppError::Io(_) | AppError::Internal(_)
+        ) {
             eprintln!("{self}");
         }
         serializer.serialize_str(self.code())
