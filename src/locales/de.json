@@ -92,6 +92,15 @@
     "open": "Einstellungen",
     "close": "Schließen",
     "general": "Allgemein",
+    "vault": {
+      "title": "Vault",
+      "description": "Hier liegen deine Boards als Dateien. Lege den Ordner in Dropbox, iCloud Drive, OneDrive oder Syncthing, um ihn mit anderen zu teilen. Ein leerer Ordner wird zu einem neuen Vault. Um deine Boards mitzunehmen, verschiebe zuerst den Ordner und wähle ihn dann hier aus.",
+      "label": "Ordner",
+      "choose": "Anderer Ordner …",
+      "reveal": "Im Ordner zeigen",
+      "revealFailed": "Der Ordner konnte nicht angezeigt werden.",
+      "dialogTitle": "Vault-Ordner wählen"
+    },
     "shortcut": {
       "title": "Schnelleingabe",
       "description": "Öffnet von überall ein kleines Fenster, um schnell eine Aufgabe anzulegen.",
@@ -276,5 +285,13 @@
     "maximize": "Maximieren",
     "restore": "Verkleinern",
     "close": "Schließen"
+  },
+  "vault": {
+    "missing": {
+      "title": "Vault nicht verfügbar",
+      "retry": "Erneut versuchen",
+      "choose": "Anderen Ordner wählen …",
+      "stillMissing": "Der Vault ist weiterhin nicht verfügbar."
+    }
   }
 }

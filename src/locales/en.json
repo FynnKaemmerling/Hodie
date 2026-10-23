@@ -92,6 +92,15 @@
     "open": "Settings",
     "close": "Close",
     "general": "General",
+    "vault": {
+      "title": "Vault",
+      "description": "Your boards are stored here as files. Put the folder in Dropbox, iCloud Drive, OneDrive or Syncthing to share it with others. An empty folder becomes a new vault. To take your boards along, move the folder first and then choose it here.",
+      "label": "Folder",
+      "choose": "Other folder …",
+      "reveal": "Show in folder",
+      "revealFailed": "The folder could not be shown.",
+      "dialogTitle": "Choose vault folder"
+    },
     "shortcut": {
       "title": "Quick entry",
       "description": "Opens a small window from anywhere to add a task quickly.",
@@ -276,5 +285,13 @@
     "maximize": "Maximize",
     "restore": "Restore",
     "close": "Close"
+  },
+  "vault": {
+    "missing": {
+      "title": "Vault not available",
+      "retry": "Try again",
+      "choose": "Choose another folder …",
+      "stillMissing": "The vault is still not available."
+    }
   }
 }

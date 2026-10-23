@@ -17,6 +17,7 @@ import ColorPresets from "./ColorPresets";
 import Preferences from "./Preferences";
 import ShortcutSetting from "./ShortcutSetting";
 import TagManager from "./TagManager";
+import VaultSetting from "./VaultSetting";
 import styles from "./SettingsDialog.module.css";
 
 interface Props {
@@ -73,6 +74,14 @@ function SettingsDialog({
                   {t("settings.general")}
                 </h3>
                 <Preferences />
+              </section>
+
+              <section className={styles.section} aria-labelledby="settings-vault">
+                <h3 id="settings-vault" className={styles.sectionTitle}>
+                  {t("settings.vault.title")}
+                </h3>
+                <p className={styles.description}>{t("settings.vault.description")}</p>
+                <VaultSetting />
               </section>
 
               <section className={styles.section} aria-labelledby="settings-shortcut">

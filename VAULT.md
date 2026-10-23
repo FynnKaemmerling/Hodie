@@ -1,6 +1,6 @@
 # Vault-Format
 
-**Status:** In Umsetzung (Meilenstein 7 in [`MVP.md`](MVP.md)). Die App speichert Boards, Spalten, Karten, Teilaufgaben und Tags im Vault (`src-tauri/src/vault/`). Noch offen: Ordner in den Einstellungen wählen, Änderungen von außen beobachten, Konflikte anzeigen.
+**Status:** In Umsetzung (Meilenstein 7 in [`MVP.md`](MVP.md)). Die App speichert Boards, Spalten, Karten, Teilaufgaben und Tags im Vault (`src-tauri/src/vault/`). Der Ordner lässt sich in den Einstellungen wählen. Noch offen: Änderungen von außen beobachten, Konflikte anzeigen.
 
 Ein **Vault** ist ein Ordner, den der Nutzer in der App auswählt, ähnlich wie bei Obsidian. Er enthält alle Boards als gewöhnliche Dateien. Der Ordner kann über Dropbox, iCloud Drive, OneDrive, Syncthing, ein Netzlaufwerk oder Git mit anderen geteilt werden. Hodie synchronisiert selbst nichts. Es liest und schreibt nur Dateien und bemerkt, wenn andere sie ändern.
 
@@ -178,9 +178,10 @@ Sync-Dienste legen bei gleichzeitigen Änderungen Kopien an, mit Namen je nach D
 ## Vault öffnen und wechseln
 
 - Es ist immer **genau ein Vault** geöffnet. Gearbeitet wird vor allem mit mehreren Boards in einem Vault, nicht mit mehreren Vaults.
-- In den Einstellungen (Tab Allgemein) steht der Pfad des Vaults. Dort lässt sich ein anderer Ordner öffnen oder ein neuer Vault anlegen. Ein leerer Ordner wird zum Vault, ein Ordner mit `.hodie/vault.json` wird geöffnet, alles andere wird abgelehnt (`vault.not_a_vault`).
-- Beim Wechsel lädt die App alle Boards des neuen Vaults. Die Schnelleingabe schreibt immer in den geöffneten Vault.
-- Fehlt der Vault beim Start (`vault.not_found`, z. B. Laufwerk nicht verbunden), zeigt die App einen Hinweis mit den Möglichkeiten „Erneut versuchen“ und „Anderen Ordner wählen“. Sie legt dabei nie still einen neuen Vault an.
+- In den Einstellungen (Tab Allgemein, Abschnitt Vault) steht der Pfad des Vaults, mit „Im Ordner zeigen“ und „Anderer Ordner …“. Ein leerer Ordner wird zum Vault, ein Ordner mit `.hodie/vault.json` wird geöffnet, alles andere wird abgelehnt (`vault.not_a_vault`), und der bisherige Vault bleibt offen.
+- Beim Wechsel wird nichts kopiert oder verschoben. Wer seine Boards mitnehmen will, verschiebt den Ordner vorher selbst und wählt ihn dann aus.
+- Nach dem Wechsel sendet die App das Ereignis `vault-changed`, und beide Fenster laden neu. Die Schnelleingabe schreibt immer in den geöffneten Vault.
+- Fehlt der Vault beim Start (`vault.not_found`, z. B. Laufwerk nicht verbunden), zeigt die App statt der Boards einen Hinweis mit Grund und Pfad sowie den Möglichkeiten „Erneut versuchen“ (`reopen_vault`) und „Anderen Ordner wählen“ (`open_vault`). Sie legt dabei nie still einen neuen Vault an.
 
 ## Was lokal bleibt
 
@@ -218,7 +219,7 @@ Beim ersten Start der neuen Version:
 | ULIDs erzeugen | `ulid` (installiert) |
 | YAML-Frontmatter lesen und schreiben | `serde_yaml_ng` (installiert) |
 | Ordner beobachten | `notify`, auf allen drei Systemen nativ (noch nicht installiert) |
-| Ordner auswählen | `tauri-plugin-dialog` (noch nicht installiert) |
+| Ordner auswählen | `tauri-plugin-dialog` (installiert) |
 
 ## Entscheidungen
 

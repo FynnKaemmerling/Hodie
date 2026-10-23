@@ -1,10 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import App from "./App";
+import { VAULT_CHANGED } from "./api/events";
 import { initPalette, syncPalette } from "./colorPreset";
 import { NotificationsProvider } from "./notifications/Notifications";
 import QuickAdd from "./quickAdd/QuickAdd";
+import VaultGate from "./components/VaultGate";
 import "./i18n";
 import { isMac, isTextInput } from "./platform";
 import { initTheme } from "./theme";
@@ -35,13 +38,19 @@ document.documentElement.dataset.window = windowLabel();
 if (isMac && windowLabel() === "main") document.documentElement.dataset.vibrancy = "";
 if (windowLabel() === "main") void syncPalette();
 
+// Every board, card and tag id belongs to the vault; after a switch both
+// windows simply start over.
+void listen(VAULT_CHANGED, () => window.location.reload());
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     {windowLabel() === "quick-add" ? (
       <QuickAdd />
     ) : (
       <NotificationsProvider>
-        <App />
+        <VaultGate>
+          <App />
+        </VaultGate>
       </NotificationsProvider>
     )}
   </React.StrictMode>,

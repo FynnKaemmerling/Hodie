@@ -18,6 +18,7 @@ import type {
   Tag,
   TagColor,
   TagPatch,
+  VaultInfo,
 } from "./types";
 
 export * from "./types";
@@ -25,6 +26,10 @@ export * from "./types";
 // Thin wrappers around the commands in src-tauri/src/commands.rs.
 // Rejections carry an error code string, see ./errors.ts.
 export const api = {
+  getVault: () => invoke<VaultInfo>("get_vault"),
+  openVault: (path: string) => invoke<VaultInfo>("open_vault", { path }),
+  reopenVault: () => invoke<VaultInfo>("reopen_vault"),
+
   listBoards: () => invoke<Board[]>("list_boards"),
   getBoard: (boardId: Id) => invoke<BoardView>("get_board", { boardId }),
   createBoard: (name: string, columnNames: string[]) =>

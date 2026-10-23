@@ -76,6 +76,12 @@ export interface Tag {
   color: TagColor;
 }
 
+/** Where the vault is and, if it could not be opened, the error code why. */
+export interface VaultInfo {
+  path: string | null;
+  error: string | null;
+}
+
 /** The quick entry shortcut, in the format "Control+Shift+Space". */
 export interface ShortcutInfo {
   shortcut: string;

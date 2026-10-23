@@ -7,7 +7,7 @@ use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
 
 use crate::error::{AppError, Result};
-use crate::library::Library;
+use crate::library::{Library, VaultInfo};
 use crate::model::{
     Board, BoardView, CardDetail, CardPatch, CardSummary, ColorPreset, ColorPresetPatch, Column,
     Id, NewCard, PresetColors, PresetId, Subtask, SubtaskPatch, Tag, TagPatch,
@@ -31,6 +31,31 @@ impl Db {
 }
 
 // Async so that file and database work runs off the main (UI) thread.
+
+#[tauri::command]
+pub async fn get_vault(library: State<'_, Library>) -> Result<VaultInfo> {
+    library.info()
+}
+
+/// Opens another folder as the vault; an empty folder becomes a new vault.
+#[tauri::command]
+pub async fn open_vault(
+    db: State<'_, Db>,
+    library: State<'_, Library>,
+    path: String,
+) -> Result<VaultInfo> {
+    db.with(|conn| library.switch(conn, std::path::Path::new(&path)))
+}
+
+/// Tries the configured vault folder again.
+#[tauri::command]
+pub async fn reopen_vault(
+    app: AppHandle,
+    db: State<'_, Db>,
+    library: State<'_, Library>,
+) -> Result<VaultInfo> {
+    db.with(|conn| library.reopen(&app, conn))
+}
 
 #[tauri::command]
 pub async fn list_boards(library: State<'_, Library>) -> Result<Vec<Board>> {

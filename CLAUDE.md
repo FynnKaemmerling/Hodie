@@ -26,7 +26,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
-| Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter); *(geplant)* `notify` (Ordner beobachten), `tauri-plugin-dialog` (Ordner wählen) |
+| Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter), `tauri-plugin-dialog` (Ordner wählen); *(geplant)* `notify` (Ordner beobachten) |
 
 Mit *(geplant)* markierte Abhängigkeiten sind vorgeschlagen, aber noch nicht installiert.
 
@@ -61,6 +61,7 @@ src/board/              Board, card and archive state: pure update functions (te
 src/notifications/      Toasts with undo (also Mod+Z)
 src/quickAdd/           The quick entry window (label "quick-add", opened by the global shortcut)
 src/theme.ts            Theme preference (system/light/dark) and data-theme
+src/vault.ts            Choosing, switching and retrying the vault folder (dialog, vault-changed event)
 src/palette.ts          Colour presets: built-ins, token derivation, contrast checks (tested)
 src/colorPreset.ts      Applying the active preset, its cache and the settings hook
 src/shortcut.ts         Recording and displaying global shortcuts (tested)
@@ -103,7 +104,9 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **App-Icon:** Quelle ist `src-tauri/icons/app-icon.svg`. Nach Änderungen alle Größen mit `npx tauri icon src-tauri/icons/app-icon.svg` neu erzeugen und die Ordner `android/` und `ios/` wieder löschen.
 
-**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher von Vault und Datenbank über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
+**Vault-Ordner:** `VaultGate` (`main.tsx`) zeigt die App erst, wenn `get_vault` keinen Fehler meldet; sonst einen Hinweis mit „Erneut versuchen“ und „Anderen Ordner wählen“. Nach `open_vault` oder erfolgreichem `reopen_vault` sendet `src/vault.ts` das Ereignis `vault-changed` (`src/api/events.ts`), und beide Fenster laden neu, weil alle IDs zum alten Vault gehören. Der Pfad steht in `settings` (`vault_path`).
+
+**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Vault-Ordner, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher von Vault und Datenbank über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
 
 Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme, das zuletzt geöffnete Board und die eingeklappte Seitenleiste liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
 
