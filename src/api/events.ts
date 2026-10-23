@@ -8,6 +8,9 @@ export const CARDS_CHANGED = "cards-changed";
 /** Another folder was opened as the vault; every window starts over. */
 export const VAULT_CHANGED = "vault-changed";
 
+/** Vault files changed from outside (sync, other people); reload what is shown. */
+export const VAULT_FILES_CHANGED = "vault-files-changed";
+
 export interface CardsChangedPayload {
   /** The card just added, which the board briefly highlights. */
   cardId?: Id;

@@ -4,6 +4,7 @@ import { Radio, RadioGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import type { CardDetail, Priority, Tag } from "../api";
 import type { CardDetailActions } from "../board/useCardDetail";
+import CardConflict from "./CardConflict";
 import SubtaskList from "./SubtaskList";
 import TagPicker from "./TagPicker";
 import IconButton from "./IconButton";
@@ -19,10 +20,20 @@ interface Props {
   onArchive: (card: CardDetail) => void;
   onUnarchive: (card: CardDetail) => void;
   onDelete: (card: CardDetail) => void;
+  /** A conflict between two versions of the card was resolved. */
+  onConflictResolved: () => void;
 }
 
 /** Side panel with every detail of one card. Changes save immediately. */
-function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: Props) {
+function CardPanel({
+  detail,
+  tags,
+  onClose,
+  onArchive,
+  onUnarchive,
+  onDelete,
+  onConflictResolved,
+}: Props) {
   const { t, i18n } = useTranslation();
   const { card } = detail;
   const dateFormat = new Intl.DateTimeFormat(i18n.language, {
@@ -67,6 +78,8 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
       {card && (
         <div className={styles.body}>
           <TitleField key={`title-${card.id}`} value={card.title} onSave={detail.setTitle} />
+
+          {card.hasConflict && <CardConflict cardId={card.id} onResolved={onConflictResolved} />}
 
           <section className={styles.section}>
             <h3 className={styles.label} id="panel-priority">
@@ -208,12 +221,21 @@ function TitleField({ value, onSave }: { value: string; onSave: (title: string) 
   );
 }
 
-/** Saves shortly after typing stops, when leaving the field and on close. */
+/**
+ * Saves shortly after typing stops, when leaving the field and on close.
+ * Notes changed elsewhere replace the text unless it is being edited here;
+ * then the own text stays and the other one is offered.
+ */
 function NotesField({ value, onSave }: { value: string; onSave: (notes: string) => void }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState(value);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const [foreign, setForeign] = useState<string | null>(null);
   const pending = useRef<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
+  const focused = useRef(false);
+  const shown = useRef(value);
   const saveRef = useRef(onSave);
   saveRef.current = onSave;
 
@@ -228,21 +250,67 @@ function NotesField({ value, onSave }: { value: string; onSave: (notes: string) 
   // Closing the panel must not lose what was just typed.
   useEffect(() => flush, []);
 
+  useEffect(() => {
+    const previous = shown.current;
+    shown.current = value;
+    // Our own save coming back, or nothing new.
+    if (value === previous || value === draftRef.current) return;
+    const editing = focused.current || pending.current !== null || draftRef.current !== previous;
+    if (editing) {
+      setForeign(value);
+    } else {
+      setDraft(value);
+      setForeign(null);
+    }
+  }, [value]);
+
+  function takeForeign() {
+    if (foreign === null) return;
+    window.clearTimeout(timer.current);
+    pending.current = null;
+    setDraft(foreign);
+    saveRef.current(foreign);
+    setForeign(null);
+  }
+
   return (
-    <textarea
-      id="panel-notes"
-      className={styles.notes}
-      rows={5}
-      value={draft}
-      placeholder={t("panel.notesPlaceholder")}
-      onChange={(event) => {
-        setDraft(event.target.value);
-        pending.current = event.target.value;
-        window.clearTimeout(timer.current);
-        timer.current = window.setTimeout(flush, NOTES_SAVE_DELAY_MS);
-      }}
-      onBlur={flush}
-    />
+    <>
+      <textarea
+        id="panel-notes"
+        className={styles.notes}
+        rows={5}
+        value={draft}
+        placeholder={t("panel.notesPlaceholder")}
+        onFocus={() => (focused.current = true)}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          pending.current = event.target.value;
+          window.clearTimeout(timer.current);
+          timer.current = window.setTimeout(flush, NOTES_SAVE_DELAY_MS);
+        }}
+        onBlur={() => {
+          focused.current = false;
+          flush();
+        }}
+      />
+      {foreign !== null && (
+        <div className={styles.notesChanged} role="status">
+          <span>{t("panel.notesChanged")}</span>
+          <span className={styles.notesActions}>
+            <button type="button" className={styles.notesAction} onClick={takeForeign}>
+              {t("panel.notesTakeOther")}
+            </button>
+            <button
+              type="button"
+              className={styles.notesAction}
+              onClick={() => setForeign(null)}
+            >
+              {t("panel.notesKeepMine")}
+            </button>
+          </span>
+        </div>
+      )}
+    </>
   );
 }
 

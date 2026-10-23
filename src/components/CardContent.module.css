@@ -59,3 +59,14 @@
   width: var(--icon-size-sm);
   height: var(--icon-size-sm);
 }
+
+/* A conflict copy of the card's file waits to be resolved in the panel. */
+.conflict {
+  display: inline-flex;
+  color: var(--color-warning);
+}
+
+.conflict :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}

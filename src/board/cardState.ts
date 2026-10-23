@@ -13,6 +13,7 @@ export function summaryFields(card: CardDetail): SummaryFields {
     subtasksDone: card.subtasks.filter((subtask) => subtask.done).length,
     subtasksTotal: card.subtasks.length,
     tagIds: card.tagIds,
+    hasConflict: card.hasConflict,
   };
 }
 

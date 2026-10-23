@@ -39,6 +39,8 @@ export interface CardSummary {
   subtasksDone: number;
   subtasksTotal: number;
   tagIds: Id[];
+  /** A second file for this card exists, e.g. a sync service's conflict copy. */
+  hasConflict: boolean;
 }
 
 export interface ColumnView extends Column {
@@ -68,6 +70,24 @@ export interface CardDetail {
   archivedAt: number | null;
   subtasks: Subtask[];
   tagIds: Id[];
+  hasConflict: boolean;
+}
+
+/** Another version of a card, from a conflict copy of its file. */
+export interface CardVersion {
+  /** Relative to the vault; names the version when resolving. */
+  path: string;
+  title: string;
+  notes: string;
+  updatedAt: number;
+}
+
+/** A file in the vault that was skipped: unreadable or a conflict copy. */
+export interface VaultProblem {
+  kind: "invalid" | "conflict";
+  path: string;
+  fullPath: string;
+  original: string | null;
 }
 
 export interface Tag {

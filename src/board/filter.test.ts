@@ -11,6 +11,7 @@ function card(id: Id, priority: Priority, tagIds: Id[]): CardSummary {
     hasNotes: false,
     subtasksDone: 0,
     subtasksTotal: 0,
+    hasConflict: false,
     tagIds,
   };
 }

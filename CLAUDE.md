@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Als Nächstes folgt der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)). Weitere Funktionen nur nach Absprache, Ideen stehen unter „Später“ in der README.
+**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Danach kam der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)), ebenfalls umgesetzt. Weitere Funktionen nur nach Absprache, Ideen stehen unter „Später“ in der README.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -26,7 +26,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
-| Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter), `tauri-plugin-dialog` (Ordner wählen); *(geplant)* `notify` (Ordner beobachten) |
+| Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter), `tauri-plugin-dialog` (Ordner wählen), `notify` (Ordner beobachten) |
 
 Mit *(geplant)* markierte Abhängigkeiten sind vorgeschlagen, aber noch nicht installiert.
 
@@ -82,6 +82,7 @@ src-tauri/src/panel.rs        macOS only: quick entry window as non-activating p
 src-tauri/src/library.rs      Opens the vault at start-up (path from settings or Documents/Hodie), one-time import
 src-tauri/src/vault/          Vault (VAULT.md): file format, atomic writes, loading, trash, import
 src-tauri/src/vault/store.rs  The open vault in memory; answers all board, card and tag commands
+src-tauri/src/watch.rs        Watches the vault folder, reloads and emits vault-files-changed
 src-tauri/src/store/          App database: settings, colour presets; legacy.rs reads old board tables once
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
 src-tauri/capabilities/ Tauri permissions for the frontend
@@ -105,6 +106,8 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 **App-Icon:** Quelle ist `src-tauri/icons/app-icon.svg`. Nach Änderungen alle Größen mit `npx tauri icon src-tauri/icons/app-icon.svg` neu erzeugen und die Ordner `android/` und `ios/` wieder löschen.
 
 **Vault-Ordner:** `VaultGate` (`main.tsx`) zeigt die App erst, wenn `get_vault` keinen Fehler meldet; sonst einen Hinweis mit „Erneut versuchen“ und „Anderen Ordner wählen“. Nach `open_vault` oder erfolgreichem `reopen_vault` sendet `src/vault.ts` das Ereignis `vault-changed` (`src/api/events.ts`), und beide Fenster laden neu, weil alle IDs zum alten Vault gehören. Der Pfad steht in `settings` (`vault_path`).
+
+**Änderungen von außen:** `watch.rs` beobachtet den Vault-Ordner und lädt nach einer kurzen Ruhepause neu. Nur wenn sich etwas unterscheidet, sendet es `vault-files-changed`, und `App` lädt Boards, Board, Archiv und offene Karte neu. Zusätzlich prüft das Hauptfenster bei Fokus (`refresh_vault`). Jede Änderung in `VaultStore` liest vorher die betroffene Datei frisch (`fresh_card`, `fresh_board`, `fresh_tags`), damit sie auf fremden Änderungen aufbaut. Konfliktkopien (zweite Datei mit derselben `id`) markiert `hasConflict`; aufgelöst werden sie im Kartenpanel (`CardConflict`, `resolve_card_conflict`), übrige übersprungene Dateien listet der Vault-Abschnitt der Einstellungen (`list_vault_problems`).
 
 **Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Vault-Ordner, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher von Vault und Datenbank über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
 

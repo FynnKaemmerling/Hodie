@@ -69,4 +69,4 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 4. **Kartendetails:** Seitenpanel mit Notizen, Teilaufgaben, Priorität und Tags, Archiv, Rückgängig. ✅
 5. **Schnelleingabe und Finden:** `Mod+N`, globales Tastenkürzel mit Eingabefenster, Kurzschreibweise, Suche und Filter. ✅
 6. **Dunkelmodus und Feinschliff:** zweiter Token-Satz, Theme-Umschalter, Icons, App-Icon, Animationen, Release-Build. ✅
-7. **Vault:** Speicher-Schicht auf Dateien nach [`VAULT.md`](VAULT.md) umstellen, Vault wählen und Daten übernehmen, Änderungen von außen beobachten, Konflikte anzeigen.
+7. **Vault:** Speicher-Schicht auf Dateien nach [`VAULT.md`](VAULT.md) umstellen, Vault wählen und Daten übernehmen, Änderungen von außen beobachten, Konflikte anzeigen. ✅

@@ -131,5 +131,5 @@ export function useBoards() {
   // (or to the database of an earlier version), so nothing is open yet.
   const openId = boards?.some((board) => board.id === selectedId) ? selectedId : null;
 
-  return { boards, selectedId: openId, select, create, rename, reorder, remove };
+  return { boards, selectedId: openId, select, reload, create, rename, reorder, remove };
 }

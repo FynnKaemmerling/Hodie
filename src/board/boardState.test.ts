@@ -21,6 +21,7 @@ function card(id: Id, columnId: Id): CardSummary {
     hasNotes: false,
     subtasksDone: 0,
     subtasksTotal: 0,
+    hasConflict: false,
     tagIds: [],
   };
 }

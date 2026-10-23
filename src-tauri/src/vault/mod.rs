@@ -24,7 +24,7 @@ pub const META_DIR: &str = ".hodie";
 pub const VAULT_FILE: &str = "vault.json";
 const TAGS_FILE: &str = "tags.json";
 const BOARD_FILE: &str = "board.json";
-const CARDS_DIR: &str = "cards";
+pub const CARDS_DIR: &str = "cards";
 
 pub fn new_id() -> String {
     Ulid::generate().to_string()
@@ -36,7 +36,7 @@ pub struct Vault {
 }
 
 /// Everything in a vault, read into memory.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct VaultData {
     pub tags: TagsFile,
     /// Sorted by position.
@@ -44,7 +44,7 @@ pub struct VaultData {
     pub problems: Vec<Problem>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct LoadedBoard {
     /// Folder name inside the vault.
     pub dir: String,
@@ -53,7 +53,7 @@ pub struct LoadedBoard {
     pub cards: Vec<LoadedCard>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct LoadedCard {
     /// File name inside `cards/`. Usually `<id>.md`, but a card written by
     /// hand may be named differently.
@@ -332,6 +332,38 @@ impl Vault {
         replace(&path, &format::write_card(card)?, format::parse_card)
     }
 
+    /// The board's file as it is on disk now; None if it is gone.
+    pub fn read_board(&self, dir: &str) -> Result<Option<BoardFile>> {
+        read_existing(&self.root.join(dir).join(BOARD_FILE), format::parse_board)
+    }
+
+    /// A card file as it is on disk now; None if it is gone.
+    pub fn read_card(&self, dir: &str, file: &str) -> Result<Option<Card>> {
+        self.read_card_at(&Path::new(dir).join(CARDS_DIR).join(file))
+    }
+
+    /// A card file given relative to the vault, e.g. a conflict copy.
+    pub fn read_card_at(&self, relative: &Path) -> Result<Option<Card>> {
+        read_existing(&self.root.join(relative), format::parse_card)
+    }
+
+    /// The tag list as it is on disk now; empty if there is none yet.
+    pub fn read_tags(&self) -> Result<TagsFile> {
+        let path = self.root.join(META_DIR).join(TAGS_FILE);
+        Ok(read_existing(&path, format::parse_tags)?.unwrap_or_default())
+    }
+
+    /// Hides a file or folder given relative to the vault, like a deleted
+    /// card, until the vault is opened next.
+    pub fn trash_file(&self, relative: &Path) -> Result<()> {
+        let path = self.root.join(relative);
+        let (Some(dir), Some(name)) = (path.parent(), path.file_name()) else {
+            return Err(AppError::NotFound);
+        };
+        let trash = dir.join(trash_name(&name.to_string_lossy()));
+        Ok(fs::rename(&path, trash)?)
+    }
+
     pub fn remove_card(&self, dir: &str, file: &str) -> Result<()> {
         self.remove_file(&Path::new(dir).join(CARDS_DIR).join(file))
     }
@@ -348,6 +380,18 @@ pub fn card_file_name(id: &str) -> String {
 
 fn read<T>(path: &Path, parse: fn(&str) -> Option<T>) -> Option<T> {
     parse(&fs::read_to_string(path).ok()?)
+}
+
+/// None if the file does not exist, `file.invalid` if it cannot be parsed.
+fn read_existing<T>(path: &Path, parse: fn(&str) -> Option<T>) -> Result<Option<T>> {
+    let text = match fs::read_to_string(path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
+    };
+    parse(&text)
+        .map(Some)
+        .ok_or(AppError::Vault("file.invalid"))
 }
 
 /// Writes `content` to `path`, but refuses to overwrite a file this app

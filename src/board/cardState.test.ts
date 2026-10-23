@@ -27,6 +27,7 @@ function card(): CardDetail {
       { id: "3", title: "C", done: false },
     ],
     tagIds: ["5"],
+    hasConflict: false,
   };
 }
 
@@ -41,6 +42,7 @@ describe("cardState", () => {
       subtasksDone: 1,
       subtasksTotal: 3,
       tagIds: ["5"],
+      hasConflict: false,
     });
     expect(summaryFields({ ...card(), notes: " " }).hasNotes).toBe(true);
   });

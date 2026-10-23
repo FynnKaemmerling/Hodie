@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { useTranslation } from "react-i18next";
-import { api, type VaultInfo } from "../api";
+import { api, type VaultInfo, type VaultProblem } from "../api";
 import { errorMessageKey } from "../api/errors";
 import { chooseVaultFolder, switchVault } from "../vault";
 import styles from "./VaultSetting.module.css";
 
-/** Shows the vault folder and opens another one. */
+/** Shows the vault folder, files it had to skip, and opens another folder. */
 function VaultSetting() {
   const { t } = useTranslation();
   const [info, setInfo] = useState<VaultInfo | null>(null);
+  const [problems, setProblems] = useState<VaultProblem[]>([]);
   const [failure, setFailure] = useState<string | null>(null);
 
   useEffect(() => {
     api.getVault().then(setInfo, (error) => setFailure(t(errorMessageKey(error))));
+    api.listVaultProblems().then(setProblems, () => setProblems([]));
   }, [t]);
 
   async function choose() {
@@ -54,6 +56,35 @@ function VaultSetting() {
           {t("settings.vault.choose")}
         </button>
       </div>
+
+      {problems.length > 0 && (
+        <div className={styles.problems}>
+          <p className={styles.problemsTitle}>
+            {t("settings.vault.problems", { count: problems.length })}
+          </p>
+          <ul className={styles.problemList}>
+            {problems.map((problem) => (
+              <li key={problem.path} className={styles.problem}>
+                <span className={styles.problemText}>
+                  <bdi className={styles.problemPath}>{problem.path}</bdi>
+                  <span className={styles.problemKind}>
+                    {problem.kind === "invalid"
+                      ? t("settings.vault.invalid")
+                      : t("settings.vault.conflictOf", { original: problem.original })}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className={styles.link}
+                  onClick={() => void reveal(problem.fullPath)}
+                >
+                  {t("settings.vault.revealProblem")}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <p className={styles.message} role="status">
         {failure && <span className={styles.error}>{failure}</span>}

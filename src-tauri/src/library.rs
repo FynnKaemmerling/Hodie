@@ -17,6 +17,7 @@ use crate::vault::files::visible_entries;
 use crate::vault::import::import;
 use crate::vault::store::VaultStore;
 use crate::vault::{META_DIR, VAULT_FILE, Vault};
+use crate::watch::{self, VaultWatcher};
 
 const PATH_KEY: &str = "vault_path";
 /// Set once the database's boards were moved into a vault.
@@ -25,7 +26,10 @@ const DEFAULT_DIR: &str = "Hodie";
 
 /// The open vault, or the error code it failed to open with. Commands on a
 /// vault that failed to open return that code.
-pub struct Library(Mutex<Opened>);
+pub struct Library {
+    opened: Mutex<Opened>,
+    watcher: Mutex<Option<VaultWatcher>>,
+}
 
 struct Opened {
     /// None only if not even a default folder could be determined.
@@ -44,13 +48,39 @@ pub struct VaultInfo {
 
 impl Library {
     pub fn open(app: &AppHandle, conn: &Connection) -> Library {
-        Library(Mutex::new(open_configured(app, conn)))
+        Library::from(open_configured(app, conn))
+    }
+
+    fn from(opened: Opened) -> Library {
+        Library {
+            opened: Mutex::new(opened),
+            watcher: Mutex::new(None),
+        }
     }
 
     fn lock(&self) -> Result<std::sync::MutexGuard<'_, Opened>> {
-        self.0
+        self.opened
             .lock()
             .map_err(|_| AppError::Internal("vault lock poisoned"))
+    }
+
+    /// Watches the open vault's folder, replacing any earlier watcher.
+    pub fn watch(&self, app: &AppHandle) -> Result<()> {
+        let path = {
+            let opened = self.lock()?;
+            opened.path.clone().filter(|_| opened.store.is_ok())
+        };
+        let watcher = path.and_then(|path| watch::start(app, &path));
+        *self
+            .watcher
+            .lock()
+            .map_err(|_| AppError::Internal("watcher lock poisoned"))? = watcher;
+        Ok(())
+    }
+
+    /// Reads the vault's files again; true if anything changed.
+    pub fn refresh(&self) -> Result<bool> {
+        self.with(|store| store.refresh())
     }
 
     pub fn with<T>(&self, f: impl FnOnce(&mut VaultStore) -> Result<T>) -> Result<T> {
@@ -183,10 +213,10 @@ mod tests {
     use crate::vault::tests::TestDir;
 
     fn failed_library() -> Library {
-        Library(Mutex::new(Opened {
+        Library::from(Opened {
             path: Some(PathBuf::from("/nirgends")),
             store: Err("vault.not_found"),
-        }))
+        })
     }
 
     #[test]

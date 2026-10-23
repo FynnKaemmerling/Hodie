@@ -1,4 +1,4 @@
-import { CircleCheck, ListChecks } from "lucide-react";
+import { CircleCheck, ListChecks, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CardSummary, Tag } from "../api";
 import TagChip from "./TagChip";
@@ -21,7 +21,7 @@ function CardContent({ card, tags, done = false }: Props) {
   const cardTags = card.tagIds
     .map((id) => tags.find((tag) => tag.id === id))
     .filter((tag): tag is Tag => tag !== undefined);
-  const hasMeta = cardTags.length > 0 || card.subtasksTotal > 0;
+  const hasMeta = cardTags.length > 0 || card.subtasksTotal > 0 || card.hasConflict;
   const allSubtasksDone = card.subtasksTotal > 0 && card.subtasksDone === card.subtasksTotal;
 
   return (
@@ -35,6 +35,12 @@ function CardContent({ card, tags, done = false }: Props) {
       )}
       {hasMeta && (
         <span className={styles.meta}>
+          {card.hasConflict && (
+            <span className={styles.conflict} title={t("card.conflict")}>
+              <TriangleAlert aria-hidden="true" />
+              <span className="visually-hidden">{t("card.conflict")}</span>
+            </span>
+          )}
           {cardTags.map((tag) => (
             <TagChip key={tag.id} color={tag.color} size="small">
               {tag.name}

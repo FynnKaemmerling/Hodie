@@ -5,6 +5,7 @@ import type {
   CardDetail,
   CardPatch,
   CardSummary,
+  CardVersion,
   ColorPreset,
   ColorPresetPatch,
   Column,
@@ -19,6 +20,7 @@ import type {
   TagColor,
   TagPatch,
   VaultInfo,
+  VaultProblem,
 } from "./types";
 
 export * from "./types";
@@ -29,6 +31,12 @@ export const api = {
   getVault: () => invoke<VaultInfo>("get_vault"),
   openVault: (path: string) => invoke<VaultInfo>("open_vault", { path }),
   reopenVault: () => invoke<VaultInfo>("reopen_vault"),
+  refreshVault: () => invoke<boolean>("refresh_vault"),
+  listVaultProblems: () => invoke<VaultProblem[]>("list_vault_problems"),
+  getCardConflicts: (cardId: Id) => invoke<CardVersion[]>("get_card_conflicts", { cardId }),
+  /** Keeps the version at `keep` (a conflict copy), or the card as it is if null. */
+  resolveCardConflict: (cardId: Id, keep: string | null) =>
+    invoke<void>("resolve_card_conflict", { cardId, keep }),
 
   listBoards: () => invoke<Board[]>("list_boards"),
   getBoard: (boardId: Id) => invoke<BoardView>("get_board", { boardId }),

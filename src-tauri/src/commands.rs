@@ -9,8 +9,9 @@ use tauri::{AppHandle, Manager, State};
 use crate::error::{AppError, Result};
 use crate::library::{Library, VaultInfo};
 use crate::model::{
-    Board, BoardView, CardDetail, CardPatch, CardSummary, ColorPreset, ColorPresetPatch, Column,
-    Id, NewCard, PresetColors, PresetId, Subtask, SubtaskPatch, Tag, TagPatch,
+    Board, BoardView, CardDetail, CardPatch, CardSummary, CardVersion, ColorPreset,
+    ColorPresetPatch, Column, Id, NewCard, PresetColors, PresetId, Subtask, SubtaskPatch, Tag,
+    TagPatch, VaultProblem,
 };
 use crate::store::presets;
 
@@ -40,11 +41,14 @@ pub async fn get_vault(library: State<'_, Library>) -> Result<VaultInfo> {
 /// Opens another folder as the vault; an empty folder becomes a new vault.
 #[tauri::command]
 pub async fn open_vault(
+    app: AppHandle,
     db: State<'_, Db>,
     library: State<'_, Library>,
     path: String,
 ) -> Result<VaultInfo> {
-    db.with(|conn| library.switch(conn, std::path::Path::new(&path)))
+    let info = db.with(|conn| library.switch(conn, std::path::Path::new(&path)))?;
+    library.watch(&app)?;
+    Ok(info)
 }
 
 /// Tries the configured vault folder again.
@@ -54,7 +58,41 @@ pub async fn reopen_vault(
     db: State<'_, Db>,
     library: State<'_, Library>,
 ) -> Result<VaultInfo> {
-    db.with(|conn| library.reopen(&app, conn))
+    let info = db.with(|conn| library.reopen(&app, conn))?;
+    library.watch(&app)?;
+    Ok(info)
+}
+
+/// Checks the vault's files for changes from outside, for folders the system
+/// cannot watch. Windows call it when they get focus; returns whether
+/// anything changed (the windows are then told through the usual event).
+#[tauri::command]
+pub async fn refresh_vault(app: AppHandle) -> Result<bool> {
+    Ok(crate::watch::refresh(&app))
+}
+
+#[tauri::command]
+pub async fn list_vault_problems(library: State<'_, Library>) -> Result<Vec<VaultProblem>> {
+    library.with(|store| Ok(store.list_problems()))
+}
+
+#[tauri::command]
+pub async fn get_card_conflicts(
+    library: State<'_, Library>,
+    card_id: Id,
+) -> Result<Vec<CardVersion>> {
+    library.with(|store| store.card_conflicts(&card_id))
+}
+
+/// Keeps the version at `keep` (a conflict copy), or the card as it is if
+/// `keep` is null, and removes the other copies.
+#[tauri::command]
+pub async fn resolve_card_conflict(
+    library: State<'_, Library>,
+    card_id: Id,
+    keep: Option<String>,
+) -> Result<()> {
+    library.with(|store| store.resolve_card_conflict(&card_id, keep.as_deref()))
 }
 
 #[tauri::command]

@@ -49,7 +49,8 @@
       "high": "Priorität hoch"
     },
     "subtasks": "{{done}} von {{total}} Teilaufgaben erledigt",
-    "open": "Öffnen"
+    "open": "Öffnen",
+    "conflict": "Zweite Fassung vorhanden"
   },
   "actions": {
     "more": "Weitere Aktionen für {{name}}",
@@ -99,7 +100,12 @@
       "choose": "Anderer Ordner …",
       "reveal": "Im Ordner zeigen",
       "revealFailed": "Der Ordner konnte nicht angezeigt werden.",
-      "dialogTitle": "Vault-Ordner wählen"
+      "dialogTitle": "Vault-Ordner wählen",
+      "problems_one": "{{count}} Datei im Vault wurde übersprungen:",
+      "problems_other": "{{count}} Dateien im Vault wurden übersprungen:",
+      "invalid": "Nicht lesbar, bleibt unverändert",
+      "conflictOf": "Konfliktkopie von {{original}}",
+      "revealProblem": "Zeigen"
     },
     "shortcut": {
       "title": "Schnelleingabe",
@@ -218,7 +224,17 @@
     "archive": "Archivieren",
     "unarchive": "Zurück aufs Board",
     "created": "Erstellt {{date}}",
-    "updated": "Geändert {{date}}"
+    "updated": "Geändert {{date}}",
+    "notesChanged": "Die Notizen wurden gerade woanders geändert. Dein Text bleibt stehen.",
+    "notesTakeOther": "Andere Fassung übernehmen",
+    "notesKeepMine": "Meine behalten"
+  },
+  "conflict": {
+    "title": "Zwei Fassungen dieser Karte",
+    "description": "Die Karte wurde an zwei Stellen gleichzeitig geändert, deshalb gibt es eine Kopie. Oben steht die aktuelle Fassung, hier die andere. Wähle, welche gelten soll.",
+    "changed": "Geändert {{date}}",
+    "takeOther": "Diese Fassung übernehmen",
+    "keepCurrent": "Aktuelle Fassung behalten"
   },
   "subtasks": {
     "title": "Titel der Teilaufgabe",

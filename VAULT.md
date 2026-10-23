@@ -1,6 +1,6 @@
 # Vault-Format
 
-**Status:** In Umsetzung (Meilenstein 7 in [`MVP.md`](MVP.md)). Die App speichert Boards, Spalten, Karten, Teilaufgaben und Tags im Vault (`src-tauri/src/vault/`). Der Ordner lässt sich in den Einstellungen wählen. Noch offen: Änderungen von außen beobachten, Konflikte anzeigen.
+**Status:** Umgesetzt (Meilenstein 7 in [`MVP.md`](MVP.md)). Die App speichert Boards, Spalten, Karten, Teilaufgaben und Tags im Vault (`src-tauri/src/vault/`), beobachtet den Ordner (`src-tauri/src/watch.rs`) und zeigt Konflikte an.
 
 Ein **Vault** ist ein Ordner, den der Nutzer in der App auswählt, ähnlich wie bei Obsidian. Er enthält alle Boards als gewöhnliche Dateien. Der Ordner kann über Dropbox, iCloud Drive, OneDrive, Syncthing, ein Netzlaufwerk oder Git mit anderen geteilt werden. Hodie synchronisiert selbst nichts. Es liest und schreibt nur Dateien und bemerkt, wenn andere sie ändern.
 
@@ -154,18 +154,20 @@ Gilt nur für Board-Ordner, denn Karten heißen immer nach ihrer ID.
 ## Lesen und Änderungen von außen
 
 - Beim Öffnen liest Hodie alle Boards in den Speicher. Bei To-do-Mengen sind das wenige Megabyte.
-- Hodie beobachtet den Ordner. Ändert sich eine Datei von außen, lädt die App das betroffene Board neu, ohne Neustart. Eigene Schreibvorgänge erkennt sie am zuletzt geschriebenen Inhalt und ignoriert sie.
-- Ist die gerade im Panel geöffnete Karte von außen geändert worden, übernimmt das Panel die neue Fassung. Ausnahme: Man tippt gerade in den Notizen. Dann bleibt die eigene Fassung stehen, und ein Hinweis bietet an, die fremde Fassung zu laden.
-- **Unlesbare Dateien** (Frontmatter kaputt, Pflichtfeld fehlt) werden übersprungen und in einem Hinweis genannt, aber nie verändert.
+- Hodie beobachtet den Ordner (`notify`). Nach einer Änderung wartet es, bis 300 ms lang nichts mehr passiert (Sync-Dienste schreiben in Schüben), liest den Vault neu und vergleicht mit dem Stand im Speicher. Nur wenn sich etwas unterscheidet, bekommen die Fenster das Ereignis `vault-files-changed` und laden Boards, Board, Archiv und die offene Karte neu. Eigene Schreibvorgänge lösen so nichts aus.
+- Manche Ordner lassen sich nicht beobachten (z. B. Netzlaufwerke). Deshalb prüft das Hauptfenster zusätzlich jedes Mal, wenn es den Fokus bekommt (`refresh_vault`).
+- **Jede Änderung baut auf der Datei auf, wie sie jetzt auf der Platte liegt**, nicht auf dem geladenen Stand. Hat jemand anderes inzwischen den Titel geändert und man selbst die Notizen, bleibt beides erhalten. Ist die Datei inzwischen gelöscht, schlägt die Änderung mit `not_found` fehl, und die Karte verschwindet. Gleichzeitige Änderungen am selben Feld: Die letzte gewinnt.
+- Ist die gerade im Panel geöffnete Karte von außen geändert worden, übernimmt das Panel die neue Fassung. Ausnahme: Man bearbeitet gerade die Notizen. Dann bleibt der eigene Text stehen, und ein Hinweis bietet „Andere Fassung übernehmen“ und „Meine behalten“ an. Der Titel folgt, solange man ihn nicht gerade bearbeitet.
+- **Unlesbare Dateien** (Frontmatter kaputt, Pflichtfeld fehlt) werden übersprungen, in den Einstellungen (Abschnitt Vault) mit „Zeigen“ aufgelistet und nie verändert.
 - **Suche** läuft über die Karten im Speicher. Die bisherige SQLite-Suche entfällt.
 
 ## Konflikte
 
 Sync-Dienste legen bei gleichzeitigen Änderungen Kopien an, mit Namen je nach Dienst (`… (Konfliktkopie …).md`, `… 2.md`, `….sync-conflict-….md`). Hodie erkennt sie nicht am Namen, sondern am Inhalt: **Haben zwei Dateien dieselbe `id`, ist das ein Konflikt.**
 
-- Angezeigt wird die Datei, die `<id>.md` heißt. Die Karte bekommt einen Konflikt-Hinweis.
-- Im Kartenpanel lassen sich die Fassungen vergleichen. Man wählt eine aus, die andere Datei wird gelöscht.
-- Für `board.json` und `tags.json` gilt dasselbe: Hodie liest die Hauptdatei und weist auf die Kopie hin.
+- Angezeigt wird die Datei, die `<id>.md` heißt. Die Karte zeigt auf dem Board ein Warnsymbol.
+- Im Kartenpanel stehen die anderen Fassungen mit Titel, Änderungszeit und Notizen. „Diese Fassung übernehmen“ schreibt sie als Karte, „Aktuelle Fassung behalten“ lässt die Karte, wie sie ist. In beiden Fällen werden die Kopien wie gelöschte Dateien versteckt (`.….deleted`) und beim nächsten Öffnen entfernt.
+- Für `board.json`, `tags.json` und doppelte Board-Ordner gilt dasselbe Erkennen: Hodie liest die Hauptdatei und listet die Kopie in den Einstellungen (Abschnitt Vault) mit „Zeigen“ auf. Auflösen muss man sie dort von Hand.
 
 ## Löschen und Rückgängig
 
@@ -218,7 +220,7 @@ Beim ersten Start der neuen Version:
 |---|---|
 | ULIDs erzeugen | `ulid` (installiert) |
 | YAML-Frontmatter lesen und schreiben | `serde_yaml_ng` (installiert) |
-| Ordner beobachten | `notify`, auf allen drei Systemen nativ (noch nicht installiert) |
+| Ordner beobachten | `notify` (installiert), auf allen drei Systemen nativ |
 | Ordner auswählen | `tauri-plugin-dialog` (installiert) |
 
 ## Entscheidungen

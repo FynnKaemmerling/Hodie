@@ -210,3 +210,37 @@
 .panel:focus {
   outline: none;
 }
+
+/* The notes changed elsewhere while being edited here. */
+.notesChanged {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-block-start: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.notesActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.notesAction {
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.notesAction:hover {
+  background: var(--color-bg-hover);
+}

@@ -67,6 +67,8 @@ pub struct CardSummary {
     pub subtasks_done: u32,
     pub subtasks_total: u32,
     pub tag_ids: Vec<Id>,
+    /// A second file for this card exists, e.g. a sync service's conflict copy.
+    pub has_conflict: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -106,6 +108,31 @@ pub struct CardDetail {
     pub archived_at: Option<i64>,
     pub subtasks: Vec<Subtask>,
     pub tag_ids: Vec<Id>,
+    pub has_conflict: bool,
+}
+
+/// Another version of a card, from a conflict copy of its file.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CardVersion {
+    /// Relative to the vault; identifies the version when resolving.
+    pub path: String,
+    pub title: String,
+    pub notes: String,
+    pub updated_at: i64,
+}
+
+/// A file in the vault that was skipped while loading.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultProblem {
+    /// `invalid` (unreadable) or `conflict` (second copy of `original`).
+    pub kind: &'static str,
+    /// Relative to the vault, with `/` as separator.
+    pub path: String,
+    /// Absolute, for showing it in the file manager.
+    pub full_path: String,
+    pub original: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

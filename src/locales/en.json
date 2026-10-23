@@ -49,7 +49,8 @@
       "high": "High priority"
     },
     "subtasks": "{{done}} of {{total}} subtasks done",
-    "open": "Open"
+    "open": "Open",
+    "conflict": "Second version exists"
   },
   "actions": {
     "more": "More actions for {{name}}",
@@ -99,7 +100,12 @@
       "choose": "Other folder …",
       "reveal": "Show in folder",
       "revealFailed": "The folder could not be shown.",
-      "dialogTitle": "Choose vault folder"
+      "dialogTitle": "Choose vault folder",
+      "problems_one": "{{count}} file in the vault was skipped:",
+      "problems_other": "{{count}} files in the vault were skipped:",
+      "invalid": "Unreadable, left unchanged",
+      "conflictOf": "Conflict copy of {{original}}",
+      "revealProblem": "Show"
     },
     "shortcut": {
       "title": "Quick entry",
@@ -218,7 +224,17 @@
     "archive": "Archive",
     "unarchive": "Back to board",
     "created": "Created {{date}}",
-    "updated": "Changed {{date}}"
+    "updated": "Changed {{date}}",
+    "notesChanged": "The notes were just changed elsewhere. Your text stays.",
+    "notesTakeOther": "Use other version",
+    "notesKeepMine": "Keep mine"
+  },
+  "conflict": {
+    "title": "Two versions of this card",
+    "description": "The card was changed in two places at once, so there is a copy. The current version is shown above, the other one here. Choose which one to keep.",
+    "changed": "Changed {{date}}",
+    "takeOther": "Use this version",
+    "keepCurrent": "Keep current version"
   },
   "subtasks": {
     "title": "Subtask title",

@@ -8,6 +8,7 @@ mod position;
 mod quick_add;
 mod store;
 mod vault;
+mod watch;
 
 use tauri::Manager;
 
@@ -21,7 +22,9 @@ pub fn run() {
             std::fs::create_dir_all(&dir)?;
             let conn = store::open(&dir.join(store::DB_FILE))?;
             let shortcut = store::settings::get(&conn, quick_add::SETTING_KEY)?;
-            app.manage(library::Library::open(app.handle(), &conn));
+            let library = library::Library::open(app.handle(), &conn);
+            library.watch(app.handle())?;
+            app.manage(library);
             app.manage(commands::Db::new(conn));
             quick_add::setup(app, shortcut)?;
             Ok(())
@@ -37,6 +40,10 @@ pub fn run() {
             commands::get_vault,
             commands::open_vault,
             commands::reopen_vault,
+            commands::refresh_vault,
+            commands::list_vault_problems,
+            commands::get_card_conflicts,
+            commands::resolve_card_conflict,
             commands::list_boards,
             commands::get_board,
             commands::create_board,

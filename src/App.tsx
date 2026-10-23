@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useTranslation } from "react-i18next";
-import type { BoardView, CardDetail, Id, Tag } from "./api";
-import { CARDS_CHANGED, type CardsChangedPayload } from "./api/events";
+import { api, type BoardView, type CardDetail, type Id, type Tag } from "./api";
+import { CARDS_CHANGED, VAULT_FILES_CHANGED, type CardsChangedPayload } from "./api/events";
 import ArchiveView from "./components/ArchiveView";
 import BoardCanvas from "./components/BoardCanvas";
 import BoardToolbar from "./components/BoardToolbar";
@@ -91,6 +92,27 @@ function App() {
       if (payload?.cardId !== undefined) setArrivedCardId(payload.cardId);
     });
     return () => void unlisten.then((stop) => stop());
+  }, []);
+
+  // Someone else changed vault files (through a sync service, an editor …).
+  // The backend watches the folder; on focus the window also asks it to
+  // check, for folders that cannot be watched.
+  const reloadAll = useRef<() => void>(() => {});
+  reloadAll.current = () => {
+    void boards.reload();
+    void board.reload();
+    void archive.reload();
+    void detail.reload();
+  };
+  useEffect(() => {
+    const unlisten = listen(VAULT_FILES_CHANGED, () => reloadAll.current());
+    const unfocus = getCurrentWindow().onFocusChanged(({ payload: focused }) => {
+      if (focused) api.refreshVault().catch(() => {});
+    });
+    return () => {
+      void unlisten.then((stop) => stop());
+      void unfocus.then((stop) => stop());
+    };
   }, []);
 
   useEffect(() => {
@@ -286,6 +308,7 @@ function App() {
                   onArchive={archiveCard}
                   onUnarchive={unarchiveCard}
                   onDelete={deleteCard}
+                  onConflictResolved={() => reloadAll.current()}
                 />
               )}
             </div>

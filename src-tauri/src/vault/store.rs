@@ -7,11 +7,13 @@
 use super::format::{
     BoardFile, Card, CardMeta, ColumnEntry, SubtaskEntry, TagEntry, TagsFile, Timestamp,
 };
-use super::{LoadedBoard, LoadedCard, Vault, card_file_name, new_id};
+use std::path::{Path, PathBuf};
+
+use super::{CARDS_DIR, LoadedBoard, LoadedCard, Problem, Vault, card_file_name, new_id};
 use crate::error::{AppError, Result};
 use crate::model::{
-    Board, BoardView, CardDetail, CardPatch, CardSummary, Column, ColumnView, Id, NewCard, Subtask,
-    SubtaskPatch, TAG_COLORS, Tag, TagPatch,
+    Board, BoardView, CardDetail, CardPatch, CardSummary, CardVersion, Column, ColumnView, Id,
+    NewCard, Subtask, SubtaskPatch, TAG_COLORS, Tag, TagPatch, VaultProblem,
 };
 use crate::position;
 use crate::store::{now_ms, require_text};
@@ -21,6 +23,8 @@ pub struct VaultStore {
     tags: TagsFile,
     /// Sorted by position.
     boards: Vec<LoadedBoard>,
+    /// Files skipped while loading: unreadable ones and conflict copies.
+    problems: Vec<Problem>,
     trash: Trash,
 }
 
@@ -73,6 +77,14 @@ fn column_of<'a>(board: &'a BoardFile, card: &'a CardMeta) -> &'a str {
     }
 }
 
+fn subtask_index(card: &Card, id: &str) -> Result<usize> {
+    card.meta
+        .subtasks
+        .iter()
+        .position(|subtask| subtask.id == id)
+        .ok_or(AppError::NotFound)
+}
+
 fn by_position<'a>(cards: impl Iterator<Item = &'a CardMeta>) -> Vec<&'a CardMeta> {
     let mut cards: Vec<_> = cards.collect();
     cards.sort_by(|a, b| (&a.position, &a.id).cmp(&(&b.position, &b.id)));
@@ -100,15 +112,26 @@ fn active_keys(board: &LoadedBoard, column_id: &str, except: &str) -> Vec<String
 impl VaultStore {
     pub fn load(vault: Vault) -> Result<VaultStore> {
         let data = vault.load()?;
-        for problem in &data.problems {
-            eprintln!("vault: skipped {problem:?}");
-        }
         Ok(VaultStore {
             vault,
             tags: data.tags,
             boards: data.boards,
+            problems: data.problems,
             trash: Trash::default(),
         })
+    }
+
+    /// Reads the files again after they changed on disk. Returns whether
+    /// anything differs from what was loaded, so a change this store wrote
+    /// itself does not count.
+    pub fn refresh(&mut self) -> Result<bool> {
+        let data = self.vault.load()?;
+        let changed =
+            data.tags != self.tags || data.boards != self.boards || data.problems != self.problems;
+        self.tags = data.tags;
+        self.boards = data.boards;
+        self.problems = data.problems;
+        Ok(changed)
     }
 
     pub fn vault(&self) -> &Vault {
@@ -174,6 +197,70 @@ impl VaultStore {
 
     fn card(&self, (b, k): (usize, usize)) -> &Card {
         &self.boards[b].cards[k].card
+    }
+
+    // Changes build on the files as they are on disk now, not on what was
+    // loaded: someone else may have changed them meanwhile, and a change to
+    // one field must not undo theirs to another.
+
+    /// The board's file as it is now. A board that is gone is dropped.
+    fn fresh_board(&mut self, b: usize) -> Result<BoardFile> {
+        let dir = self.boards[b].dir.clone();
+        match self.vault.read_board(&dir)? {
+            Some(file) if file.id == self.boards[b].board.id => {
+                self.boards[b].board = file.clone();
+                Ok(file)
+            }
+            _ => {
+                self.boards.remove(b);
+                Err(AppError::NotFound)
+            }
+        }
+    }
+
+    /// Board index, its fresh file and the column's index in that file.
+    fn fresh_column(&mut self, id: &str) -> Result<(usize, BoardFile, usize)> {
+        let (b, _) = self.column_location(id)?;
+        let file = self.fresh_board(b)?;
+        let c = file
+            .columns
+            .iter()
+            .position(|column| column.id == id)
+            .ok_or(AppError::NotFound)?;
+        Ok((b, file, c))
+    }
+
+    /// The card as it is now. A card whose file is gone is dropped.
+    fn fresh_card(&mut self, (b, k): (usize, usize)) -> Result<Card> {
+        let dir = self.boards[b].dir.clone();
+        let file = self.boards[b].cards[k].file.clone();
+        match self.vault.read_card(&dir, &file)? {
+            Some(card) if card.meta.id == self.boards[b].cards[k].card.meta.id => {
+                self.boards[b].cards[k].card = card.clone();
+                Ok(card)
+            }
+            _ => {
+                self.boards[b].cards.remove(k);
+                Err(AppError::NotFound)
+            }
+        }
+    }
+
+    /// Like `fresh_card`, for loops over several cards: None if it is gone.
+    fn fresh_card_by_id(&mut self, id: &str) -> Result<Option<Card>> {
+        let Ok(at) = self.card_location(id) else {
+            return Ok(None);
+        };
+        match self.fresh_card(at) {
+            Ok(card) => Ok(Some(card)),
+            Err(AppError::NotFound) => Ok(None),
+            Err(error) => Err(error),
+        }
+    }
+
+    fn fresh_tags(&mut self) -> Result<TagsFile> {
+        self.tags = self.vault.read_tags()?;
+        Ok(self.tags.clone())
     }
 
     fn sort_boards(&mut self) {
@@ -252,7 +339,87 @@ impl VaultStore {
             subtasks_done: meta.subtasks.iter().filter(|subtask| subtask.done).count() as u32,
             subtasks_total: meta.subtasks.len() as u32,
             tag_ids: self.known_tags(&meta.tags),
+            has_conflict: !self.conflict_copies(board, &meta.id).is_empty(),
         }
+    }
+
+    /// Paths (relative to the vault) of conflict copies of a card's file.
+    fn conflict_copies(&self, board: &LoadedBoard, id: &str) -> Vec<PathBuf> {
+        let Some(loaded) = board.cards.iter().find(|card| card.card.meta.id == id) else {
+            return Vec::new();
+        };
+        let file = Path::new(&board.dir).join(CARDS_DIR).join(&loaded.file);
+        self.problems
+            .iter()
+            .filter_map(|problem| match problem {
+                Problem::Conflict { path, original } if *original == file => Some(path.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Files that were skipped while loading, for the settings.
+    pub fn list_problems(&self) -> Vec<VaultProblem> {
+        let text = |path: &Path| {
+            path.components()
+                .map(|part| part.as_os_str().to_string_lossy())
+                .collect::<Vec<_>>()
+                .join("/")
+        };
+        let view = |kind, path: &Path, original: Option<&PathBuf>| VaultProblem {
+            kind,
+            path: text(path),
+            full_path: self.vault.root().join(path).to_string_lossy().into_owned(),
+            original: original.map(|original| text(original)),
+        };
+        self.problems
+            .iter()
+            .map(|problem| match problem {
+                Problem::Invalid { path } => view("invalid", path, None),
+                Problem::Conflict { path, original } => view("conflict", path, Some(original)),
+            })
+            .collect()
+    }
+
+    /// The other versions of a card, from conflict copies of its file.
+    pub fn card_conflicts(&self, id: &str) -> Result<Vec<CardVersion>> {
+        let (b, _) = self.card_location(id)?;
+        let mut versions = Vec::new();
+        for path in self.conflict_copies(&self.boards[b], id) {
+            // A copy that vanished or broke meanwhile is simply not offered.
+            if let Ok(Some(copy)) = self.vault.read_card_at(&path) {
+                versions.push(CardVersion {
+                    path: path.to_string_lossy().into_owned(),
+                    title: copy.meta.title,
+                    notes: copy.notes,
+                    updated_at: copy.meta.updated_at.0,
+                });
+            }
+        }
+        Ok(versions)
+    }
+
+    /// Keeps one version of a card and removes the other files. `keep` is the
+    /// path of a conflict copy to take over, or None to keep the card as is.
+    pub fn resolve_card_conflict(&mut self, id: &str, keep: Option<&str>) -> Result<()> {
+        let (b, _) = self.card_location(id)?;
+        let copies = self.conflict_copies(&self.boards[b], id);
+        if let Some(keep) = keep {
+            let path = copies
+                .iter()
+                .find(|copy| copy.to_string_lossy() == keep)
+                .ok_or(AppError::NotFound)?;
+            let mut chosen = self.vault.read_card_at(path)?.ok_or(AppError::NotFound)?;
+            chosen.meta.id = id.to_owned();
+            self.save_card(self.card_location(id)?, chosen)?;
+        }
+        for copy in &copies {
+            self.vault.trash_file(copy)?;
+            self.problems.retain(
+                |problem| !matches!(problem, Problem::Conflict { path, .. } if path == copy),
+            );
+        }
+        Ok(())
     }
 
     // Boards
@@ -355,7 +522,7 @@ impl VaultStore {
     pub fn rename_board(&mut self, id: &str, name: &str) -> Result<()> {
         let name = require_text(name)?;
         let b = self.board_index(id)?;
-        let mut file = self.boards[b].board.clone();
+        let mut file = self.fresh_board(b)?;
         file.name = name;
         self.save_board(b, file)
     }
@@ -370,7 +537,7 @@ impl VaultStore {
 
     pub fn reorder_board(&mut self, id: &str, index: usize) -> Result<()> {
         let b = self.board_index(id)?;
-        let mut file = self.boards[b].board.clone();
+        let mut file = self.fresh_board(b)?;
         file.position = position::key_at(&self.other_board_keys(id), index)?;
         self.save_board(b, file)
     }
@@ -402,7 +569,7 @@ impl VaultStore {
         self.sort_boards();
         if key != wanted {
             let b = self.board_index(id)?;
-            let mut file = self.boards[b].board.clone();
+            let mut file = self.fresh_board(b)?;
             file.position = key;
             self.save_board(b, file)?;
         }
@@ -415,7 +582,7 @@ impl VaultStore {
     pub fn create_column(&mut self, board_id: &str, name: &str) -> Result<Column> {
         let name = require_text(name)?;
         let b = self.board_index(board_id)?;
-        let mut file = self.boards[b].board.clone();
+        let mut file = self.fresh_board(b)?;
         let keys: Vec<String> = file.columns.iter().map(|c| c.position.clone()).collect();
         let column = ColumnEntry {
             id: new_id(),
@@ -436,15 +603,13 @@ impl VaultStore {
 
     pub fn rename_column(&mut self, id: &str, name: &str) -> Result<()> {
         let name = require_text(name)?;
-        let (b, c) = self.column_location(id)?;
-        let mut file = self.boards[b].board.clone();
+        let (b, mut file, c) = self.fresh_column(id)?;
         file.columns[c].name = name;
         self.save_board(b, file)
     }
 
     pub fn reorder_column(&mut self, id: &str, index: usize) -> Result<()> {
-        let (b, c) = self.column_location(id)?;
-        let mut file = self.boards[b].board.clone();
+        let (b, mut file, c) = self.fresh_column(id)?;
         let keys: Vec<String> = file
             .columns
             .iter()
@@ -457,8 +622,7 @@ impl VaultStore {
 
     /// Makes this column the board's done column.
     pub fn set_done_column(&mut self, id: &str) -> Result<()> {
-        let (b, c) = self.column_location(id)?;
-        let mut file = self.boards[b].board.clone();
+        let (b, mut file, c) = self.fresh_column(id)?;
         for (index, column) in file.columns.iter_mut().enumerate() {
             column.is_done = index == c;
         }
@@ -468,8 +632,8 @@ impl VaultStore {
     /// Deletes the column together with its cards. The done column cannot be
     /// deleted; another column has to become the done column first.
     pub fn delete_column(&mut self, id: &str) -> Result<()> {
-        let (b, c) = self.column_location(id)?;
-        if self.boards[b].board.columns[c].is_done {
+        let (b, mut file, c) = self.fresh_column(id)?;
+        if file.columns[c].is_done {
             return Err(AppError::Conflict("column.is_done"));
         }
         let dir = self.boards[b].dir.clone();
@@ -484,7 +648,6 @@ impl VaultStore {
             self.vault.trash_card(&dir, &self.boards[b].cards[k].file)?;
             cards.push(self.boards[b].cards.remove(k));
         }
-        let mut file = self.boards[b].board.clone();
         let column = file.columns.remove(c);
         let board_id = file.id.clone();
         let saved = self.save_board(b, file);
@@ -509,7 +672,7 @@ impl VaultStore {
             mut column, cards, ..
         } = self.trash.columns.remove(t);
 
-        let mut file = self.boards[b].board.clone();
+        let mut file = self.fresh_board(b)?;
         let keys: Vec<String> = file.columns.iter().map(|c| c.position.clone()).collect();
         column.position = position::free_key(&keys, &column.position)?;
         column.is_done = false;
@@ -572,6 +735,7 @@ impl VaultStore {
                 })
                 .collect(),
             tag_ids: self.known_tags(&meta.tags),
+            has_conflict: !self.conflict_copies(&self.boards[b], &meta.id).is_empty(),
         })
     }
 
@@ -613,7 +777,7 @@ impl VaultStore {
     pub fn update_card(&mut self, id: &str, patch: &CardPatch) -> Result<()> {
         let title = patch.title.as_deref().map(require_text).transpose()?;
         let at = self.card_location(id)?;
-        let mut card = self.card(at).clone();
+        let mut card = self.fresh_card(at)?;
         if let Some(title) = title {
             card.meta.title = title;
         }
@@ -634,7 +798,7 @@ impl VaultStore {
         if column_board != b {
             return Err(AppError::NotFound);
         }
-        let mut card = self.card((b, k)).clone();
+        let mut card = self.fresh_card((b, k))?;
         if card.meta.archived_at.is_some() {
             return Err(AppError::Conflict("card.archived"));
         }
@@ -685,7 +849,7 @@ impl VaultStore {
 
     pub fn archive_card(&mut self, id: &str) -> Result<()> {
         let at = self.card_location(id)?;
-        let mut card = self.card(at).clone();
+        let mut card = self.fresh_card(at)?;
         if card.meta.archived_at.is_some() {
             return Err(AppError::Conflict("card.archived"));
         }
@@ -696,7 +860,7 @@ impl VaultStore {
     /// Puts an archived card back into its column, at its old place if free.
     pub fn unarchive_card(&mut self, id: &str) -> Result<()> {
         let (b, k) = self.card_location(id)?;
-        let mut card = self.card((b, k)).clone();
+        let mut card = self.fresh_card((b, k))?;
         if card.meta.archived_at.is_none() {
             return Err(AppError::Conflict("card.not_archived"));
         }
@@ -731,10 +895,11 @@ impl VaultStore {
         .collect();
         let stamp = now();
         for id in &ids {
-            let at = self.card_location(id)?;
-            let mut card = self.card(at).clone();
+            let Some(mut card) = self.fresh_card_by_id(id)? else {
+                continue;
+            };
             card.meta.archived_at = Some(stamp);
-            self.save_card(at, card)?;
+            self.save_card(self.card_location(id)?, card)?;
         }
         Ok(ids)
     }
@@ -760,7 +925,7 @@ impl VaultStore {
 
     pub fn set_card_tags(&mut self, id: &str, tag_ids: &[Id]) -> Result<Vec<Id>> {
         let at = self.card_location(id)?;
-        let mut card = self.card(at).clone();
+        let mut card = self.fresh_card(at)?;
         card.meta.tags = self.merge_tags(&card.meta.tags, tag_ids)?;
         card.meta.updated_at = now();
         let known = self.known_tags(&card.meta.tags);
@@ -774,7 +939,7 @@ impl VaultStore {
     pub fn create_subtask(&mut self, card_id: &str, title: &str) -> Result<Subtask> {
         let title = require_text(title)?;
         let at = self.card_location(card_id)?;
-        let mut card = self.card(at).clone();
+        let mut card = self.fresh_card(at)?;
         let subtask = SubtaskEntry {
             id: new_id(),
             title: title.clone(),
@@ -793,8 +958,9 @@ impl VaultStore {
 
     pub fn update_subtask(&mut self, id: &str, patch: &SubtaskPatch) -> Result<()> {
         let title = patch.title.as_deref().map(require_text).transpose()?;
-        let (b, k, s) = self.subtask_location(id)?;
-        let mut card = self.card((b, k)).clone();
+        let (b, k, _) = self.subtask_location(id)?;
+        let mut card = self.fresh_card((b, k))?;
+        let s = subtask_index(&card, id)?;
         let subtask = &mut card.meta.subtasks[s];
         if let Some(title) = title {
             subtask.title = title;
@@ -806,8 +972,9 @@ impl VaultStore {
     }
 
     pub fn reorder_subtask(&mut self, id: &str, index: usize) -> Result<()> {
-        let (b, k, s) = self.subtask_location(id)?;
-        let mut card = self.card((b, k)).clone();
+        let (b, k, _) = self.subtask_location(id)?;
+        let mut card = self.fresh_card((b, k))?;
+        let s = subtask_index(&card, id)?;
         let subtask = card.meta.subtasks.remove(s);
         let index = index.min(card.meta.subtasks.len());
         card.meta.subtasks.insert(index, subtask);
@@ -816,8 +983,9 @@ impl VaultStore {
 
     /// Deleted for good: a subtask is small enough to be re-created for undo.
     pub fn delete_subtask(&mut self, id: &str) -> Result<()> {
-        let (b, k, s) = self.subtask_location(id)?;
-        let mut card = self.card((b, k)).clone();
+        let (b, k, _) = self.subtask_location(id)?;
+        let mut card = self.fresh_card((b, k))?;
+        let s = subtask_index(&card, id)?;
         card.meta.subtasks.remove(s);
         self.save_card((b, k), card)
     }
@@ -867,8 +1035,8 @@ impl VaultStore {
     pub fn create_tag(&mut self, name: &str, color: &str) -> Result<Tag> {
         let name = require_text(name)?;
         let color = require_color(color)?.to_owned();
+        let mut tags = self.fresh_tags()?;
         self.require_free_name(&name, "")?;
-        let mut tags = self.tags.clone();
         let tag = Tag {
             id: new_id(),
             name,
@@ -887,7 +1055,7 @@ impl VaultStore {
     pub fn update_tag(&mut self, id: &str, patch: &TagPatch) -> Result<()> {
         let name = patch.name.as_deref().map(require_text).transpose()?;
         let color = patch.color.as_deref().map(require_color).transpose()?;
-        let mut tags = self.tags.clone();
+        let mut tags = self.fresh_tags()?;
         let tag = tags
             .tags
             .iter_mut()
@@ -926,13 +1094,21 @@ impl VaultStore {
 
     /// Removes the tag from every card, then from the tag list.
     pub fn delete_tag(&mut self, id: &str) -> Result<()> {
+        self.fresh_tags()?;
         self.tag(id).ok_or(AppError::NotFound)?;
-        for at in self.cards_with_tag(id) {
-            let mut card = self.card(at).clone();
+        let card_ids: Vec<Id> = self
+            .cards_with_tag(id)
+            .into_iter()
+            .map(|at| self.card(at).meta.id.clone())
+            .collect();
+        for card_id in card_ids {
+            let Some(mut card) = self.fresh_card_by_id(&card_id)? else {
+                continue;
+            };
             card.meta.tags.retain(|tag| tag != id);
-            self.save_card(at, card)?;
+            self.save_card(self.card_location(&card_id)?, card)?;
         }
-        let mut tags = self.tags.clone();
+        let mut tags = self.fresh_tags()?;
         tags.tags.retain(|tag| tag.id != id);
         self.save_tags(tags)
     }
@@ -1363,5 +1539,145 @@ mod tests {
         let text = fs::read_to_string(&path).unwrap();
         assert!(text.contains("- fremd\n"), "{text}");
         assert!(text.contains(&format!("column: {}\n", ids[0])), "{text}");
+    }
+
+    fn card_path(dir: &TestDir, board_dir: &str, id: &str) -> std::path::PathBuf {
+        dir.path()
+            .join(board_dir)
+            .join("cards")
+            .join(card_file_name(id))
+    }
+
+    #[test]
+    fn refresh_notices_outside_changes_but_not_its_own() {
+        let dir = TestDir::new();
+        let mut store = open(&dir);
+        let board = store.create_board("B", &columns()).unwrap();
+        let column = column_ids(&store, &board.id)[0].clone();
+        let card = store.create_card(&new_card(&column, "Alt")).unwrap();
+        assert!(!store.refresh().unwrap());
+
+        let path = card_path(&dir, "B", &card.id);
+        let text = fs::read_to_string(&path).unwrap();
+        fs::write(&path, text.replace("title: Alt", "title: Neu")).unwrap();
+        assert!(store.refresh().unwrap());
+        assert_eq!(titles(&store, &board.id)[0], ["Neu"]);
+        assert!(!store.refresh().unwrap());
+    }
+
+    #[test]
+    fn changes_build_on_what_others_wrote_meanwhile() {
+        let dir = TestDir::new();
+        let mut store = open(&dir);
+        let board = store.create_board("B", &columns()).unwrap();
+        let column = column_ids(&store, &board.id)[0].clone();
+        let card = store.create_card(&new_card(&column, "Alt")).unwrap();
+        let subtask = store.create_subtask(&card.id, "Schritt").unwrap();
+
+        // Someone renames the card; this store has not noticed yet.
+        let path = card_path(&dir, "B", &card.id);
+        let text = fs::read_to_string(&path).unwrap();
+        fs::write(&path, text.replace("title: Alt", "title: Von Anna")).unwrap();
+        store
+            .update_card(
+                &card.id,
+                &CardPatch {
+                    notes: Some("Meine Notiz".into()),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        store
+            .update_subtask(
+                &subtask.id,
+                &SubtaskPatch {
+                    done: Some(true),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+
+        let detail = reload(&dir).get_card(&card.id).unwrap();
+        assert_eq!(detail.title, "Von Anna");
+        assert_eq!(detail.notes, "Meine Notiz");
+        assert!(detail.subtasks[0].done);
+
+        // Someone renames a column while this store renames the board.
+        let board_json = dir.path().join("B/board.json");
+        let text = fs::read_to_string(&board_json).unwrap();
+        fs::write(&board_json, text.replace("\"Offen\"", "\"Backlog\"")).unwrap();
+        store.rename_board(&board.id, "Projekt").unwrap();
+        let view = reload(&dir).view(&board.id).unwrap();
+        assert_eq!(view.board.name, "Projekt");
+        assert_eq!(view.columns[0].column.name, "Backlog");
+    }
+
+    #[test]
+    fn a_card_deleted_elsewhere_is_gone_here_too() {
+        let dir = TestDir::new();
+        let mut store = open(&dir);
+        let board = store.create_board("B", &columns()).unwrap();
+        let column = column_ids(&store, &board.id)[0].clone();
+        let card = store.create_card(&new_card(&column, "K")).unwrap();
+        let subtask = store.create_subtask(&card.id, "S").unwrap();
+
+        let path = card_path(&dir, "B", &card.id);
+        let text = fs::read_to_string(&path).unwrap();
+        let without_subtask: String = text
+            .lines()
+            .filter(|line| {
+                !line.contains("subtasks:") && !line.starts_with("- ") && !line.starts_with("  ")
+            })
+            .map(|line| format!("{line}\n"))
+            .collect();
+        fs::write(&path, without_subtask).unwrap();
+        assert_eq!(code(store.delete_subtask(&subtask.id)), "not_found");
+
+        fs::remove_file(&path).unwrap();
+        assert_eq!(
+            code(store.update_card(&card.id, &CardPatch::default())),
+            "not_found"
+        );
+        assert!(titles(&store, &board.id)[0].is_empty());
+    }
+
+    #[test]
+    fn conflict_copies_are_shown_and_resolved() {
+        let dir = TestDir::new();
+        let mut store = open(&dir);
+        let board = store.create_board("B", &columns()).unwrap();
+        let column = column_ids(&store, &board.id)[0].clone();
+        let card = store.create_card(&new_card(&column, "Meins")).unwrap();
+        let path = card_path(&dir, "B", &card.id);
+        let theirs = fs::read_to_string(&path)
+            .unwrap()
+            .replace("title: Meins", "title: Deins");
+        let copy = dir.path().join("B/cards/Kopie.md");
+        fs::write(&copy, &theirs).unwrap();
+        assert!(store.refresh().unwrap());
+
+        assert!(store.view(&board.id).unwrap().columns[0].cards[0].has_conflict);
+        assert!(store.get_card(&card.id).unwrap().has_conflict);
+        let versions = store.card_conflicts(&card.id).unwrap();
+        assert_eq!(versions.len(), 1);
+        assert_eq!(versions[0].title, "Deins");
+        let problems = store.list_problems();
+        assert_eq!(problems[0].kind, "conflict");
+        assert_eq!(problems[0].path, "B/cards/Kopie.md");
+
+        store
+            .resolve_card_conflict(&card.id, Some(&versions[0].path))
+            .unwrap();
+        assert!(!copy.exists());
+        let detail = store.get_card(&card.id).unwrap();
+        assert_eq!(detail.title, "Deins");
+        assert!(!detail.has_conflict);
+        assert!(!store.refresh().unwrap());
+
+        fs::write(&copy, theirs.replace("Deins", "Noch eins")).unwrap();
+        store.refresh().unwrap();
+        store.resolve_card_conflict(&card.id, None).unwrap();
+        assert_eq!(store.get_card(&card.id).unwrap().title, "Deins");
+        assert!(store.list_problems().is_empty());
     }
 }
