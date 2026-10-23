@@ -4,14 +4,14 @@
 use std::sync::Mutex;
 
 use rusqlite::Connection;
-use tauri::State;
+use tauri::{AppHandle, Manager, State};
 
 use crate::error::{AppError, Result};
 use crate::model::{
-    Board, BoardView, CardDetail, CardPatch, CardSummary, Column, Id, NewCard, Subtask,
-    SubtaskPatch, Tag, TagPatch,
+    Board, BoardView, CardDetail, CardPatch, CardSummary, ColorPreset, ColorPresetPatch, Column,
+    Id, NewCard, PresetColors, Subtask, SubtaskPatch, Tag, TagPatch,
 };
-use crate::store::{boards, cards, columns, subtasks, tags};
+use crate::store::{boards, cards, columns, presets, subtasks, tags};
 
 pub struct Db(Mutex<Connection>);
 
@@ -203,4 +203,52 @@ pub async fn count_tag_cards(db: State<'_, Db>, tag_id: Id) -> Result<u32> {
 #[tauri::command]
 pub async fn delete_tag(db: State<'_, Db>, tag_id: Id) -> Result<()> {
     db.with(|conn| tags::delete(conn, tag_id))
+}
+
+#[tauri::command]
+pub async fn list_color_presets(db: State<'_, Db>) -> Result<Vec<ColorPreset>> {
+    db.with(|conn| presets::list(conn))
+}
+
+#[tauri::command]
+pub async fn create_color_preset(
+    db: State<'_, Db>,
+    name: String,
+    colors: PresetColors,
+) -> Result<ColorPreset> {
+    db.with(|conn| presets::create(conn, &name, &colors))
+}
+
+#[tauri::command]
+pub async fn update_color_preset(
+    db: State<'_, Db>,
+    preset_id: Id,
+    patch: ColorPresetPatch,
+) -> Result<()> {
+    db.with(|conn| presets::update(conn, preset_id, &patch))
+}
+
+#[tauri::command]
+pub async fn delete_color_preset(db: State<'_, Db>, preset_id: Id) -> Result<()> {
+    db.with(|conn| presets::delete(conn, preset_id))
+}
+
+#[tauri::command]
+pub async fn get_color_preset_choice(db: State<'_, Db>) -> Result<String> {
+    db.with(|conn| presets::choice(conn))
+}
+
+#[tauri::command]
+pub async fn set_color_preset_choice(db: State<'_, Db>, choice: String) -> Result<()> {
+    db.with(|conn| presets::set_choice(conn, &choice))
+}
+
+/// Bytes the app's data takes on disk.
+#[tauri::command]
+pub async fn get_storage_usage(app: AppHandle) -> Result<u64> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|_| AppError::Internal("no app data directory"))?;
+    Ok(crate::store::disk_usage(&dir))
 }

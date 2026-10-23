@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import type { Board, Id } from "../api";
 import logo from "../../src-tauri/icons/app-icon.svg";
 import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
+import IconButton from "./IconButton";
 import InlineInput from "./InlineInput";
 import SidebarToggle from "./SidebarToggle";
 import styles from "./Sidebar.module.css";
@@ -104,7 +105,12 @@ function Sidebar({
         </span>
       </div>
 
-      <h2 className={styles.sectionTitle}>{t("nav.boards")}</h2>
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t("nav.boards")}</h2>
+        <IconButton label={t("board.add")} onClick={() => setCreating(true)}>
+          <Plus aria-hidden="true" />
+        </IconButton>
+      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -130,35 +136,28 @@ function Sidebar({
         </SortableContext>
       </DndContext>
 
-      {creating ? (
+      {creating && (
         <InlineInput
           label={t("board.name")}
           placeholder={t("board.namePlaceholder")}
           onSubmit={onCreate}
           onClose={() => setCreating(false)}
         />
-      ) : (
-        <button type="button" className={styles.add} onClick={() => setCreating(true)}>
-          <Plus className="icon-badge" aria-hidden="true" /> {t("board.add")}
-        </button>
-      )}
-
-      {selectedId !== null && (
-        <button
-          type="button"
-          className={`${styles.item} ${styles.archive}`}
-          aria-current={showingArchive ? "page" : undefined}
-          onClick={onShowArchive}
-        >
-          <Archive aria-hidden="true" />
-          {t("nav.archive")}
-        </button>
       )}
 
       <div className={styles.footer}>
-        <button type="button" className={styles.add} onClick={onOpenSettings}>
-          <Settings aria-hidden="true" /> {t("settings.open")}
-        </button>
+        {selectedId !== null && (
+          <IconButton
+            label={t("nav.archive")}
+            aria-current={showingArchive ? "page" : undefined}
+            onClick={onShowArchive}
+          >
+            <Archive aria-hidden="true" />
+          </IconButton>
+        )}
+        <IconButton label={t("settings.open")} onClick={onOpenSettings}>
+          <Settings aria-hidden="true" />
+        </IconButton>
       </div>
     </nav>
   );

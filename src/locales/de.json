@@ -37,9 +37,7 @@
     "deleteDoneHint": "Die Erledigt-Spalte kann nicht gelöscht werden",
     "cardCount_one": "{{count}} Karte",
     "cardCount_other": "{{count}} Karten",
-    "archiveDone": "Erledigte archivieren",
-    "empty": "Noch keine Karten",
-    "emptyDone": "Noch nichts erledigt"
+    "archiveDone": "Erledigte archivieren"
   },
   "card": {
     "title": "Titel der Karte",
@@ -117,6 +115,33 @@
       "confirm_other": "Von {{count}} Karten entfernen und löschen?",
       "confirmDelete": "Löschen",
       "cancel": "Abbrechen"
+    },
+    "colors": {
+      "title": "Farben",
+      "description": "Jedes Preset hat eine helle und eine dunkle Variante. Ob hell oder dunkel, legst du unter Allgemein → Darstellung fest.",
+      "builtin": {
+        "hodie": "Hodie",
+        "ocean": "Ozean",
+        "forest": "Wald"
+      },
+      "add": "Eigenes Preset",
+      "newName": "Eigenes Preset",
+      "name": "Name",
+      "accent": "Akzentfarbe",
+      "base": "Grundton",
+      "delete": "Preset löschen",
+      "deleted": "Preset „{{name}}“ gelöscht",
+      "issues": {
+        "text": "Text ist auf diesem Grundton schwer lesbar.",
+        "accentText": "Die Akzentfarbe hebt sich als Text zu wenig vom Hintergrund ab.",
+        "onAccent": "Text auf Knöpfen in der Akzentfarbe ist schwer lesbar."
+      }
+    },
+    "info": {
+      "title": "Info",
+      "version": "Version",
+      "storage": "Speicherverbrauch",
+      "unknown": "Unbekannt"
     }
   },
   "languages": {
@@ -151,6 +176,9 @@
     "shortcut": {
       "invalid": "Dieses Tastenkürzel wird nicht unterstützt.",
       "unavailable": "Dieses Tastenkürzel ist von einem anderen Programm belegt. Das bisherige bleibt aktiv."
+    },
+    "preset": {
+      "invalid_color": "Ungültige Farbe."
     }
   },
   "panel": {
@@ -203,12 +231,12 @@
   },
   "archive": {
     "title": "Archiv · {{name}}",
-    "restore": "Zurück aufs Board",
     "delete": "„{{title}}“ endgültig löschen",
     "empty": {
       "title": "Das Archiv ist leer",
       "description": "Archivierte Karten erscheinen hier und lassen sich jederzeit zurückholen."
-    }
+    },
+    "restoreCard": "„{{title}}“ wiederherstellen"
   },
   "keys": {
     "ctrl": "Strg",
@@ -219,11 +247,11 @@
   "filter": {
     "search": "Karten durchsuchen",
     "searchPlaceholder": "Suchen ({{shortcut}})",
-    "button": "Filter",
     "title": "Karten filtern",
     "reset": "Filter zurücksetzen",
     "counts": "{{visible}} von {{total}} Karten",
-    "noTags": "Noch keine Tags vorhanden."
+    "noTags": "Noch keine Tags vorhanden.",
+    "titleActive": "Karten filtern, {{count}} aktiv"
   },
   "quickAdd": {
     "label": "Neue Aufgabe",

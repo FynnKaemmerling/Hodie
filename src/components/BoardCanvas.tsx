@@ -323,8 +323,14 @@ function BoardCanvas({
               onClose={() => setAddingColumn(false)}
             />
           ) : (
-            <button type="button" className={styles.add} onClick={() => setAddingColumn(true)}>
-              <Plus className="icon-badge" aria-hidden="true" /> {t("column.add")}
+            <button
+              type="button"
+              className={styles.add}
+              aria-label={t("column.add")}
+              title={t("column.add")}
+              onClick={() => setAddingColumn(true)}
+            >
+              <Plus aria-hidden="true" />
             </button>
           )}
         </div>

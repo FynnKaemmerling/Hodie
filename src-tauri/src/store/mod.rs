@@ -4,6 +4,7 @@
 pub mod boards;
 pub mod cards;
 pub mod columns;
+pub mod presets;
 pub mod settings;
 pub mod subtasks;
 pub mod tags;
@@ -20,7 +21,20 @@ use crate::error::{AppError, Result};
 const MIGRATIONS: &[&str] = &[
     include_str!("migrations/001_initial.sql"),
     include_str!("migrations/002_settings.sql"),
+    include_str!("migrations/003_color_presets.sql"),
 ];
+
+/// File name of the database in the app data directory.
+pub const DB_FILE: &str = "hodie.db";
+
+/// Bytes the database takes on disk, including SQLite's WAL side files.
+pub fn disk_usage(dir: &Path) -> u64 {
+    ["", "-wal", "-shm"]
+        .iter()
+        .filter_map(|suffix| std::fs::metadata(dir.join(format!("{DB_FILE}{suffix}"))).ok())
+        .map(|meta| meta.len())
+        .sum()
+}
 
 pub fn open(path: &Path) -> Result<Connection> {
     let mut conn = Connection::open(path)?;
@@ -104,6 +118,18 @@ fn expect_changed(changed: usize) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn disk_usage_counts_database_files_only() {
+        let dir = std::env::temp_dir().join(format!("hodie-usage-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        assert_eq!(disk_usage(&dir), 0);
+        std::fs::write(dir.join(DB_FILE), [0u8; 100]).unwrap();
+        std::fs::write(dir.join(format!("{DB_FILE}-wal")), [0u8; 20]).unwrap();
+        std::fs::write(dir.join("other.txt"), [0u8; 5]).unwrap();
+        assert_eq!(disk_usage(&dir), 120);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
 
     #[test]
     fn migrations_set_user_version() {

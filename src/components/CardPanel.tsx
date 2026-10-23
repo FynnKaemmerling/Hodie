@@ -6,6 +6,7 @@ import type { CardDetail, Priority, Tag } from "../api";
 import type { CardDetailActions } from "../board/useCardDetail";
 import SubtaskList from "./SubtaskList";
 import TagPicker from "./TagPicker";
+import IconButton from "./IconButton";
 import styles from "./CardPanel.module.css";
 
 const PRIORITIES: Priority[] = ["none", "low", "medium", "high"];
@@ -42,6 +43,7 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
       ref={panel}
       tabIndex={-1}
       className={styles.panel}
+      data-card-panel
       aria-label={t("panel.title")}
       onKeyDown={(event) => {
         if (event.key === "Escape" && !event.defaultPrevented) {
@@ -130,25 +132,17 @@ function CardPanel({ detail, tags, onClose, onArchive, onUnarchive, onDelete }: 
           <footer className={styles.footer}>
             <div className={styles.actions}>
               {card.archivedAt == null ? (
-                <button type="button" className={styles.action} onClick={() => onArchive(card)}>
+                <IconButton label={t("panel.archive")} onClick={() => onArchive(card)}>
                   <Archive aria-hidden="true" />
-                  {t("panel.archive")}
-                </button>
+                </IconButton>
               ) : (
-                <button type="button" className={styles.action} onClick={() => onUnarchive(card)}>
+                <IconButton label={t("panel.unarchive")} onClick={() => onUnarchive(card)}>
                   <ArchiveRestore aria-hidden="true" />
-                  {t("panel.unarchive")}
-                </button>
+                </IconButton>
               )}
-              <button
-                type="button"
-                className={styles.action}
-                data-danger
-                onClick={() => onDelete(card)}
-              >
+              <IconButton label={t("actions.delete")} tone="danger" onClick={() => onDelete(card)}>
                 <Trash2 aria-hidden="true" />
-                {t("actions.delete")}
-              </button>
+              </IconButton>
             </div>
             <p className={styles.meta}>
               {t("panel.created", { date: dateFormat.format(card.createdAt) })}

@@ -12,17 +12,21 @@
 }
 
 .addColumn {
-  width: var(--column-width);
   flex-shrink: 0;
+}
+
+/* Grows to a column's width once it turns into the name field. */
+.addColumn > input {
+  width: var(--column-width);
 }
 
 .add {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: calc(var(--list-row-height) + var(--space-4));
-  padding-inline: var(--space-5);
+  justify-content: center;
+  width: calc(var(--list-row-height) + var(--space-4));
+  height: calc(var(--list-row-height) + var(--space-4));
+  padding: 0;
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-xl);
   background: transparent;

@@ -8,6 +8,7 @@ import type { Direction } from "../board/boardState";
 import { dndId, type DragData } from "../board/dnd";
 import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
 import BoardCard from "./BoardCard";
+import IconButton from "./IconButton";
 import InlineInput from "./InlineInput";
 import styles from "./BoardColumn.module.css";
 
@@ -149,6 +150,9 @@ function BoardColumn({
                 </span>
               )}
             </div>
+            <IconButton label={t("card.add")} onClick={() => onAddingCardChange(true)}>
+              <Plus aria-hidden="true" />
+            </IconButton>
             <ActionMenu
               label={t("actions.more", { name: column.name })}
               items={menuItems}
@@ -182,14 +186,13 @@ function BoardColumn({
       </SortableContext>
 
       {column.cards.length === 0 && !addingCard && (
-        <p className={styles.empty}>
-          {column.isDone ? <CircleCheck aria-hidden="true" /> : <Inbox aria-hidden="true" />}
-          {column.isDone ? t("column.emptyDone") : t("column.empty")}
-        </p>
+        <div className={styles.empty} aria-hidden="true">
+          {column.isDone ? <CircleCheck /> : <Inbox />}
+        </div>
       )}
 
-      <div className={styles.footer}>
-        {addingCard ? (
+      {addingCard && (
+        <div className={styles.footer}>
           <InlineInput
             label={t("card.title")}
             placeholder={t("card.titlePlaceholder")}
@@ -197,12 +200,8 @@ function BoardColumn({
             onSubmit={(title) => onCreateCard(column.id, title)}
             onClose={() => onAddingCardChange(false)}
           />
-        ) : (
-          <button type="button" className={styles.add} onClick={() => onAddingCardChange(true)}>
-            <Plus className="icon-badge" aria-hidden="true" /> {t("card.add")}
-          </button>
-        )}
-      </div>
+        </div>
+      )}
       {contextMenu.menu}
     </section>
   );

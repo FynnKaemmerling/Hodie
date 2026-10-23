@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { CardSummary, Id, Tag } from "../api";
 import type { CardRef } from "../board/useBoard";
 import CardContent from "./CardContent";
+import IconButton from "./IconButton";
 import styles from "./ArchiveView.module.css";
 
 interface Props {
@@ -46,20 +47,19 @@ function ArchiveView({ cards, tags, selectedCardId, onOpen, onRestore, onDelete 
             <CardContent card={card} tags={tags} />
           </button>
           <div className={styles.actions}>
-            <button type="button" className={styles.action} onClick={() => onRestore(card)}>
+            <IconButton
+              label={t("archive.restoreCard", { title: card.title })}
+              onClick={() => onRestore(card)}
+            >
               <ArchiveRestore aria-hidden="true" />
-              {t("archive.restore")}
-            </button>
-            <button
-              type="button"
-              className={styles.action}
-              data-danger
-              aria-label={t("archive.delete", { title: card.title })}
+            </IconButton>
+            <IconButton
+              label={t("archive.delete", { title: card.title })}
+              tone="danger"
               onClick={() => onDelete(card)}
             >
               <Trash2 aria-hidden="true" />
-              {t("actions.delete")}
-            </button>
+            </IconButton>
           </div>
         </li>
       ))}

@@ -24,31 +24,21 @@
   font-size: var(--font-size-sm);
 }
 
-.reset {
-  flex-shrink: 0;
-  padding: var(--space-2) var(--space-3);
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-accent);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-}
-
-.reset:hover {
-  background: var(--color-bg-hover);
-}
-
 .search {
   position: relative;
-  width: 16rem;
+  width: var(--icon-button-size);
+  flex-shrink: 0;
+  transition: width var(--duration-normal) var(--easing-standard);
+}
+
+.search[data-expanded] {
+  width: var(--search-width);
   flex-shrink: 1;
-  min-width: 9rem;
 }
 
 .searchIcon {
   position: absolute;
-  inset-inline-start: var(--space-4);
+  inset-inline-start: calc((var(--icon-button-size) - var(--icon-size-md)) / 2);
   inset-block-start: 50%;
   transform: translateY(-50%);
   color: var(--color-text-secondary);
@@ -57,18 +47,35 @@
 
 .searchInput {
   width: 100%;
-  padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + var(--icon-size-sm) + var(--space-3));
+  height: var(--icon-button-size);
+  padding: 0 var(--space-3) 0 var(--icon-button-size);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--color-bg-sunken);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--easing-standard);
+}
+
+.search:not([data-expanded]) .searchInput:hover {
+  background: var(--color-overlay-hover);
+}
+
+.search:not([data-expanded]) .searchInput::placeholder {
+  color: transparent;
 }
 
 .searchInput::placeholder {
   color: var(--color-text-secondary);
 }
 
-.searchInput:hover {
-  border-color: var(--color-border);
+/* WebKit's own clear button would crowd the collapsed field. */
+.search:not([data-expanded]) .searchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search[data-expanded] .searchInput {
+  background: var(--color-bg-sunken);
+  cursor: text;
 }
 
 .searchInput:focus {
@@ -78,40 +85,22 @@
   box-shadow: 0 0 0 2px var(--color-focus-ring-soft);
 }
 
-.filterButton {
+.trigger {
   display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-surface);
-  cursor: pointer;
 }
 
-.filterButton[data-hovered] {
-  background: var(--color-bg-hover);
-}
-
-.filterButton[data-active] {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
-.filterButton[data-focus-visible] {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-
+/* Number of active filter choices, on the corner of the filter icon. */
 .badge {
+  position: absolute;
+  inset-block-start: calc(-1 * var(--space-1));
+  inset-inline-end: calc(-1 * var(--space-1));
   min-width: 1.4em;
-  padding: 0 var(--space-2);
+  padding: 0 var(--space-1);
   border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: var(--color-text-on-accent);
   font-size: var(--font-size-xs);
-  line-height: 1.5;
+  line-height: 1.4;
   text-align: center;
 }
 
@@ -216,11 +205,6 @@
   padding: var(--space-2) var(--space-3);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-}
-
-.searchIcon {
-  width: var(--icon-size-sm);
-  height: var(--icon-size-sm);
 }
 
 .box :global(.lucide) {

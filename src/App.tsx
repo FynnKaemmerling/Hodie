@@ -25,6 +25,16 @@ import styles from "./App.module.css";
 // A little longer than --duration-arrived, so the highlight fully fades.
 const ARRIVED_MS = 2000;
 
+/**
+ * Whether a click closes the card panel: anywhere in the app except the
+ * panel, a card (which opens that card instead) and the window drag areas.
+ * Menus, dialogs and toasts render outside the app element and never count.
+ */
+function closesPanel(app: Element | null, target: EventTarget | null): boolean {
+  if (!(target instanceof Element) || !app?.contains(target)) return false;
+  return !target.closest("[data-card-panel], [data-card-id], [data-tauri-drag-region]");
+}
+
 function App() {
   const { t } = useTranslation();
   const boards = useBoards();
@@ -40,6 +50,7 @@ function App() {
   const searchRef = useRef<HTMLInputElement>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed();
   const [arrivedCardId, setArrivedCardId] = useState<Id | null>(null);
+  const appRef = useRef<HTMLDivElement>(null);
 
   const filterView = useCallback(
     (view: BoardView) => (filtering ? applyFilter(view, filter, searchMatches) : view),
@@ -95,6 +106,27 @@ function App() {
   const closeCard = useCallback(() => {
     if (openCardId !== null) focusCard(openCardId);
     setOpenCardId(null);
+  }, [openCardId]);
+
+  // Clicking next to the panel closes it. Listening for the click (not the
+  // press) lets the title field save on blur first; the press must have
+  // started outside too, so selecting text in the panel never closes it.
+  useEffect(() => {
+    if (openCardId === null) return;
+    let pressedOutside = false;
+    function onPointerDown(event: PointerEvent) {
+      pressedOutside = closesPanel(appRef.current, event.target);
+    }
+    function onClick(event: MouseEvent) {
+      if (pressedOutside && closesPanel(appRef.current, event.target)) setOpenCardId(null);
+      pressedOutside = false;
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("click", onClick);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("click", onClick);
+    };
   }, [openCardId]);
 
   const detail = useCardDetail(openCardId, {
@@ -153,7 +185,7 @@ function App() {
   }
 
   return (
-    <div className={styles.app}>
+    <div ref={appRef} className={styles.app}>
       <Sidebar
         boards={boards.boards ?? []}
         selectedId={boards.selectedId}

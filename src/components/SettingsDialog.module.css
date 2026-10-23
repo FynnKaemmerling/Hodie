@@ -101,6 +101,61 @@
   font-size: var(--font-size-sm);
 }
 
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.tabList {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-sunken);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+.tab[data-hovered] {
+  color: var(--color-text-primary);
+}
+
+.tab[data-selected] {
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab[data-focus-visible] {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  outline: none;
+}
+
+.panel[data-focus-visible] {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: var(--space-2);
+}
+
 @keyframes fade {
   from {
     opacity: 0;

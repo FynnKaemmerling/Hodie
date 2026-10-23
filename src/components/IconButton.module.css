@@ -1,0 +1,41 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+.button:hover,
+.button[data-hovered],
+.button[aria-expanded="true"] {
+  background: var(--color-overlay-hover);
+  color: var(--color-text-primary);
+}
+
+.button[data-tone="danger"]:hover,
+.button[data-tone="danger"][data-hovered] {
+  color: var(--color-danger);
+}
+
+.button[data-active],
+.button[aria-current="page"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.button[data-focus-visible] {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}

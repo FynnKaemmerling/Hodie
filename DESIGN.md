@@ -28,10 +28,11 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 └────────────┴──────────────┴──────────────┴──────────────┴───────┘
 ```
 
-- **Seitenleiste links:** Boards (per Griff ⠿ sortierbar), Archiv, Knopf „Einstellungen“. Sie lässt sich über das Symbol im Kopf oder `Mod+B` ausblenden; dann holt ein Symbol am Anfang der Werkzeugleiste sie zurück. Auf macOS ist sie durchscheinend (Systemmaterial „Sidebar“), unter Windows und Linux deckend. Die Einstellungen öffnen sich als Dialog mit Sprache, Darstellung, Tastenkürzel und Tag-Verwaltung.
+- **Seitenleiste links:** Boards (per Griff ⠿ sortierbar), Archiv, Knopf „Einstellungen“. Sie lässt sich über das Symbol im Kopf oder `Mod+B` ausblenden; dann holt ein Symbol am Anfang der Werkzeugleiste sie zurück. Auf macOS ist sie durchscheinend (Systemmaterial „Sidebar“), unter Windows und Linux deckend. Die Einstellungen öffnen sich als Dialog mit den Tabs Allgemein (Sprache, Darstellung, Tastenkürzel), Farben, Tags und Info (Version, Speicherverbrauch der Datenbank). Unter Farben wählt man ein Preset (Hodie, Ozean, Wald oder eigene) und legt eigene an; jedes hat eine helle und eine dunkle Variante aus Akzentfarbe und Grundton. Die Hauptfläche (Board, Karten, Panel) bleibt dabei immer weiß bzw. dunkel. Zu schwache Kontraste werden direkt am Preset angezeigt.
 - **Board:** Spalten nebeneinander mit fester Breite, horizontal scrollbar, auf einem feinen Punktraster. Jede Spalte zeigt einen Farbpunkt (Erledigt-Spalte grün) und die Anzahl ihrer Karten; leere Spalten zeigen einen kurzen Hinweis.
 - **Karte:** Titel, darunter nur, was vorhanden ist: Tags und Fortschritt der Teilaufgaben (Zahl und dünner Balken). Die Priorität steckt in der Farbe der Kachel und einem abgerundeten Streifen am Anfang, der mit der Priorität breiter wird. Karten in der Erledigt-Spalte treten zurück und zeigen ein Häkchen. Leere Felder nehmen keinen Platz ein.
-- **Kartendetails** öffnen sich in einem **Seitenpanel rechts**. Das Board bleibt sichtbar und bedienbar. `Esc` schließt das Panel.
+- **Kartendetails** öffnen sich in einem **Seitenpanel rechts**. Das Board bleibt sichtbar und bedienbar. `Esc` oder ein Klick daneben schließt das Panel; ein Klick auf eine andere Karte wechselt zu ihr.
+- **Schlicht:** Aktionen sind reine Icon-Knöpfe ohne Beschriftung (Name als Tooltip und für Screenreader). Die Suche ist ein Lupen-Icon, das sich beim Fokussieren zum Feld öffnet; Filter, „＋ Board“, „＋ Karte“ (im Spaltenkopf), „＋ Spalte“, Archiv und Einstellungen sind Icons.
 - **Schnelleingabe:** kleines, randloses Fenster mit runden Ecken (`--radius-window`), mittig auf dem Bildschirm: Logo, Eingabefeld und runder Senden-Knopf in Akzentfarbe. `Enter` legt die Karte an, `Esc` schließt.
 
 ## Interaktion

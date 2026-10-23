@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import App from "./App";
+import { initPalette, syncPalette } from "./colorPreset";
 import { NotificationsProvider } from "./notifications/Notifications";
 import QuickAdd from "./quickAdd/QuickAdd";
 import "./i18n";
@@ -10,6 +11,7 @@ import { initTheme } from "./theme";
 import "./styles/global.css";
 
 initTheme();
+initPalette();
 document.documentElement.dataset.platform = isMac ? "mac" : "other";
 
 // The webview's own menu (Back, Reload, Inspect …) does not belong in an app.
@@ -31,6 +33,7 @@ function windowLabel(): string {
 document.documentElement.dataset.window = windowLabel();
 // The macOS main window has a translucent sidebar (see tauri.macos.conf.json).
 if (isMac && windowLabel() === "main") document.documentElement.dataset.vibrancy = "";
+if (windowLabel() === "main") void syncPalette();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

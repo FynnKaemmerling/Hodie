@@ -60,8 +60,11 @@ src/board/              Board, card and archive state: pure update functions (te
 src/notifications/      Toasts with undo (also Mod+Z)
 src/quickAdd/           The quick entry window (label "quick-add", opened by the global shortcut)
 src/theme.ts            Theme preference (system/light/dark) and data-theme
+src/palette.ts          Colour presets: built-ins, token derivation, contrast checks (tested)
+src/colorPreset.ts      Applying the active preset, its cache and the settings hook
 src/shortcut.ts         Recording and displaying global shortcuts (tested)
 src/sidebar.ts          Collapsed state of the sidebar (localStorage)
+src/format.ts           Locale-aware formatting helpers, e.g. byte sizes (tested)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
@@ -92,9 +95,11 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **Themes:** `tokens.css` enthält einen hellen Satz in `:root` und einen dunklen unter `:root[data-theme="dark"]` mit denselben Namen. `src/theme.ts` setzt `data-theme` aus der Einstellung (Wie System, Hell, Dunkel), folgt bei „Wie System“ der Systemeinstellung und färbt auch den Fensterrahmen. Neue Farben immer in **beiden** Sätzen anlegen.
 
+**Farb-Presets:** Ein Preset besteht aus Akzent und Grundton für Hell und Dunkel. „Hodie“ ist der handabgestimmte Satz in `tokens.css`; für alle anderen (eingebaut „Ozean“, „Wald“ sowie eigene) leitet `derivePalette` (`palette.ts`) Flächen, Rahmen und Akzent-Töne ab und setzt sie als Inline-Variablen auf `<html>`. Die Hauptfläche (`--color-bg-surface`, `--color-bg-card`) sowie Text-, Status-, Prioritäts- und Tag-Farben bleiben unverändert. Eigene Presets liegen in der Tabelle `color_presets`, die Auswahl in `settings` (`color_preset`: Name eines eingebauten oder `custom:<id>`). Die aufgelösten Farben werden im `localStorage` zwischengespeichert, damit beide Fenster sofort richtig malen und das Schnellfenster Änderungen mitbekommt.
+
 **App-Icon:** Quelle ist `src-tauri/icons/app-icon.svg`. Nach Änderungen alle Größen mit `npx tauri icon src-tauri/icons/app-icon.svg` neu erzeugen und die Ordner `android/` und `ios/` wieder löschen.
 
-**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste): Sprache, Darstellung, Tastenkürzel und Tags. Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
+**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
 
 Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme, das zuletzt geöffnete Board und die eingeklappte Seitenleiste liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
 
@@ -134,7 +139,7 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 - **Löschen und Rückgängig:** Boards, Spalten und Karten werden nur markiert (`deleted_at`) und lassen sich mit `restore_*` zurückholen. Beim nächsten Start werden markierte Zeilen endgültig gelöscht. Teilaufgaben und Tags werden sofort gelöscht.
 - **Archiv:** Archivierte Karten (`archived_at`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
 - **Reihenfolge:** Verschiebe-Befehle bekommen den Zielindex. Das Backend berechnet daraus den Sortierschlüssel zwischen den Nachbarn.
-- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`.
+- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `preset.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`.
 
 ## Plattformübergreifend
 
@@ -151,6 +156,7 @@ Die Designrichtung steht in [`DESIGN.md`](DESIGN.md). Kernregeln: alle visuellen
 
 - Kanban-Layout: Seitenleiste mit Boards links, Spalten nebeneinander, Kartendetails im Seitenpanel rechts.
 - Sofort speichern, kein Speichern-Button. Löschen mit Rückgängig statt Bestätigungsdialog.
+- Schlicht: Aktionen als Icon-Knöpfe ohne Beschriftung über `IconButton` (Name als `aria-label` und Tooltip).
 - Tastenkürzel zentral definieren, siehe Tabelle in `DESIGN.md`.
 
 ## Arbeitsweise

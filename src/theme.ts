@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { applyPalette } from "./colorPreset";
 
 export const THEME_PREFERENCES = ["system", "light", "dark"] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
@@ -27,6 +28,8 @@ export function readThemePreference(): ThemePreference {
 function apply(preference: ThemePreference) {
   const dark = preference === "dark" || (preference === "system" && systemDark.matches);
   document.documentElement.dataset.theme = dark ? "dark" : "light";
+  // Colour presets derive different tokens for light and dark.
+  applyPalette();
   try {
     void getCurrentWindow()
       .setTheme(preference === "system" ? null : preference)

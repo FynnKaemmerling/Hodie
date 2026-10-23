@@ -16,7 +16,7 @@ pub fn run() {
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
-            let conn = store::open(&dir.join("hodie.db"))?;
+            let conn = store::open(&dir.join(store::DB_FILE))?;
             let shortcut = store::settings::get(&conn, quick_add::SETTING_KEY)?;
             app.manage(commands::Db::new(conn));
             quick_add::setup(app, shortcut)?;
@@ -64,6 +64,13 @@ pub fn run() {
             commands::update_tag,
             commands::count_tag_cards,
             commands::delete_tag,
+            commands::list_color_presets,
+            commands::create_color_preset,
+            commands::update_color_preset,
+            commands::delete_color_preset,
+            commands::get_color_preset_choice,
+            commands::set_color_preset_choice,
+            commands::get_storage_usage,
             quick_add::get_quick_add_shortcut,
             quick_add::set_quick_add_shortcut,
         ])

@@ -98,19 +98,16 @@
   --dot-color: var(--color-success);
 }
 
-/* Shown instead of an empty list; the column stays a drop target. */
+/* Shown instead of an empty list; the column stays a drop target. The
+   header's count already tells screen readers the column is empty. */
 .empty {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  margin: 0 var(--space-3);
+  justify-content: center;
+  margin: 0 var(--space-3) var(--space-3);
   padding: var(--space-6) var(--space-4);
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-lg);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  text-align: center;
 }
 
 .empty :global(.lucide) {
@@ -125,33 +122,12 @@
   gap: var(--space-3);
   min-height: var(--space-3);
   margin: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-3);
   overflow-y: auto;
 }
 
 .footer {
   padding: var(--space-2) var(--space-3) var(--space-3);
-}
-
-.add {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: var(--list-row-height);
-  padding-inline: var(--space-3);
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-text-secondary);
-  text-align: start;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--easing-standard);
-}
-
-.add:hover {
-  background: var(--color-overlay-hover);
-  color: var(--color-text-primary);
 }
 
 .done {

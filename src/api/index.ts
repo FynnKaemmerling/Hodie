@@ -5,9 +5,12 @@ import type {
   CardDetail,
   CardPatch,
   CardSummary,
+  ColorPreset,
+  ColorPresetPatch,
   Column,
   Id,
   NewCard,
+  PresetColors,
   ShortcutInfo,
   Subtask,
   SubtaskPatch,
@@ -68,6 +71,17 @@ export const api = {
   updateTag: (tagId: Id, patch: TagPatch) => invoke<void>("update_tag", { tagId, patch }),
   countTagCards: (tagId: Id) => invoke<number>("count_tag_cards", { tagId }),
   deleteTag: (tagId: Id) => invoke<void>("delete_tag", { tagId }),
+
+  listColorPresets: () => invoke<ColorPreset[]>("list_color_presets"),
+  createColorPreset: (name: string, colors: PresetColors) =>
+    invoke<ColorPreset>("create_color_preset", { name, colors }),
+  updateColorPreset: (presetId: Id, patch: ColorPresetPatch) =>
+    invoke<void>("update_color_preset", { presetId, patch }),
+  deleteColorPreset: (presetId: Id) => invoke<void>("delete_color_preset", { presetId }),
+  getColorPresetChoice: () => invoke<string>("get_color_preset_choice"),
+  setColorPresetChoice: (choice: string) => invoke<void>("set_color_preset_choice", { choice }),
+
+  getStorageUsage: () => invoke<number>("get_storage_usage"),
 
   getQuickAddShortcut: () => invoke<ShortcutInfo>("get_quick_add_shortcut"),
   setQuickAddShortcut: (shortcut: string) =>

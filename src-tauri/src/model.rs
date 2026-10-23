@@ -146,3 +146,31 @@ pub struct TagPatch {
     pub name: Option<String>,
     pub color: Option<String>,
 }
+
+/// Names of the colour presets built into the frontend; the first is the default.
+pub const BUILTIN_PRESETS: &[&str] = &["hodie", "ocean", "forest"];
+
+/// Accent and base colour (`#rrggbb`) of a preset for each mode.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PresetColors {
+    pub light_accent: String,
+    pub light_base: String,
+    pub dark_accent: String,
+    pub dark_base: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ColorPreset {
+    pub id: Id,
+    pub name: String,
+    pub colors: PresetColors,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ColorPresetPatch {
+    pub name: Option<String>,
+    pub colors: Option<PresetColors>,
+}

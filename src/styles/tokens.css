@@ -14,6 +14,8 @@
   --color-bg-hover: #ececea;
   --color-bg-selected: #f7e6dc;
   --color-bg-sidebar: var(--color-bg-app);
+  /* Over the macOS sidebar material, so presets still colour the sidebar */
+  --color-bg-sidebar-tint: rgb(246 246 244 / 0.6);
   --color-canvas-dot: #dcdcd7;
   --color-overlay-hover: rgb(0 0 0 / 0.08);
   --color-backdrop: rgb(20 22 24 / 0.35);
@@ -96,6 +98,10 @@
   --shadow-card-lift: 0 4px 12px rgb(0 0 0 / 0.08);
   /* Accent glow, the quieter sibling of the quick entry's neon edge */
   --shadow-glow-accent: 0 0 0 1px var(--color-accent), 0 0 12px var(--color-focus-ring-soft);
+  /* Preset previews show both modes whatever the app's mode, so these two
+     have no dark variant. */
+  --color-swatch-card-light: rgb(255 255 255 / 0.85);
+  --color-swatch-card-dark: rgb(255 255 255 / 0.1);
   --shadow-glow-arrived: 0 0 0 2px var(--color-accent), 0 0 20px var(--color-focus-ring);
 
   /* Spacing */
@@ -165,6 +171,9 @@
   --canvas-dot-size: 1px;
   --canvas-dot-gap: 1.25rem;
   --card-lift: -1px;
+  --preset-width: 9rem;
+  --search-width: 16rem;
+  --preset-preview-height: 3.5rem;
 
   /* Motion */
   --duration-fast: 120ms;
@@ -188,6 +197,7 @@
   --color-bg-hover: #2f3338;
   --color-bg-selected: #3d2c22;
   --color-canvas-dot: #2e3136;
+  --color-bg-sidebar-tint: rgb(27 29 32 / 0.6);
   --color-overlay-hover: rgb(255 255 255 / 0.1);
   --color-backdrop: rgb(0 0 0 / 0.6);
 
@@ -257,9 +267,9 @@
 }
 
 /* macOS: the main window's sidebar shows the system's translucent material
-   (windowEffects in tauri.macos.conf.json), so it stays see-through. */
+   (windowEffects in tauri.macos.conf.json) through a tint of the base tone. */
 :root[data-vibrancy] {
-  --color-bg-sidebar: transparent;
+  --color-bg-sidebar: var(--color-bg-sidebar-tint);
 }
 
 @media (prefers-reduced-motion: reduce) {

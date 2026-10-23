@@ -62,6 +62,13 @@
   color: var(--color-text-primary);
 }
 
+.section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline-end: var(--space-2);
+}
+
 .sectionTitle {
   margin: 0;
   padding: var(--space-3) var(--space-4) var(--space-2);
@@ -126,47 +133,17 @@
   opacity: 1;
 }
 
-.add {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: var(--list-row-height);
-  padding-inline: var(--space-4);
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-text-secondary);
-  text-align: start;
-  cursor: pointer;
-}
 
-.add:hover {
-  background: var(--color-overlay-hover);
-  color: var(--color-text-primary);
-}
 
 .footer {
-  margin-block-start: auto;
-  padding-block-start: var(--space-4);
-}
-
-.archive {
-  flex: none;
-  margin-block-start: var(--space-5);
-  padding-inline-end: var(--space-4);
-  color: var(--color-text-secondary);
-}
-
-.archive[aria-current="page"] {
-  color: var(--color-text-primary);
-}
-
-.archive,
-.add {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  margin-block-start: auto;
+  padding: var(--space-4) var(--space-2) 0;
 }
+
+
+
 
 /* Drag handle sits at the start of the row and shows on hover or focus. */
 .handle {

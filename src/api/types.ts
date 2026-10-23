@@ -103,3 +103,23 @@ export interface TagPatch {
   name?: string;
   color?: TagColor;
 }
+
+/** Accent and base colour (#rrggbb) of a colour preset for each mode. */
+export interface PresetColors {
+  lightAccent: string;
+  lightBase: string;
+  darkAccent: string;
+  darkBase: string;
+}
+
+/** A colour preset the user created. */
+export interface ColorPreset {
+  id: Id;
+  name: string;
+  colors: PresetColors;
+}
+
+export interface ColorPresetPatch {
+  name?: string;
+  colors?: PresetColors;
+}

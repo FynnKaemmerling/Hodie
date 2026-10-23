@@ -37,9 +37,7 @@
     "deleteDoneHint": "The done column cannot be deleted",
     "cardCount_one": "{{count}} card",
     "cardCount_other": "{{count}} cards",
-    "archiveDone": "Archive done cards",
-    "empty": "No cards yet",
-    "emptyDone": "Nothing done yet"
+    "archiveDone": "Archive done cards"
   },
   "card": {
     "title": "Card title",
@@ -117,6 +115,33 @@
       "confirm_other": "Remove from {{count}} cards and delete?",
       "confirmDelete": "Delete",
       "cancel": "Cancel"
+    },
+    "colors": {
+      "title": "Colours",
+      "description": "Every preset has a light and a dark variant. Choose light or dark under General → Appearance.",
+      "builtin": {
+        "hodie": "Hodie",
+        "ocean": "Ocean",
+        "forest": "Forest"
+      },
+      "add": "Custom preset",
+      "newName": "Custom preset",
+      "name": "Name",
+      "accent": "Accent colour",
+      "base": "Base tone",
+      "delete": "Delete preset",
+      "deleted": "Preset “{{name}}” deleted",
+      "issues": {
+        "text": "Text is hard to read on this base tone.",
+        "accentText": "The accent colour does not stand out enough as text.",
+        "onAccent": "Text on accent-coloured buttons is hard to read."
+      }
+    },
+    "info": {
+      "title": "About",
+      "version": "Version",
+      "storage": "Storage used",
+      "unknown": "Unknown"
     }
   },
   "languages": {
@@ -151,6 +176,9 @@
     "shortcut": {
       "invalid": "This shortcut is not supported.",
       "unavailable": "Another program already uses this shortcut. The previous one stays active."
+    },
+    "preset": {
+      "invalid_color": "Invalid colour."
     }
   },
   "panel": {
@@ -203,12 +231,12 @@
   },
   "archive": {
     "title": "Archive · {{name}}",
-    "restore": "Back to board",
     "delete": "Delete “{{title}}” for good",
     "empty": {
       "title": "The archive is empty",
       "description": "Archived cards appear here and can be brought back at any time."
-    }
+    },
+    "restoreCard": "Restore “{{title}}”"
   },
   "keys": {
     "ctrl": "Ctrl",
@@ -219,11 +247,11 @@
   "filter": {
     "search": "Search cards",
     "searchPlaceholder": "Search ({{shortcut}})",
-    "button": "Filter",
     "title": "Filter cards",
     "reset": "Clear filters",
     "counts": "{{visible}} of {{total}} cards",
-    "noTags": "No tags yet."
+    "noTags": "No tags yet.",
+    "titleActive": "Filter cards, {{count}} active"
   },
   "quickAdd": {
     "label": "New task",
