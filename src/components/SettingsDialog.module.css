@@ -14,13 +14,14 @@
 }
 
 .modal {
+  display: flex;
   width: min(var(--dialog-width), 100%);
-  max-height: 100%;
+  height: min(var(--dialog-height), 100%);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background: var(--color-bg-surface);
   box-shadow: var(--shadow-lg);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .modal[data-entering] {
@@ -29,6 +30,8 @@
 
 .dialog {
   display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   gap: var(--space-6);
   padding: var(--space-5) var(--space-6) var(--space-6);
@@ -103,6 +106,8 @@
 
 .tabs {
   display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   gap: var(--space-5);
 }
@@ -144,16 +149,23 @@
   outline-offset: 1px;
 }
 
+/* The panel scrolls so the dialog keeps one size across tabs; the padding
+   leaves room for the focus ring inside the scroll area. */
 .panel {
   display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   gap: var(--space-6);
+  margin: calc(-1 * var(--space-2));
+  padding: var(--space-2);
+  overflow-y: auto;
   outline: none;
 }
 
 .panel[data-focus-visible] {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: var(--space-2);
+  outline-offset: calc(-1 * var(--space-1));
 }
 
 @keyframes fade {

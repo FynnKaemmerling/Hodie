@@ -152,6 +152,7 @@
   --panel-width: 26rem;
   --field-width: 12rem;
   --dialog-width: 34rem;
+  --dialog-height: 36rem;
   --window-button-width: 2.875rem;
   --logo-size: 1.5rem;
   /* Room for the macOS traffic lights at the start of the sidebar header */
