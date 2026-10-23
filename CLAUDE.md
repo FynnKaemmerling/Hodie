@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Danach kam der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)), ebenfalls umgesetzt. Weitere Funktionen nur nach Absprache, Ideen stehen unter „Später“ in der README.
+**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Danach kam der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)), ebenfalls umgesetzt. Weitere Funktionen nur nach Absprache, Ideen stehen unter „Ausblick“ in der README.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -87,6 +87,7 @@ src-tauri/src/store/          App database: settings, colour presets; legacy.rs 
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
 src-tauri/capabilities/ Tauri permissions for the frontend
 .github/workflows/      CI builds for all three platforms
+docs/screenshots/       Screenshots for the README (demo data, light and dark)
 ```
 
 Styling: CSS Modules (`*.module.css`) neben der Komponente, ausschließlich mit Variablen aus `tokens.css`.
