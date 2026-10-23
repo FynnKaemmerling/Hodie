@@ -3,6 +3,38 @@
   overflow-wrap: anywhere;
 }
 
+.title[data-done] {
+  color: var(--color-text-secondary);
+}
+
+.check {
+  margin-inline-end: var(--space-2);
+  vertical-align: text-bottom;
+  color: var(--color-success);
+}
+
+/* Subtask progress as a thin bar under the card. */
+.bar {
+  display: block;
+  height: var(--progress-height);
+  margin-block-start: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-count);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width var(--duration-normal) var(--easing-standard);
+}
+
+.bar[data-complete] > span {
+  background: var(--color-success);
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

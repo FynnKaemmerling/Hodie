@@ -1,4 +1,4 @@
-import { ListChecks } from "lucide-react";
+import { CircleCheck, ListChecks } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CardSummary, Tag } from "../api";
 import TagChip from "./TagChip";
@@ -7,6 +7,8 @@ import styles from "./CardContent.module.css";
 interface Props {
   card: CardSummary;
   tags: Tag[];
+  /** In the done column: a check before the title, muted text. */
+  done?: boolean;
 }
 
 /**
@@ -14,7 +16,7 @@ interface Props {
  * is shown by the tile around it (see `data-priority`), so here it is only
  * spelled out for screen readers.
  */
-function CardContent({ card, tags }: Props) {
+function CardContent({ card, tags, done = false }: Props) {
   const { t } = useTranslation();
   const cardTags = card.tagIds
     .map((id) => tags.find((tag) => tag.id === id))
@@ -24,7 +26,10 @@ function CardContent({ card, tags }: Props) {
 
   return (
     <>
-      <span className={styles.title}>{card.title}</span>
+      <span className={styles.title} data-done={done || undefined}>
+        {done && <CircleCheck className={styles.check} aria-hidden="true" />}
+        {card.title}
+      </span>
       {card.priority !== "none" && (
         <span className="visually-hidden">{t(`card.priority.${card.priority}`)}</span>
       )}
@@ -46,6 +51,15 @@ function CardContent({ card, tags }: Props) {
               </span>
             </span>
           )}
+        </span>
+      )}
+      {card.subtasksTotal > 0 && (
+        <span
+          className={styles.bar}
+          data-complete={allSubtasksDone || undefined}
+          aria-hidden="true"
+        >
+          <span style={{ width: `${(card.subtasksDone / card.subtasksTotal) * 100}%` }} />
         </span>
       )}
     </>

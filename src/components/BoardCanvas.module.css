@@ -5,6 +5,10 @@
   height: 100%;
   padding: var(--space-5) var(--space-6) var(--space-6);
   overflow-x: auto;
+  /* A faint dot grid that scrolls with the columns. */
+  background-image: radial-gradient(var(--color-canvas-dot) var(--canvas-dot-size), transparent 0);
+  background-size: var(--canvas-dot-gap) var(--canvas-dot-gap);
+  background-attachment: local;
 }
 
 .addColumn {

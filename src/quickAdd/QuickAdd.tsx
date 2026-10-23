@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { emit } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { ArrowUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { api, type Tag } from "../api";
 import { errorMessageKey } from "../api/errors";
-import { CARDS_CHANGED } from "../api/events";
+import { CARDS_CHANGED, type CardsChangedPayload } from "../api/events";
 import { findTagByName } from "../board/cardState";
 import { createCardFromEntry, parseQuickEntry } from "../board/quickEntry";
 import { readStoredBoard } from "../board/useBoards";
+import logo from "../../src-tauri/icons/app-icon.svg";
 import TagChip from "../components/TagChip";
 import styles from "./QuickAdd.module.css";
 
@@ -72,8 +74,8 @@ function QuickAdd() {
     if (!target || saving) return;
     setSaving(true);
     try {
-      await createCardFromEntry(target.columnId, text, tags);
-      await emit(CARDS_CHANGED);
+      const { card } = await createCardFromEntry(target.columnId, text, tags);
+      await emit<CardsChangedPayload>(CARDS_CHANGED, { cardId: card.id });
       setText("");
       await getCurrentWindow().hide();
     } catch (failure) {
@@ -87,28 +89,42 @@ function QuickAdd() {
 
   return (
     <div className={styles.window} data-priority={entry.priority}>
-      <input
-        ref={input}
-        className={styles.input}
-        value={text}
-        autoFocus
-        placeholder={t("quickAdd.placeholder")}
-        aria-label={t("quickAdd.label")}
-        aria-describedby="quick-add-status"
-        onChange={(event) => {
-          setText(event.target.value);
-          setError(null);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            void submit();
-          } else if (event.key === "Escape") {
-            event.preventDefault();
-            void getCurrentWindow().hide();
-          }
-        }}
-      />
+      <div className={styles.entry}>
+        <img className={styles.logo} src={logo} alt="" />
+        <input
+          ref={input}
+          className={styles.input}
+          value={text}
+          autoFocus
+          placeholder={t("quickAdd.placeholder")}
+          aria-label={t("quickAdd.label")}
+          aria-describedby="quick-add-status"
+          onChange={(event) => {
+            setText(event.target.value);
+            setError(null);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void submit();
+            } else if (event.key === "Escape") {
+              event.preventDefault();
+              void getCurrentWindow().hide();
+            }
+          }}
+        />
+        <button
+          type="button"
+          className={styles.send}
+          aria-label={t("quickAdd.submit")}
+          disabled={!target || saving || text.trim() === ""}
+          // Keeps the caret in the input.
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => void submit()}
+        >
+          <ArrowUp aria-hidden />
+        </button>
+      </div>
 
       <div className={styles.footer} id="quick-add-status">
         {error ? (

@@ -1,39 +1,148 @@
 .window {
+  --surface: var(--color-bg-surface);
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   height: 100%;
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-border-strong);
-  border-inline-start: var(--priority-edge-low) solid var(--color-border-strong);
-  background: var(--color-bg-surface);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
+  border-radius: var(--radius-window);
+  /* Faint ring under the moving light, so the whole edge stays visible. */
+  background: var(--color-focus-ring-soft);
+  overflow: hidden;
+}
+
+/* Neon edge: a spot of accent light circles the rim. The square is wider
+   than the window's diagonal, so the rotating gradient always covers it. */
+.window::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  aspect-ratio: 1;
+  background: conic-gradient(
+    transparent 0turn,
+    transparent 0.3turn,
+    var(--color-accent) 0.45turn,
+    transparent 0.55turn,
+    transparent 0.8turn,
+    var(--color-focus-ring) 0.92turn,
+    transparent 1turn
+  );
+  filter: blur(var(--neon-blur));
+  animation:
+    neon-spin var(--duration-neon-spin) linear infinite,
+    neon-pulse var(--duration-neon-pulse) ease-in-out infinite alternate;
+}
+
+/* The surface sits inside the ring and glows faintly along its edge. */
+.window::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: var(--neon-width);
+  border-radius: calc(var(--radius-window) - var(--neon-width));
+  background: var(--surface);
+  box-shadow: inset 0 0 var(--neon-glow) var(--color-focus-ring-soft);
   transition: background var(--duration-fast) var(--easing-standard);
 }
 
-/* Shows the priority the way the card will look. */
+@keyframes neon-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0turn);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(1turn);
+  }
+}
+
+@keyframes neon-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .window::before {
+    animation: none;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Shows the priority the way the card will look: a tinted surface. The
+   footer names the priority, so it never relies on colour alone. */
 .window[data-priority="low"] {
-  border-inline-start: var(--priority-edge-low) solid var(--color-priority-low-edge);
-  background: var(--color-priority-low-bg);
+  --surface: var(--color-priority-low-bg);
 }
 
 .window[data-priority="medium"] {
-  border-inline-start: var(--priority-edge-medium) solid var(--color-priority-medium-edge);
-  background: var(--color-priority-medium-bg);
+  --surface: var(--color-priority-medium-bg);
 }
 
 .window[data-priority="high"] {
-  border-inline-start: var(--priority-edge-high) solid var(--color-priority-high-edge);
-  background: var(--color-priority-high-bg);
+  --surface: var(--color-priority-high-bg);
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.logo {
+  width: var(--logo-size);
+  height: var(--logo-size);
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: var(--space-2) 0;
   border: none;
   background: transparent;
   font-size: var(--font-size-xl);
+  caret-color: var(--color-accent);
   outline: none;
+}
+
+.send {
+  display: grid;
+  place-items: center;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--easing-standard),
+    opacity var(--duration-fast) var(--easing-standard);
+}
+
+.send:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.send:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.send :global(.lucide) {
+  stroke-width: var(--icon-stroke-bold);
 }
 
 .input::placeholder {
@@ -45,6 +154,7 @@
   align-items: center;
   gap: var(--space-4);
   min-height: 1.5rem;
+  padding-inline-start: calc(var(--logo-size) + var(--space-4));
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }

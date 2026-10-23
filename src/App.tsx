@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
 import type { BoardView, CardDetail, Id, Tag } from "./api";
-import { CARDS_CHANGED } from "./api/events";
+import { CARDS_CHANGED, type CardsChangedPayload } from "./api/events";
 import ArchiveView from "./components/ArchiveView";
 import BoardCanvas from "./components/BoardCanvas";
 import BoardToolbar from "./components/BoardToolbar";
 import CardPanel from "./components/CardPanel";
 import SettingsDialog from "./components/SettingsDialog";
+import SidebarToggle from "./components/SidebarToggle";
 import WindowControls from "./components/WindowControls";
 import Sidebar from "./components/Sidebar";
 import { focusCard } from "./board/focus";
@@ -18,7 +19,11 @@ import { applyFilter, countCards, isFilterActive, NO_FILTER, type CardFilter } f
 import { useCardDetail } from "./board/useCardDetail";
 import { useCardSearch } from "./board/useCardSearch";
 import { isModKey } from "./platform";
+import { useSidebarCollapsed } from "./sidebar";
 import styles from "./App.module.css";
+
+// A little longer than --duration-arrived, so the highlight fully fades.
+const ARRIVED_MS = 2000;
 
 function App() {
   const { t } = useTranslation();
@@ -33,6 +38,8 @@ function App() {
   const searchMatches = useCardSearch(boards.selectedId, filter.query, board.view);
   const filtering = isFilterActive(filter);
   const searchRef = useRef<HTMLInputElement>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed();
+  const [arrivedCardId, setArrivedCardId] = useState<Id | null>(null);
 
   const filterView = useCallback(
     (view: BoardView) => (filtering ? applyFilter(view, filter, searchMatches) : view),
@@ -46,26 +53,44 @@ function App() {
   // Each board starts unfiltered.
   useEffect(() => setFilter(NO_FILTER), [boards.selectedId]);
 
-  // Mod+F jumps to the search field.
+  // Mod+F jumps to the search field, Mod+B toggles the sidebar.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (!isModKey(event) || event.shiftKey || event.key.toLowerCase() !== "f") return;
-      if (!searchRef.current) return;
-      event.preventDefault();
-      searchRef.current.focus();
-      searchRef.current.select();
+      if (!isModKey(event) || event.shiftKey) return;
+      const key = event.key.toLowerCase();
+      if (key === "b") {
+        event.preventDefault();
+        setSidebarCollapsed(!sidebarCollapsed);
+      } else if (key === "f" && searchRef.current) {
+        event.preventDefault();
+        searchRef.current.focus();
+        searchRef.current.select();
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [sidebarCollapsed, setSidebarCollapsed]);
 
   // The quick entry window adds cards behind this window's back.
   const reloadBoard = useRef(board.reload);
   reloadBoard.current = board.reload;
   useEffect(() => {
-    const unlisten = listen(CARDS_CHANGED, () => void reloadBoard.current());
+    const unlisten = listen<CardsChangedPayload>(CARDS_CHANGED, async ({ payload }) => {
+      await reloadBoard.current();
+      if (payload?.cardId !== undefined) setArrivedCardId(payload.cardId);
+    });
     return () => void unlisten.then((stop) => stop());
   }, []);
+
+  useEffect(() => {
+    if (arrivedCardId === null) return;
+    const timer = window.setTimeout(() => setArrivedCardId(null), ARRIVED_MS);
+    return () => window.clearTimeout(timer);
+  }, [arrivedCardId]);
+
+  const sidebarToggle = sidebarCollapsed && (
+    <SidebarToggle collapsed onToggle={() => setSidebarCollapsed(false)} />
+  );
 
   const closeCard = useCallback(() => {
     if (openCardId !== null) focusCard(openCardId);
@@ -140,6 +165,8 @@ function App() {
         showingArchive={showingArchive}
         onShowArchive={showArchive}
         onOpenSettings={() => setSettingsOpen(true)}
+        collapsed={sidebarCollapsed}
+        onCollapse={() => setSidebarCollapsed(true)}
       />
 
       <SettingsDialog
@@ -154,6 +181,7 @@ function App() {
       <main className={styles.main}>
         {!selected && (
           <header className={styles.toolbar} data-tauri-drag-region>
+            {sidebarToggle}
             <span className={styles.spacer} data-tauri-drag-region />
             <WindowControls />
           </header>
@@ -177,6 +205,7 @@ function App() {
           <>
             {showingArchive ? (
               <header className={styles.toolbar} data-tauri-drag-region>
+                {sidebarToggle}
                 <h1 className={styles.title} data-tauri-drag-region>
                   {t("archive.title", { name: selected.name })}
                 </h1>
@@ -190,6 +219,7 @@ function App() {
                 onFilterChange={setFilter}
                 counts={counts}
                 searchRef={searchRef}
+                leading={sidebarToggle}
                 trailing={<WindowControls />}
               />
             )}
@@ -208,6 +238,7 @@ function App() {
                   <BoardCanvas
                     board={board}
                     selectedCardId={openCardId}
+                    arrivedCardId={arrivedCardId}
                     onOpenCard={setOpenCardId}
                     filterView={filterView}
                     dragDisabled={filtering}

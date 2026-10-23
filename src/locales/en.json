@@ -5,7 +5,9 @@
   "nav": {
     "title": "Navigation",
     "boards": "Boards",
-    "archive": "Archive"
+    "archive": "Archive",
+    "collapse": "Hide sidebar",
+    "expand": "Show sidebar"
   },
   "home": {
     "empty": {
@@ -35,7 +37,9 @@
     "deleteDoneHint": "The done column cannot be deleted",
     "cardCount_one": "{{count}} card",
     "cardCount_other": "{{count}} cards",
-    "archiveDone": "Archive done cards"
+    "archiveDone": "Archive done cards",
+    "empty": "No cards yet",
+    "emptyDone": "Nothing done yet"
   },
   "card": {
     "title": "Card title",
@@ -223,6 +227,7 @@
   },
   "quickAdd": {
     "label": "New task",
+    "submit": "Add task",
     "placeholder": "New task … #tag, ! !! !!! for priority",
     "target": "→ {{board}} · {{column}}",
     "hint": "Enter saves · Esc closes",

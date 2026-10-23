@@ -7,7 +7,7 @@
   background: var(--color-bg-surface);
   box-shadow: var(--shadow-panel);
   overflow-y: auto;
-  animation: slide-in var(--duration-normal) var(--easing-standard);
+  animation: slide-in var(--duration-panel) var(--easing-spring);
 }
 
 .header {

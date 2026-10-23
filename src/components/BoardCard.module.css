@@ -3,6 +3,7 @@
 }
 
 .card {
+  position: relative;
   display: block;
   padding: var(--space-4) var(--space-4);
   border: 1px solid var(--color-border-card);
@@ -13,12 +14,14 @@
   touch-action: manipulation;
   transition:
     box-shadow var(--duration-fast) var(--easing-standard),
-    border-color var(--duration-fast) var(--easing-standard);
+    border-color var(--duration-fast) var(--easing-standard),
+    transform var(--duration-fast) var(--easing-standard);
 }
 
 .card:hover {
   border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-card-hover);
+  box-shadow: var(--shadow-card-lift);
+  transform: translateY(var(--card-lift));
 }
 
 /* The spot the card will land in while it is being dragged. */
@@ -26,6 +29,7 @@
   border: 1px dashed var(--color-border-strong);
   background: transparent;
   box-shadow: none;
+  transform: none;
 }
 
 .slot[data-dragging] .card > * {
@@ -33,32 +37,73 @@
 }
 
 /* The copy that follows the pointer (DragOverlay). */
-.overlay {
+.overlay,
+.overlay:hover {
   cursor: grabbing;
   box-shadow: var(--shadow-drag);
   transform: rotate(1.5deg);
 }
 
-/* The card open in the detail panel. */
-.card[data-selected] {
+/* The card open in the detail panel, or focused by keyboard: a soft glow. */
+.card[data-selected],
+.card:focus-visible {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent);
+  box-shadow: var(--shadow-glow-accent);
 }
 
-/* Priority tints the tile; it comes last so hover and selection keep it. */
+/* Done cards step back a little. */
+.card[data-done] {
+  background: var(--color-bg-column);
+  box-shadow: none;
+}
+
+/* Priority tints the tile and adds a rounded strip at the start that
+   widens with the priority, so it does not rely on colour alone. */
+.card[data-priority="low"],
+.card[data-priority="medium"],
+.card[data-priority="high"] {
+  padding-inline-start: calc(var(--space-4) + var(--space-2));
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset-block: var(--space-3);
+  inset-inline-start: var(--space-2);
+  width: var(--strip-width, 0);
+  border-radius: var(--radius-pill);
+  background: var(--strip-color, transparent);
+}
+
 .card[data-priority="low"] {
+  --strip-width: var(--priority-edge-low);
+  --strip-color: var(--color-priority-low-edge);
   background: var(--color-priority-low-bg);
-  border-inline-start: var(--priority-edge-low) solid var(--color-priority-low-edge);
 }
 
 .card[data-priority="medium"] {
+  --strip-width: var(--priority-edge-medium);
+  --strip-color: var(--color-priority-medium-edge);
   background: var(--color-priority-medium-bg);
-  border-inline-start: var(--priority-edge-medium) solid var(--color-priority-medium-edge);
 }
 
 .card[data-priority="high"] {
+  --strip-width: var(--priority-edge-high);
+  --strip-color: var(--color-priority-high-edge);
   background: var(--color-priority-high-bg);
-  border-inline-start: var(--priority-edge-high) solid var(--color-priority-high-edge);
+}
+
+/* Added from the quick entry: a short accent pulse. */
+.card[data-arrived] {
+  animation: arrived var(--duration-arrived) var(--easing-standard);
+}
+
+@keyframes arrived {
+  0%,
+  30% {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-glow-arrived);
+  }
 }
 
 /* New or moved cards fade in; tokens drop to 0ms for reduced motion. */

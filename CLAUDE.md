@@ -61,6 +61,7 @@ src/notifications/      Toasts with undo (also Mod+Z)
 src/quickAdd/           The quick entry window (label "quick-add", opened by the global shortcut)
 src/theme.ts            Theme preference (system/light/dark) and data-theme
 src/shortcut.ts         Recording and displaying global shortcuts (tested)
+src/sidebar.ts          Collapsed state of the sidebar (localStorage)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
 src/locales/            Translation files (de.json, en.json); tests check that keys match
@@ -83,7 +84,7 @@ Styling: CSS Modules (`*.module.css`) neben der Komponente, ausschließlich mit 
 
 Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit einer reinen Funktion aus `boardState.ts` geändert, dann der Befehl aufgerufen. Schlägt er fehl, erscheint der übersetzte Fehler und das Board wird neu geladen. Das Kartenpanel arbeitet genauso über `useCardDetail` (`cardState.ts`) und spiegelt jede Änderung per `patchCard` in Board und Archiv. Notizen werden kurz nach dem Tippen, beim Verlassen des Felds und beim Schließen des Panels gespeichert.
 
-**Fensterrahmen:** Das Hauptfenster ist unter Windows und Linux rahmenlos (`decorations: false`); `WindowControls` zeichnet die Knöpfe, Ziehflächen sind mit `data-tauri-drag-region` markiert (gilt nur für das Element selbst, nicht für Kinder). macOS überschreibt das in `tauri.macos.conf.json` (Ampelknöpfe, `titleBarStyle: Overlay`); `<html data-platform="mac">` schafft dort Platz im Seitenleistenkopf. Wird das Hauptfenster geschlossen, beendet `lib.rs` die App, sonst liefe sie wegen des versteckten Schnelleingabe-Fensters unsichtbar weiter.
+**Fensterrahmen:** Das Hauptfenster ist unter Windows und Linux rahmenlos (`decorations: false`); `WindowControls` zeichnet die Knöpfe, Ziehflächen sind mit `data-tauri-drag-region` markiert (gilt nur für das Element selbst, nicht für Kinder). macOS überschreibt das in `tauri.macos.conf.json` (Ampelknöpfe, `titleBarStyle: Overlay`); `<html data-platform="mac">` schafft dort Platz im Seitenleistenkopf. Die Seitenleiste ist auf macOS durchscheinend: Das Hauptfenster ist dort transparent mit `windowEffects` (`sidebar`, braucht `macOSPrivateApi` und das Cargo-Feature `macos-private-api`), `<html data-vibrancy>` macht den Seitenleisten-Hintergrund durchsichtig; der Hauptbereich bleibt deckend. Wird das Hauptfenster geschlossen, beendet `lib.rs` die App, sonst liefe sie wegen des versteckten Schnelleingabe-Fensters unsichtbar weiter.
 
 **Zwei Fenster, ein Frontend:** `main.tsx` zeigt je nach Fensterlabel (`main` oder `quick-add`, siehe `tauri.conf.json`) die App oder die Schnelleingabe. Das Tastenkürzel registriert das Backend (`quick_add.rs`) beim Start aus der Tabelle `settings`, Standard ist `Mod+Umschalt+Leertaste`. Es lässt sich in den Einstellungen ändern; ist ein neues Kürzel belegt, bleibt das alte aktiv (`shortcut.unavailable`). Ist es schon beim Start belegt, läuft die App ohne es weiter und die Einstellungen zeigen einen Hinweis. Legt die Schnelleingabe eine Karte an, sendet sie das Ereignis `cards-changed` (`src/api/events.ts`), und das Hauptfenster lädt neu.
 
@@ -95,7 +96,7 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste): Sprache, Darstellung, Tastenkürzel und Tags. Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
 
-Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme und das zuletzt geöffnete Board liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
+Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme, das zuletzt geöffnete Board und die eingeklappte Seitenleiste liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
 
 ## Sprache
 

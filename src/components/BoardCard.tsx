@@ -27,6 +27,10 @@ interface Props {
   onNavigate: (cardId: Id, direction: Direction) => void;
   onOpen: (cardId: Id) => void;
   selected: boolean;
+  /** Just added from the quick entry; plays a short highlight. */
+  arrived: boolean;
+  /** In the done column. */
+  done: boolean;
   dragDisabled: boolean;
 }
 
@@ -42,6 +46,8 @@ function BoardCard({
   onNavigate,
   onOpen,
   selected,
+  arrived,
+  done,
   dragDisabled,
 }: Props) {
   const { t } = useTranslation();
@@ -92,6 +98,8 @@ function BoardCard({
           className={styles.card}
           data-card-id={card.id}
           data-selected={selected || undefined}
+          data-arrived={arrived || undefined}
+          data-done={done || undefined}
           data-priority={card.priority}
           {...attributes}
           {...listeners}
@@ -119,7 +127,7 @@ function BoardCard({
             }
           }}
         >
-          <CardContent card={card} tags={tags} />
+          <CardContent card={card} tags={tags} done={done} />
         </div>
       )}
       {contextMenu.menu}

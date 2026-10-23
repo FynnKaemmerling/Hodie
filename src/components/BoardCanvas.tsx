@@ -87,6 +87,8 @@ function targetColumn(view: BoardView, focused: Element | null, selectedCardId: 
 interface Props {
   board: BoardActions;
   selectedCardId: Id | null;
+  /** Card just added from the quick entry, briefly highlighted. */
+  arrivedCardId: Id | null;
   onOpenCard: (cardId: Id) => void;
   /** Hides cards that do not match the current search and filter. */
   filterView: (view: BoardView) => BoardView;
@@ -94,7 +96,14 @@ interface Props {
   dragDisabled: boolean;
 }
 
-function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabled }: Props) {
+function BoardCanvas({
+  board,
+  selectedCardId,
+  arrivedCardId,
+  onOpenCard,
+  filterView,
+  dragDisabled,
+}: Props) {
   const { t } = useTranslation();
   const { view, tags } = board;
   // While dragging, cards moved between columns live in this draft until drop.
@@ -280,10 +289,11 @@ function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabl
           items={shown.columns.map((column) => dndId("column", column.id))}
           strategy={horizontalListSortingStrategy}
         >
-          {shown.columns.map((column) => (
+          {shown.columns.map((column, index) => (
             <BoardColumn
               key={column.id}
               column={column}
+              index={index}
               tags={tags}
               onRename={board.renameColumn}
               onSetDone={board.setDoneColumn}
@@ -296,6 +306,7 @@ function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabl
               onOpenCard={onOpenCard}
               onArchiveDone={board.archiveDoneCards}
               selectedCardId={selectedCardId}
+              arrivedCardId={arrivedCardId}
               dragDisabled={dragDisabled}
               addingCard={addingCardIn === column.id}
               onAddingCardChange={(open) => setAddingCardIn(open ? column.id : null)}
@@ -313,7 +324,7 @@ function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabl
             />
           ) : (
             <button type="button" className={styles.add} onClick={() => setAddingColumn(true)}>
-              <Plus aria-hidden="true" /> {t("column.add")}
+              <Plus className="icon-badge" aria-hidden="true" /> {t("column.add")}
             </button>
           )}
         </div>
@@ -321,7 +332,9 @@ function BoardCanvas({ board, selectedCardId, onOpenCard, filterView, dragDisabl
 
       <DragOverlay>
         {activeCard && <CardOverlay card={activeCard} tags={tags} />}
-        {activeColumn && <ColumnOverlay column={activeColumn} />}
+        {activeColumn && (
+          <ColumnOverlay column={activeColumn} index={shown.columns.indexOf(activeColumn)} />
+        )}
       </DragOverlay>
     </DndContext>
   );

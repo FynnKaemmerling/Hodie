@@ -26,17 +26,29 @@ interface Props {
   /** Visible and total cards while a filter is active. */
   counts: { visible: number; total: number } | null;
   searchRef: RefObject<HTMLInputElement | null>;
+  /** Shown before the title, e.g. the button that brings back the sidebar. */
+  leading?: ReactNode;
   /** Shown after the filter, e.g. the window controls. */
   trailing?: ReactNode;
 }
 
-function BoardToolbar({ title, tags, filter, onFilterChange, counts, searchRef, trailing }: Props) {
+function BoardToolbar({
+  title,
+  tags,
+  filter,
+  onFilterChange,
+  counts,
+  searchRef,
+  leading,
+  trailing,
+}: Props) {
   const { t } = useTranslation();
   const choices = filter.tagIds.length + filter.priorities.length;
 
   return (
     // The free space of the toolbar moves the frameless window.
     <header className={styles.toolbar} data-tauri-drag-region>
+      {leading}
       <h1 className={styles.title} data-tauri-drag-region>
         {title}
       </h1>

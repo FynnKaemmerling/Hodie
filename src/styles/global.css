@@ -30,12 +30,39 @@ textarea {
   color: inherit;
 }
 
+/* The quick entry window is transparent outside its rounded shape, the
+   macOS main window behind its translucent sidebar. */
+:root[data-window="quick-add"] body,
+:root[data-vibrancy] body {
+  background: transparent;
+}
+
 /* Lucide icons: size and stroke come from tokens, colour from the text. */
 .lucide {
   width: var(--icon-size-md);
   height: var(--icon-size-md);
   flex-shrink: 0;
   stroke-width: var(--icon-stroke);
+}
+
+/* Round accent badge around the icon of "add" buttons, like the quick
+   entry's send button. It fills in when its button is hovered. */
+.lucide.icon-badge {
+  width: var(--icon-badge-size);
+  height: var(--icon-badge-size);
+  padding: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  stroke-width: var(--icon-stroke-bold);
+  transition:
+    background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+button:hover > .lucide.icon-badge {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
 }
 
 /* Text for screen readers only. */

@@ -5,7 +5,9 @@
   "nav": {
     "title": "Navigation",
     "boards": "Boards",
-    "archive": "Archiv"
+    "archive": "Archiv",
+    "collapse": "Seitenleiste ausblenden",
+    "expand": "Seitenleiste einblenden"
   },
   "home": {
     "empty": {
@@ -35,7 +37,9 @@
     "deleteDoneHint": "Die Erledigt-Spalte kann nicht gelöscht werden",
     "cardCount_one": "{{count}} Karte",
     "cardCount_other": "{{count}} Karten",
-    "archiveDone": "Erledigte archivieren"
+    "archiveDone": "Erledigte archivieren",
+    "empty": "Noch keine Karten",
+    "emptyDone": "Noch nichts erledigt"
   },
   "card": {
     "title": "Titel der Karte",
@@ -223,6 +227,7 @@
   },
   "quickAdd": {
     "label": "Neue Aufgabe",
+    "submit": "Aufgabe anlegen",
     "placeholder": "Neue Aufgabe … #tag, ! !! !!! für Priorität",
     "target": "→ {{board}} · {{column}}",
     "hint": "Enter speichert · Esc schließt",

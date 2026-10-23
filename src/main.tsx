@@ -28,6 +28,10 @@ function windowLabel(): string {
   }
 }
 
+document.documentElement.dataset.window = windowLabel();
+// The macOS main window has a translucent sidebar (see tauri.macos.conf.json).
+if (isMac && windowLabel() === "main") document.documentElement.dataset.vibrancy = "";
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     {windowLabel() === "quick-add" ? (

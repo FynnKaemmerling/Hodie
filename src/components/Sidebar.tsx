@@ -23,6 +23,7 @@ import type { Board, Id } from "../api";
 import logo from "../../src-tauri/icons/app-icon.svg";
 import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
 import InlineInput from "./InlineInput";
+import SidebarToggle from "./SidebarToggle";
 import styles from "./Sidebar.module.css";
 
 interface Props {
@@ -36,6 +37,8 @@ interface Props {
   showingArchive: boolean;
   onShowArchive: () => void;
   onOpenSettings: () => void;
+  collapsed: boolean;
+  onCollapse: () => void;
 }
 
 function Sidebar({
@@ -49,6 +52,8 @@ function Sidebar({
   showingArchive,
   onShowArchive,
   onOpenSettings,
+  collapsed,
+  onCollapse,
 }: Props) {
   const { t } = useTranslation();
   const [creating, setCreating] = useState(false);
@@ -83,11 +88,19 @@ function Sidebar({
   }
 
   return (
-    <nav className={styles.sidebar} aria-label={t("nav.title")}>
+    <nav
+      className={styles.sidebar}
+      aria-label={t("nav.title")}
+      data-collapsed={collapsed || undefined}
+      inert={collapsed}
+    >
       <div className={styles.header} data-tauri-drag-region>
         <img className={styles.logo} src={logo} alt="" data-tauri-drag-region />
         <span className={styles.appName} data-tauri-drag-region>
           {t("app.name")}
+        </span>
+        <span className={styles.toggle}>
+          <SidebarToggle collapsed={false} onToggle={onCollapse} />
         </span>
       </div>
 
@@ -126,7 +139,7 @@ function Sidebar({
         />
       ) : (
         <button type="button" className={styles.add} onClick={() => setCreating(true)}>
-          <Plus aria-hidden="true" /> {t("board.add")}
+          <Plus className="icon-badge" aria-hidden="true" /> {t("board.add")}
         </button>
       )}
 

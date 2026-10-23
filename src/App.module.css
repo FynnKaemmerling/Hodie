@@ -72,7 +72,7 @@
 .primary {
   padding: var(--space-3) var(--space-6);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: var(--color-text-on-accent);
   font-weight: var(--font-weight-medium);

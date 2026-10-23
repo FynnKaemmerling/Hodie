@@ -28,14 +28,15 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 └────────────┴──────────────┴──────────────┴──────────────┴───────┘
 ```
 
-- **Seitenleiste links:** Boards (per Griff ⠿ sortierbar), Archiv, Knopf „Einstellungen“. Die Einstellungen öffnen sich als Dialog mit Sprache, Darstellung, Tastenkürzel und Tag-Verwaltung.
-- **Board:** Spalten nebeneinander mit fester Breite, horizontal scrollbar. Jede Spalte zeigt die Anzahl ihrer Karten.
-- **Karte:** Titel, darunter nur, was vorhanden ist: Tags und Fortschritt der Teilaufgaben. Die Priorität steckt in der Farbe der Kachel. Leere Felder nehmen keinen Platz ein.
+- **Seitenleiste links:** Boards (per Griff ⠿ sortierbar), Archiv, Knopf „Einstellungen“. Sie lässt sich über das Symbol im Kopf oder `Mod+B` ausblenden; dann holt ein Symbol am Anfang der Werkzeugleiste sie zurück. Auf macOS ist sie durchscheinend (Systemmaterial „Sidebar“), unter Windows und Linux deckend. Die Einstellungen öffnen sich als Dialog mit Sprache, Darstellung, Tastenkürzel und Tag-Verwaltung.
+- **Board:** Spalten nebeneinander mit fester Breite, horizontal scrollbar, auf einem feinen Punktraster. Jede Spalte zeigt einen Farbpunkt (Erledigt-Spalte grün) und die Anzahl ihrer Karten; leere Spalten zeigen einen kurzen Hinweis.
+- **Karte:** Titel, darunter nur, was vorhanden ist: Tags und Fortschritt der Teilaufgaben (Zahl und dünner Balken). Die Priorität steckt in der Farbe der Kachel und einem abgerundeten Streifen am Anfang, der mit der Priorität breiter wird. Karten in der Erledigt-Spalte treten zurück und zeigen ein Häkchen. Leere Felder nehmen keinen Platz ein.
 - **Kartendetails** öffnen sich in einem **Seitenpanel rechts**. Das Board bleibt sichtbar und bedienbar. `Esc` schließt das Panel.
-- **Schnelleingabe:** kleines, randloses Fenster mit einem Eingabefeld, mittig auf dem Bildschirm. `Enter` legt die Karte an, `Esc` schließt.
+- **Schnelleingabe:** kleines, randloses Fenster mit runden Ecken (`--radius-window`), mittig auf dem Bildschirm: Logo, Eingabefeld und runder Senden-Knopf in Akzentfarbe. `Enter` legt die Karte an, `Esc` schließt.
 
 ## Interaktion
 
+- **Akzent:** Knöpfe zum Anlegen tragen ein rundes Akzent-Symbol, die geöffnete oder fokussierte Karte leuchtet dezent in der Akzentfarbe. Eine Karte aus der Schnelleingabe pulsiert kurz auf, das Kartenpanel gleitet mit leichtem Nachfedern herein.
 - **Drag & Drop** für Karten und Spalten, mit sichtbarer Einfügemarke und weicher Animation der verdrängten Karten.
 - **Tastatur gleichwertig:** Pfeiltasten bewegen den Fokus zwischen Karten und Spalten, `Leertaste` hebt eine Karte auf, Pfeiltasten verschieben sie, `Leertaste` legt sie ab, `Esc` bricht ab. `Enter` öffnet die Details.
 - **Rechtsklick** auf Board, Spalte oder Karte öffnet an der Maus dieselben Aktionen wie die drei Punkte (Karten: Öffnen, Umbenennen, Archivieren, Löschen). Auch die Kontextmenü-Taste und `Umschalt+F10` funktionieren. Das Browser-Menü (Zurück, Aktualisieren, Untersuchen …) gibt es nicht; nur Textfelder behalten das Systemmenü für Ausschneiden, Kopieren und Einfügen.
@@ -51,6 +52,7 @@ Dieses Dokument legt die Designrichtung von Hodie fest. Es beschreibt Prinzipien
 | `Mod+N` | Neue Karte in der fokussierten Spalte |
 | `Mod+Umschalt+Leertaste` (systemweit, in den Einstellungen änderbar) | Schnelleingabe öffnen |
 | `Mod+F` | Suche |
+| `Mod+B` | Seitenleiste aus- und einblenden |
 | `Enter` | Kartendetails öffnen |
 | `F2` | Umbenennen |
 | `Entf` | Löschen (mit Rückgängig) |

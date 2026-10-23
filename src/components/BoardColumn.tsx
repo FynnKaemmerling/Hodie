@@ -1,4 +1,4 @@
-import { CircleCheck, Plus } from "lucide-react";
+import { CircleCheck, Inbox, Plus } from "lucide-react";
 import { useState } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -11,8 +11,13 @@ import BoardCard from "./BoardCard";
 import InlineInput from "./InlineInput";
 import styles from "./BoardColumn.module.css";
 
+// Decorative dot colours for the column headers, in board order.
+const TONES = ["blue", "purple", "orange", "teal", "yellow", "red"] as const;
+
 interface Props {
   column: ColumnView;
+  /** Position on the board, which picks the colour of the header dot. */
+  index: number;
   tags: Tag[];
   onRename: (columnId: Id, name: string) => void;
   onSetDone: (columnId: Id) => void;
@@ -25,6 +30,7 @@ interface Props {
   onOpenCard: (cardId: Id) => void;
   onArchiveDone: () => void;
   selectedCardId: Id | null;
+  arrivedCardId: Id | null;
   dragDisabled: boolean;
   /** The "add card" field is controlled so Mod+N can open it. */
   addingCard: boolean;
@@ -33,6 +39,7 @@ interface Props {
 
 function BoardColumn({
   column,
+  index,
   tags,
   onRename,
   onSetDone,
@@ -45,6 +52,7 @@ function BoardColumn({
   onOpenCard,
   onArchiveDone,
   selectedCardId,
+  arrivedCardId,
   dragDisabled,
   addingCard,
   onAddingCardChange,
@@ -126,6 +134,7 @@ function BoardColumn({
                 }
               }}
             >
+              <ColumnDot column={column} index={index} />
               <h2 className={styles.name}>{column.name}</h2>
               <span className={styles.count}>
                 <span aria-hidden="true">{column.cards.length}</span>
@@ -164,11 +173,20 @@ function BoardColumn({
               onNavigate={onNavigate}
               onOpen={onOpenCard}
               selected={card.id === selectedCardId}
+              arrived={card.id === arrivedCardId}
+              done={column.isDone}
               dragDisabled={dragDisabled}
             />
           ))}
         </ul>
       </SortableContext>
+
+      {column.cards.length === 0 && !addingCard && (
+        <p className={styles.empty}>
+          {column.isDone ? <CircleCheck aria-hidden="true" /> : <Inbox aria-hidden="true" />}
+          {column.isDone ? t("column.emptyDone") : t("column.empty")}
+        </p>
+      )}
 
       <div className={styles.footer}>
         {addingCard ? (
@@ -181,7 +199,7 @@ function BoardColumn({
           />
         ) : (
           <button type="button" className={styles.add} onClick={() => onAddingCardChange(true)}>
-            <Plus aria-hidden="true" /> {t("card.add")}
+            <Plus className="icon-badge" aria-hidden="true" /> {t("card.add")}
           </button>
         )}
       </div>
@@ -190,12 +208,18 @@ function BoardColumn({
   );
 }
 
+function ColumnDot({ column, index }: { column: ColumnView; index: number }) {
+  const tone = column.isDone ? "done" : TONES[index % TONES.length];
+  return <span className={styles.dot} data-tone={tone} aria-hidden="true" />;
+}
+
 /** The copy of a column that follows the pointer while dragging. */
-export function ColumnOverlay({ column }: { column: ColumnView }) {
+export function ColumnOverlay({ column, index }: { column: ColumnView; index: number }) {
   return (
     <div className={`${styles.column} ${styles.overlay}`}>
       <header className={styles.header}>
         <div className={styles.handle}>
+          <ColumnDot column={column} index={index} />
           <h2 className={styles.name}>{column.name}</h2>
           <span className={styles.count}>{column.cards.length}</span>
         </div>
