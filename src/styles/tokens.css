@@ -16,7 +16,7 @@
   --color-bg-sidebar: var(--color-bg-app);
   /* Over the macOS sidebar material, so presets still colour the sidebar */
   --color-bg-sidebar-tint: rgb(246 246 244 / 0.6);
-  --color-canvas-dot: #dcdcd7;
+  --color-canvas-dot: #c4c4be;
   --color-overlay-hover: rgb(0 0 0 / 0.08);
   --color-backdrop: rgb(20 22 24 / 0.35);
   /* Close button hover, as on Windows */
@@ -169,7 +169,7 @@
   --icon-badge-size: 1.25rem;
   --column-dot-size: 0.5rem;
   --progress-height: 3px;
-  --canvas-dot-size: 1px;
+  --canvas-dot-size: 1.5px;
   --canvas-dot-gap: 1.25rem;
   --card-lift: -1px;
   --preset-width: 9rem;
@@ -197,7 +197,7 @@
   --color-bg-sunken: #2a2d32;
   --color-bg-hover: #2f3338;
   --color-bg-selected: #3d2c22;
-  --color-canvas-dot: #2e3136;
+  --color-canvas-dot: #43474d;
   --color-bg-sidebar-tint: rgb(27 29 32 / 0.6);
   --color-overlay-hover: rgb(255 255 255 / 0.1);
   --color-backdrop: rgb(0 0 0 / 0.6);
