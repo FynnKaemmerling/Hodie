@@ -138,7 +138,7 @@ export function derivePalette({ accent, base }: ModeColors, dark: boolean): Reco
     "color-border": shade(dark ? 0.1 : 0.075),
     "color-border-strong": shade(dark ? 0.2 : 0.16),
     "color-border-card": shade(dark ? 0.12 : 0.065),
-    "color-canvas-dot": shade(dark ? 0.14 : 0.2),
+    "color-canvas-dot": shade(dark ? 0.1 : 0.15),
     "color-accent": toHex(a),
     "color-accent-hover": toHex(dark ? mix(a, WHITE, 0.2) : mix(a, BLACK, 0.14)),
     "color-focus-ring": toHex(focus),
