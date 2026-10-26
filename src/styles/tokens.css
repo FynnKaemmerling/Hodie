@@ -267,8 +267,8 @@
   --shadow-card-lift: 0 4px 12px rgb(0 0 0 / 0.4);
 }
 
-/* macOS: the main window's sidebar shows the system's translucent material
-   (windowEffects in tauri.macos.conf.json) through a tint of the base tone. */
+/* macOS and Windows 11: the main window's sidebar shows the system's translucent material
+   (windowEffects in tauri.{macos,windows}.conf.json) through a tint of the base tone. */
 :root[data-vibrancy] {
   --color-bg-sidebar: var(--color-bg-sidebar-tint);
 }

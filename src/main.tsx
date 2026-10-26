@@ -9,7 +9,7 @@ import { NotificationsProvider } from "./notifications/Notifications";
 import QuickAdd from "./quickAdd/QuickAdd";
 import VaultGate from "./components/VaultGate";
 import "./i18n";
-import { isMac, isTextInput } from "./platform";
+import { isMac, isTextInput, isWindows11 } from "./platform";
 import { initTheme } from "./theme";
 import "./styles/global.css";
 
@@ -36,6 +36,12 @@ function windowLabel(): string {
 document.documentElement.dataset.window = windowLabel();
 // The macOS main window has a translucent sidebar (see tauri.macos.conf.json).
 if (isMac && windowLabel() === "main") document.documentElement.dataset.vibrancy = "";
+// Windows 11 gets the Mica material instead (tauri.windows.conf.json). Older versions keep an opaque window.
+if (windowLabel() === "main") {
+  void isWindows11().then((mica) => {
+    if (mica) document.documentElement.dataset.vibrancy = "";
+  });
+}
 if (windowLabel() === "main") void syncPalette();
 
 // Every board, card and tag id belongs to the vault; after a switch both
