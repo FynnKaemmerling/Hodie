@@ -24,13 +24,36 @@ pub fn write_atomic(path: &Path, content: &str) -> Result<()> {
     let result = File::create(&temp)
         .and_then(|mut file| {
             file.write_all(content.as_bytes())?;
-            file.sync_all()
+            sync(&file)
         })
         .and_then(|()| fs::rename(&temp, path));
     if result.is_err() {
         let _ = fs::remove_file(&temp);
     }
     Ok(result?)
+}
+
+/// Flushes the file to disk. On macOS `sync_all` uses `F_FULLFSYNC`, which
+/// network shares (SMB) reject with ENOTSUP; the write itself has succeeded
+/// there, so the vault stays usable instead of refusing every change.
+fn sync(file: &File) -> std::io::Result<()> {
+    match file.sync_all() {
+        Err(error) if is_unsupported(&error) => Ok(()),
+        result => result,
+    }
+}
+
+fn is_unsupported(error: &std::io::Error) -> bool {
+    // ENOTSUP is not mapped to an ErrorKind; Windows uses other codes.
+    const ENOTSUP: Option<i32> = if cfg!(target_os = "macos") {
+        Some(45)
+    } else if cfg!(target_os = "linux") {
+        Some(95)
+    } else {
+        None
+    };
+    error.kind() == std::io::ErrorKind::Unsupported
+        || (ENOTSUP.is_some() && error.raw_os_error() == ENOTSUP)
 }
 
 pub fn is_temp_file(name: &str) -> bool {
