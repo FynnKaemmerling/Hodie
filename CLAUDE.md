@@ -24,6 +24,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Icons | Lucide (`lucide-react`), Größe und Strichstärke über Tokens |
 | Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) |
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
+| Fenstergröße merken | `tauri-plugin-window-state` (nur Hauptfenster) |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
 | Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter), `tauri-plugin-dialog` (Ordner wählen), `notify` (Ordner beobachten) |

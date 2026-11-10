@@ -11,12 +11,26 @@ mod vault;
 mod watch;
 
 use tauri::Manager;
+use tauri_plugin_window_state::StateFlags;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        // Remembers size, position and maximised state of the main window.
+        // Decorations and visibility come from the per-platform config.
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_denylist(&["quick-add"])
+                .with_state_flags(
+                    StateFlags::SIZE
+                        | StateFlags::POSITION
+                        | StateFlags::MAXIMIZED
+                        | StateFlags::FULLSCREEN,
+                )
+                .build(),
+        )
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
