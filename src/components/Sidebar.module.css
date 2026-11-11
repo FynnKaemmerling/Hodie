@@ -135,10 +135,15 @@
 
 
 
+/* Pushes the timer and the footer to the bottom of the sidebar. */
+.bottom {
+  margin-block-start: auto;
+  padding-block-start: var(--space-4);
+}
+
 .footer {
   display: flex;
   gap: var(--space-2);
-  margin-block-start: auto;
   padding: var(--space-4) var(--space-2) 0;
 }
 

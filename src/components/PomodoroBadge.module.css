@@ -1,0 +1,47 @@
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--icon-button-size);
+  padding-inline: var(--space-3);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+.badge :global(.lucide) {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.badge:hover {
+  background: var(--color-overlay-hover);
+}
+
+.badge:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.badge[data-phase="shortBreak"],
+.badge[data-phase="longBreak"] {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-primary);
+}
+
+.badge[data-paused] {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-secondary);
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+}

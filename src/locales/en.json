@@ -309,5 +309,21 @@
       "choose": "Choose another folder …",
       "stillMissing": "The vault is still not available."
     }
+  },
+  "pomodoro": {
+    "title": "Pomodoro",
+    "phases": {
+      "focus": "Focus",
+      "shortBreak": "Short break",
+      "longBreak": "Long break"
+    },
+    "start": "Start",
+    "pause": "Pause",
+    "reset": "Reset",
+    "skip": "Skip phase",
+    "badgePause": "{{phase}}, {{time}} left. Pause",
+    "badgeResume": "{{phase}} paused, {{time}} left. Resume",
+    "focusDone": "Focus time is up – take a break.",
+    "breakDone": "Break is over – back to focus."
   }
 }

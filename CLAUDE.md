@@ -25,6 +25,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 | Drag & Drop | `@dnd-kit` (mit Tastatur- und Screenreader-Unterstützung) |
 | Globales Tastenkürzel | `tauri-plugin-global-shortcut` |
 | Fenstergröße merken | `tauri-plugin-window-state` (nur Hauptfenster) |
+| Systembenachrichtigungen | `tauri-plugin-notification` (Ende einer Pomodoro-Phase, nur wenn das Fenster im Hintergrund ist) |
 | i18n | i18next / react-i18next |
 | Plattform-Funktionen | Offizielle Tauri-Plugins |
 | Vault-Dateien | `ulid`, `serde_yaml_ng` (Frontmatter), `tauri-plugin-dialog` (Ordner wählen), `notify` (Ordner beobachten) |
@@ -67,6 +68,7 @@ src/palette.ts          Colour presets: built-ins, token derivation, contrast ch
 src/colorPreset.ts      Applying the active preset, its cache and the settings hook
 src/shortcut.ts         Recording and displaying global shortcuts (tested)
 src/sidebar.ts          Collapsed state of the sidebar (localStorage)
+src/pomodoro/           Pomodoro timer: pure state functions (tested), usePomodoro (in memory, main window), system notifications
 src/format.ts           Locale-aware formatting helpers, e.g. byte sizes (tested)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching

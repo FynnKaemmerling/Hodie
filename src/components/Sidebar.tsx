@@ -23,7 +23,9 @@ import type { Board, Id } from "../api";
 import logo from "../../src-tauri/icons/app-icon.svg";
 import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
 import IconButton from "./IconButton";
+import type { Pomodoro } from "../pomodoro/usePomodoro";
 import InlineInput from "./InlineInput";
+import PomodoroTimer from "./PomodoroTimer";
 import SidebarToggle from "./SidebarToggle";
 import styles from "./Sidebar.module.css";
 
@@ -40,6 +42,7 @@ interface Props {
   onOpenSettings: () => void;
   collapsed: boolean;
   onCollapse: () => void;
+  pomodoro: Pomodoro;
 }
 
 function Sidebar({
@@ -55,6 +58,7 @@ function Sidebar({
   onOpenSettings,
   collapsed,
   onCollapse,
+  pomodoro,
 }: Props) {
   const { t } = useTranslation();
   const [creating, setCreating] = useState(false);
@@ -144,6 +148,10 @@ function Sidebar({
           onClose={() => setCreating(false)}
         />
       )}
+
+      <div className={styles.bottom}>
+        <PomodoroTimer timer={pomodoro} />
+      </div>
 
       <div className={styles.footer}>
         {selectedId !== null && (

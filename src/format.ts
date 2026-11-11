@@ -15,3 +15,10 @@ export function formatBytes(bytes: number, locale: string): string {
     maximumFractionDigits: unit === 0 ? 0 : 1,
   }).format(value);
 }
+
+/** A countdown as minutes and seconds, e.g. "24:59", with the language's digits. */
+export function formatCountdown(ms: number, locale: string): string {
+  const totalSeconds = Math.ceil(Math.max(0, ms) / 1000);
+  const minutes = new Intl.NumberFormat(locale, { minimumIntegerDigits: 2 });
+  return `${minutes.format(Math.floor(totalSeconds / 60))}:${minutes.format(totalSeconds % 60)}`;
+}

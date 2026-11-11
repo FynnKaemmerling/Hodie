@@ -12,6 +12,8 @@ import SettingsDialog from "./components/SettingsDialog";
 import SidebarToggle from "./components/SidebarToggle";
 import WindowControls from "./components/WindowControls";
 import Sidebar from "./components/Sidebar";
+import PomodoroBadge from "./components/PomodoroBadge";
+import { usePomodoro } from "./pomodoro/usePomodoro";
 import { focusCard } from "./board/focus";
 import { useArchive } from "./board/useArchive";
 import { useBoard } from "./board/useBoard";
@@ -52,6 +54,7 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed();
   const [arrivedCardId, setArrivedCardId] = useState<Id | null>(null);
   const appRef = useRef<HTMLDivElement>(null);
+  const pomodoro = usePomodoro();
 
   const filterView = useCallback(
     (view: BoardView) => (filtering ? applyFilter(view, filter, searchMatches) : view),
@@ -120,6 +123,15 @@ function App() {
     const timer = window.setTimeout(() => setArrivedCardId(null), ARRIVED_MS);
     return () => window.clearTimeout(timer);
   }, [arrivedCardId]);
+
+  // The top right corner of every toolbar: the running timer, then the
+  // window controls.
+  const toolbarEnd = (
+    <>
+      <PomodoroBadge timer={pomodoro} />
+      <WindowControls />
+    </>
+  );
 
   const sidebarToggle = sidebarCollapsed && (
     <SidebarToggle collapsed onToggle={() => setSidebarCollapsed(false)} />
@@ -221,6 +233,7 @@ function App() {
         onOpenSettings={() => setSettingsOpen(true)}
         collapsed={sidebarCollapsed}
         onCollapse={() => setSidebarCollapsed(true)}
+        pomodoro={pomodoro}
       />
 
       <SettingsDialog
@@ -237,7 +250,7 @@ function App() {
           <header className={styles.toolbar} data-tauri-drag-region>
             {sidebarToggle}
             <span className={styles.spacer} data-tauri-drag-region />
-            <WindowControls />
+            {toolbarEnd}
           </header>
         )}
 
@@ -263,7 +276,7 @@ function App() {
                 <h1 className={styles.title} data-tauri-drag-region>
                   {t("archive.title", { name: selected.name })}
                 </h1>
-                <WindowControls />
+                {toolbarEnd}
               </header>
             ) : (
               <BoardToolbar
@@ -274,7 +287,7 @@ function App() {
                 counts={counts}
                 searchRef={searchRef}
                 leading={sidebarToggle}
-                trailing={<WindowControls />}
+                trailing={toolbarEnd}
               />
             )}
             <div className={styles.content}>

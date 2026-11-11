@@ -18,6 +18,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        // System notifications, e.g. when a Pomodoro phase ends.
+        .plugin(tauri_plugin_notification::init())
         // Remembers size, position and maximised state of the main window.
         // Decorations and visibility come from the per-platform config.
         .plugin(
