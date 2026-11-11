@@ -95,6 +95,9 @@ export const api = {
   getColorPresetChoice: () => invoke<string>("get_color_preset_choice"),
   setColorPresetChoice: (choice: string) => invoke<void>("set_color_preset_choice", { choice }),
 
+  getPomodoroSound: () => invoke<string | null>("get_pomodoro_sound"),
+  setPomodoroSound: (sound: string) => invoke<void>("set_pomodoro_sound", { sound }),
+
   getStorageUsage: () => invoke<number>("get_storage_usage"),
 
   getQuickAddShortcut: () => invoke<ShortcutInfo>("get_quick_add_shortcut"),

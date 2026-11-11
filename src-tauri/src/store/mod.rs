@@ -3,6 +3,7 @@
 //! `legacy` to move them there. Knows nothing about Tauri or the UI.
 
 pub mod legacy;
+pub mod pomodoro;
 pub mod presets;
 pub mod settings;
 

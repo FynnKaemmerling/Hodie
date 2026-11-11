@@ -157,6 +157,25 @@
       "version": "Version",
       "storage": "Storage used",
       "unknown": "Unknown"
+    },
+    "pomodoro": {
+      "title": "Pomodoro",
+      "description": "This sound plays when a focus or break phase ends.",
+      "sound": "Sound",
+      "preview": "Play sound",
+      "sounds": {
+        "chime": "Chime",
+        "bell": "Bell",
+        "marimba": "Marimba",
+        "ding": "Ding",
+        "beep": "Beep",
+        "descend": "Descending",
+        "arpeggio": "Arpeggio",
+        "gong": "Gong",
+        "digital": "Digital",
+        "harp": "Harp",
+        "none": "No sound"
+      }
     }
   },
   "languages": {

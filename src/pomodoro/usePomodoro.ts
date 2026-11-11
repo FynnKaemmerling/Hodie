@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useNotifications } from "../notifications/Notifications";
 import * as pomodoro from "./pomodoro";
 import type { PomodoroPhase } from "./pomodoro";
+import { currentPomodoroSound, loadPomodoroSound } from "./soundSetting";
+import { playSound, unlockSound } from "./sounds";
 import { notifySystem, prepareSystemNotifications } from "./systemNotification";
 
 // Often enough that the seconds never visibly skip.
@@ -27,6 +29,8 @@ export function usePomodoro(): Pomodoro {
   const [now, setNow] = useState(() => Date.now());
   const running = pomodoro.isRunning(state);
 
+  useEffect(() => void loadPomodoroSound(), []);
+
   useEffect(() => {
     if (!running) return;
     const timer = window.setInterval(() => setNow(Date.now()), TICK_MS);
@@ -49,6 +53,7 @@ export function usePomodoro(): Pomodoro {
     setState(next);
     const message = t(next.phase === "focus" ? "pomodoro.breakDone" : "pomodoro.focusDone");
     notify.info(message);
+    playSound(currentPomodoroSound());
     // The toast goes unseen while the window is in the background.
     if (!document.hasFocus()) void notifySystem(t("pomodoro.title"), message);
   }, [state, now, notify, t]);
@@ -57,6 +62,7 @@ export function usePomodoro(): Pomodoro {
     const at = Date.now();
     setNow(at);
     void prepareSystemNotifications();
+    unlockSound();
     setState((s) => (pomodoro.isRunning(s) ? pomodoro.pause(s, at) : pomodoro.start(s, at)));
   }, []);
   const reset = useCallback(() => setState(pomodoro.reset), []);

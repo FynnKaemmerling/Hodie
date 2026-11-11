@@ -100,6 +100,8 @@ pub fn run() {
             commands::delete_color_preset,
             commands::get_color_preset_choice,
             commands::set_color_preset_choice,
+            commands::get_pomodoro_sound,
+            commands::set_pomodoro_sound,
             commands::get_storage_usage,
             quick_add::get_quick_add_shortcut,
             quick_add::set_quick_add_shortcut,

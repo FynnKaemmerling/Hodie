@@ -157,6 +157,25 @@
       "version": "Version",
       "storage": "Speicherverbrauch",
       "unknown": "Unbekannt"
+    },
+    "pomodoro": {
+      "title": "Pomodoro",
+      "description": "Dieser Ton erklingt, wenn eine Fokus- oder Pausenphase zu Ende ist.",
+      "sound": "Ton",
+      "preview": "Ton anhören",
+      "sounds": {
+        "chime": "Zweiklang",
+        "bell": "Glocke",
+        "marimba": "Marimba",
+        "ding": "Ding",
+        "beep": "Piepen",
+        "descend": "Absteigend",
+        "arpeggio": "Arpeggio",
+        "gong": "Gong",
+        "digital": "Digital",
+        "harp": "Harfe",
+        "none": "Kein Ton"
+      }
     }
   },
   "languages": {

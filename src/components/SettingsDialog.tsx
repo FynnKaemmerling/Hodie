@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import type { Id, Tag, TagColor, TagPatch } from "../api";
 import AppInfo from "./AppInfo";
 import ColorPresets from "./ColorPresets";
+import PomodoroSoundSetting from "./PomodoroSoundSetting";
 import Preferences from "./Preferences";
 import ShortcutSetting from "./ShortcutSetting";
 import TagManager from "./TagManager";
@@ -90,6 +91,14 @@ function SettingsDialog({
                 </h3>
                 <p className={styles.description}>{t("settings.shortcut.description")}</p>
                 <ShortcutSetting />
+              </section>
+
+              <section className={styles.section} aria-labelledby="settings-pomodoro">
+                <h3 id="settings-pomodoro" className={styles.sectionTitle}>
+                  {t("settings.pomodoro.title")}
+                </h3>
+                <p className={styles.description}>{t("settings.pomodoro.description")}</p>
+                <PomodoroSoundSetting />
               </section>
             </TabPanel>
 

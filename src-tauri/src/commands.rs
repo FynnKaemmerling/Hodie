@@ -13,7 +13,7 @@ use crate::model::{
     ColorPresetPatch, Column, Id, NewCard, PresetColors, PresetId, Subtask, SubtaskPatch, Tag,
     TagPatch, VaultProblem,
 };
-use crate::store::presets;
+use crate::store::{pomodoro, presets};
 
 pub struct Db(Mutex<Connection>);
 
@@ -341,6 +341,16 @@ pub async fn get_color_preset_choice(db: State<'_, Db>) -> Result<String> {
 #[tauri::command]
 pub async fn set_color_preset_choice(db: State<'_, Db>, choice: String) -> Result<()> {
     db.with(|conn| presets::set_choice(conn, &choice))
+}
+
+#[tauri::command]
+pub async fn get_pomodoro_sound(db: State<'_, Db>) -> Result<Option<String>> {
+    db.with(|conn| pomodoro::sound(conn))
+}
+
+#[tauri::command]
+pub async fn set_pomodoro_sound(db: State<'_, Db>, sound: String) -> Result<()> {
+    db.with(|conn| pomodoro::set_sound(conn, &sound))
 }
 
 /// Bytes the app's data takes on disk: the vault and the app's own database.

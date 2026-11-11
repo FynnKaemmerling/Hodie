@@ -68,7 +68,7 @@ src/palette.ts          Colour presets: built-ins, token derivation, contrast ch
 src/colorPreset.ts      Applying the active preset, its cache and the settings hook
 src/shortcut.ts         Recording and displaying global shortcuts (tested)
 src/sidebar.ts          Collapsed state of the sidebar (localStorage)
-src/pomodoro/           Pomodoro timer: pure state functions (tested), usePomodoro (in memory, main window), system notifications
+src/pomodoro/           Pomodoro timer: pure state functions (tested), usePomodoro (in memory, main window), system notifications, ten selectable sounds (Web Audio)
 src/format.ts           Locale-aware formatting helpers, e.g. byte sizes (tested)
 src/components/         UI components (one component + its CSS module per file pair)
 src/i18n/               i18next setup and language switching
@@ -86,7 +86,7 @@ src-tauri/src/library.rs      Opens the vault at start-up (path from settings or
 src-tauri/src/vault/          Vault (VAULT.md): file format, atomic writes, loading, trash, import
 src-tauri/src/vault/store.rs  The open vault in memory; answers all board, card and tag commands
 src-tauri/src/watch.rs        Watches the vault folder, reloads and emits vault-files-changed
-src-tauri/src/store/          App database: settings, colour presets; legacy.rs reads old board tables once
+src-tauri/src/store/          App database: settings, colour presets, Pomodoro sound; legacy.rs reads old board tables once
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
 src-tauri/capabilities/ Tauri permissions for the frontend
 .github/workflows/      CI builds for all three platforms
@@ -113,7 +113,7 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 
 **Änderungen von außen:** `watch.rs` beobachtet den Vault-Ordner und lädt nach einer kurzen Ruhepause neu. Nur wenn sich etwas unterscheidet, sendet es `vault-files-changed`, und `App` lädt Boards, Board, Archiv und offene Karte neu. Zusätzlich prüft das Hauptfenster bei Fokus (`refresh_vault`). Jede Änderung in `VaultStore` liest vorher die betroffene Datei frisch (`fresh_card`, `fresh_board`, `fresh_tags`), damit sie auf fremden Änderungen aufbaut. Konfliktkopien (zweite Datei mit derselben `id`) markiert `hasConflict`; aufgelöst werden sie im Kartenpanel (`CardConflict`, `resolve_card_conflict`), übrige übersprungene Dateien listet der Vault-Abschnitt der Einstellungen (`list_vault_problems`).
 
-**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Vault-Ordner, Tastenkürzel), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher von Vault und Datenbank über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
+**Einstellungen** liegen im Dialog „Einstellungen“ (Knopf unten in der Seitenleiste) mit den Tabs Allgemein (Sprache, Darstellung, Vault-Ordner, Tastenkürzel, Pomodoro-Ton in `settings` als `pomodoro_sound`), Farben (Presets), Tags und Info (Version über `getVersion`, Speicher von Vault und Datenbank über `get_storage_usage`). Ein Tag, der an Karten hängt, wird erst nach Rückfrage mit der Anzahl gelöscht (`count_tag_cards`).
 
 Das Tastenkürzel steht in der Tabelle `settings` im Backend, weil es vor dem Frontend gebraucht wird. Sprache, Theme, das zuletzt geöffnete Board und die eingeklappte Seitenleiste liegen vorerst im `localStorage`; beide Fenster teilen ihn und hören über das `storage`-Ereignis auf Änderungen des anderen. Neue Einstellungen gehören in die Tabelle `settings`.
 
