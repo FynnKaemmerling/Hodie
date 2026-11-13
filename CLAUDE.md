@@ -180,4 +180,5 @@ Die Designrichtung steht in [`DESIGN.md`](DESIGN.md). Kernregeln: alle visuellen
 - Kleine, fokussierte Änderungen. Vor größeren Architektur- oder Abhängigkeitsentscheidungen kurz Rücksprache halten.
 - Neue Funktionen mit Tests absichern, besonders Speicher-Schicht, Migrationen und Sortierlogik.
 - Commits nur auf ausdrückliche Anweisung. Commit-Messages auf Englisch im Imperativ (z. B. `Add settings view`).
+- **Version bei jedem Commit erhöhen** (Semantic Versioning, solange `0.x`): Patch (`0.2.0` → `0.2.1`) für Fehlerbehebungen und Kleinigkeiten, Minor (`0.2.x` → `0.3.0`) für neue Funktionen; Major erst nach Absprache. Die Version steht an fünf Stellen, die immer gleich sein müssen: `package.json`, `package-lock.json` (zweimal oben), `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock` (Paket `hodie`) und `src-tauri/tauri.conf.json`. Die Lockfiles nicht von Hand raten, sondern mit `npm install --package-lock-only` bzw. `cargo check` (in `src-tauri/`) nachziehen lassen oder exakt mitändern.
 - Diese Datei aktuell halten, sobald sich Stack, Befehle oder Struktur ändern.
