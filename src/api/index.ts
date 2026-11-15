@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import type {
   Board,
   BoardView,
@@ -10,6 +10,9 @@ import type {
   ColorPresetPatch,
   Column,
   Id,
+  ImagePatch,
+  MoodboardImage,
+  MoodboardView,
   NewCard,
   PresetColors,
   PresetId,
@@ -47,6 +50,24 @@ export const api = {
     invoke<void>("reorder_board", { boardId, index }),
   deleteBoard: (boardId: Id) => invoke<void>("delete_board", { boardId }),
   restoreBoard: (boardId: Id) => invoke<void>("restore_board", { boardId }),
+
+  createMoodboard: (name: string) => invoke<Board>("create_moodboard", { name }),
+  getMoodboard: (boardId: Id) => invoke<MoodboardView>("get_moodboard", { boardId }),
+  /** Copies an image file onto the moodboard, its top left corner at x, y. */
+  addMoodboardImage: (boardId: Id, path: string, x: number, y: number) =>
+    invoke<MoodboardImage>("add_moodboard_image", { boardId, path, x, y }),
+  /** Adds an image from memory (e.g. pasted); the bytes travel without JSON. */
+  addMoodboardImageData: (boardId: Id, bytes: Uint8Array, x: number, y: number) =>
+    invoke<MoodboardImage>("add_moodboard_image_data", bytes, {
+      headers: { "x-board-id": boardId, "x-x": String(x), "x-y": String(y) },
+    }),
+  updateMoodboardImage: (imageId: Id, patch: ImagePatch) =>
+    invoke<void>("update_moodboard_image", { imageId, patch }),
+  /** Moves an image to another layer: 0 is the back. */
+  reorderMoodboardImage: (imageId: Id, index: number) =>
+    invoke<void>("reorder_moodboard_image", { imageId, index }),
+  deleteMoodboardImage: (imageId: Id) => invoke<void>("delete_moodboard_image", { imageId }),
+  restoreMoodboardImage: (imageId: Id) => invoke<void>("restore_moodboard_image", { imageId }),
 
   createColumn: (boardId: Id, name: string) =>
     invoke<Column>("create_column", { boardId, name }),
@@ -104,3 +125,8 @@ export const api = {
   setQuickAddShortcut: (shortcut: string) =>
     invoke<ShortcutInfo>("set_quick_add_shortcut", { shortcut }),
 };
+
+/** URL under which the backend serves an image of a moodboard. */
+export function imageUrl(boardId: Id, file: string): string {
+  return convertFileSrc(`${boardId}/${file}`, "hodie-image");
+}

@@ -64,6 +64,10 @@ Hodie folgt der Systemeinstellung oder bleibt fest hell bzw. dunkel. Neben dem S
 
 <img src="docs/screenshots/colors.png" alt="Einstellungsdialog, Tab Farben, mit den Presets Hodie, Ozean und Wald, jeweils in heller und dunkler Variante.">
 
+### Moodboards
+
+Neben Boards mit Spalten gibt es Moodboards: eine freie Fläche für Bilder. Bilder kommen per Dialog, durch Ziehen aus dem Dateimanager oder per `Mod+V` dazu und lassen sich verschieben, an den Ecken skalieren und in Ebenen nach vorne oder hinten legen. Sie liegen als gewöhnliche Dateien im Vault.
+
 ### Außerdem
 
 - Mehrere Boards mit frei benennbaren Spalten (Standard: Offen, In Arbeit, Erledigt)

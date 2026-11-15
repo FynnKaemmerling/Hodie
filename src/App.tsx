@@ -8,6 +8,7 @@ import ArchiveView from "./components/ArchiveView";
 import BoardCanvas from "./components/BoardCanvas";
 import BoardToolbar from "./components/BoardToolbar";
 import CardPanel from "./components/CardPanel";
+import MoodboardView from "./components/MoodboardView";
 import SettingsDialog from "./components/SettingsDialog";
 import SidebarToggle from "./components/SidebarToggle";
 import WindowControls from "./components/WindowControls";
@@ -21,6 +22,7 @@ import { useBoards } from "./board/useBoards";
 import { applyFilter, countCards, isFilterActive, NO_FILTER, type CardFilter } from "./board/filter";
 import { useCardDetail } from "./board/useCardDetail";
 import { useCardSearch } from "./board/useCardSearch";
+import { useMoodboard } from "./moodboard/useMoodboard";
 import { isModKey } from "./platform";
 import { useSidebarCollapsed } from "./sidebar";
 import styles from "./App.module.css";
@@ -41,14 +43,18 @@ function closesPanel(app: Element | null, target: EventTarget | null): boolean {
 function App() {
   const { t } = useTranslation();
   const boards = useBoards();
-  const board = useBoard(boards.selectedId);
+  const selected = boards.boards?.find((b) => b.id === boards.selectedId);
+  // Exactly one of the two is open, depending on what the selected board is.
+  const kanbanId = selected?.kind === "kanban" ? selected.id : null;
+  const moodboardId = selected?.kind === "moodboard" ? selected.id : null;
+  const board = useBoard(kanbanId);
+  const moodboard = useMoodboard(moodboardId);
   const [showingArchive, setShowingArchive] = useState(false);
-  const archive = useArchive(showingArchive ? boards.selectedId : null, board.reload);
+  const archive = useArchive(showingArchive ? kanbanId : null, board.reload);
   const [openCardId, setOpenCardId] = useState<Id | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const selected = boards.boards?.find((b) => b.id === boards.selectedId);
   const [filter, setFilter] = useState<CardFilter>(NO_FILTER);
-  const searchMatches = useCardSearch(boards.selectedId, filter.query, board.view);
+  const searchMatches = useCardSearch(kanbanId, filter.query, board.view);
   const filtering = isFilterActive(filter);
   const searchRef = useRef<HTMLInputElement>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed();
@@ -104,6 +110,7 @@ function App() {
   reloadAll.current = () => {
     void boards.reload();
     void board.reload();
+    void moodboard.reload();
     void archive.reload();
     void detail.reload();
   };
@@ -268,7 +275,16 @@ function App() {
           </div>
         )}
 
-        {selected && (
+        {selected?.kind === "moodboard" && (
+          <MoodboardView
+            board={selected}
+            moodboard={moodboard}
+            leading={sidebarToggle}
+            trailing={toolbarEnd}
+          />
+        )}
+
+        {selected?.kind === "kanban" && (
           <>
             {showingArchive ? (
               <header className={styles.toolbar} data-tauri-drag-region>

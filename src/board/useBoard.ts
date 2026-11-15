@@ -35,7 +35,17 @@ export function useBoard(boardId: Id | null) {
   currentBoard.current = boardId;
 
   const reload = useCallback(async () => {
-    if (boardId === null) return;
+    if (boardId === null) {
+      // Tags belong to the vault, not a board; the settings list them while
+      // a moodboard (or nothing) is open, too.
+      try {
+        const loadedTags = await api.listTags();
+        if (currentBoard.current === null) setTags(loadedTags);
+      } catch (error) {
+        notify.error(error);
+      }
+      return;
+    }
     try {
       const [loaded, loadedTags] = await Promise.all([api.getBoard(boardId), api.listTags()]);
       // Ignore answers for a board that is no longer open.

@@ -1,5 +1,6 @@
 mod commands;
 mod error;
+mod image_protocol;
 mod library;
 mod model;
 #[cfg(target_os = "macos")]
@@ -16,6 +17,7 @@ use tauri_plugin_window_state::StateFlags;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .register_asynchronous_uri_scheme_protocol(image_protocol::SCHEME, image_protocol::handle)
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         // System notifications, e.g. when a Pomodoro phase ends.
@@ -67,6 +69,14 @@ pub fn run() {
             commands::reorder_board,
             commands::delete_board,
             commands::restore_board,
+            commands::create_moodboard,
+            commands::get_moodboard,
+            commands::add_moodboard_image,
+            commands::add_moodboard_image_data,
+            commands::update_moodboard_image,
+            commands::reorder_moodboard_image,
+            commands::delete_moodboard_image,
+            commands::restore_moodboard_image,
             commands::create_column,
             commands::rename_column,
             commands::reorder_column,

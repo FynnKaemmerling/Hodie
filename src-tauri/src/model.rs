@@ -41,11 +41,20 @@ pub const TAG_COLORS: &[&str] = &[
     "gray", "red", "orange", "yellow", "green", "teal", "blue", "purple",
 ];
 
+/// What a board in the sidebar holds: columns with cards, or images.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BoardKind {
+    Kanban,
+    Moodboard,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Board {
     pub id: Id,
     pub name: String,
+    pub kind: BoardKind,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -175,6 +184,38 @@ pub struct SubtaskPatch {
 pub struct TagPatch {
     pub name: Option<String>,
     pub color: Option<String>,
+}
+
+/// An image on a moodboard, in CSS pixels from the moodboard's top left.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MoodboardImage {
+    pub id: Id,
+    /// File name in the moodboard's `images/` folder; the frontend loads it
+    /// through the `hodie-image` protocol.
+    pub file: String,
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MoodboardView {
+    pub board: Board,
+    /// Back to front.
+    pub images: Vec<MoodboardImage>,
+}
+
+/// Only the fields that are present are changed.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImagePatch {
+    pub x: Option<f64>,
+    pub y: Option<f64>,
+    pub width: Option<f64>,
+    pub height: Option<f64>,
 }
 
 /// Names of the colour presets built into the frontend; the first is the default.

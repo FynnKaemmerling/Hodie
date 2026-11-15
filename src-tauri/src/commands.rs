@@ -10,8 +10,8 @@ use crate::error::{AppError, Result};
 use crate::library::{Library, VaultInfo};
 use crate::model::{
     Board, BoardView, CardDetail, CardPatch, CardSummary, CardVersion, ColorPreset,
-    ColorPresetPatch, Column, Id, NewCard, PresetColors, PresetId, Subtask, SubtaskPatch, Tag,
-    TagPatch, VaultProblem,
+    ColorPresetPatch, Column, Id, ImagePatch, MoodboardImage, MoodboardView, NewCard, PresetColors,
+    PresetId, Subtask, SubtaskPatch, Tag, TagPatch, VaultProblem,
 };
 use crate::store::{pomodoro, presets};
 
@@ -132,6 +132,82 @@ pub async fn delete_board(library: State<'_, Library>, board_id: Id) -> Result<(
 #[tauri::command]
 pub async fn restore_board(library: State<'_, Library>, board_id: Id) -> Result<()> {
     library.with(|store| store.restore_board(&board_id))
+}
+
+#[tauri::command]
+pub async fn create_moodboard(library: State<'_, Library>, name: String) -> Result<Board> {
+    library.with(|store| store.create_moodboard(&name))
+}
+
+#[tauri::command]
+pub async fn get_moodboard(library: State<'_, Library>, board_id: Id) -> Result<MoodboardView> {
+    library.with(|store| store.moodboard_view(&board_id))
+}
+
+/// Copies an image file the user picked or dropped onto the moodboard.
+#[tauri::command]
+pub async fn add_moodboard_image(
+    library: State<'_, Library>,
+    board_id: Id,
+    path: String,
+    x: f64,
+    y: f64,
+) -> Result<MoodboardImage> {
+    library.with(|store| store.add_image_file(&board_id, std::path::Path::new(&path), x, y))
+}
+
+/// Adds a pasted image. The bytes come as the raw request body (no JSON),
+/// the moodboard and position as headers.
+#[tauri::command]
+pub async fn add_moodboard_image_data(
+    library: State<'_, Library>,
+    request: tauri::ipc::Request<'_>,
+) -> Result<MoodboardImage> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err(AppError::Validation("image.unsupported"));
+    };
+    let header = |name: &str| {
+        request
+            .headers()
+            .get(name)
+            .and_then(|value| value.to_str().ok())
+    };
+    let board_id = header("x-board-id").ok_or(AppError::NotFound)?;
+    let coordinate = |name| {
+        header(name)
+            .and_then(|value| value.parse().ok())
+            .unwrap_or(0.0)
+    };
+    library.with(|store| store.add_image(board_id, bytes, coordinate("x-x"), coordinate("x-y")))
+}
+
+#[tauri::command]
+pub async fn update_moodboard_image(
+    library: State<'_, Library>,
+    image_id: Id,
+    patch: ImagePatch,
+) -> Result<()> {
+    library.with(|store| store.update_image(&image_id, &patch))
+}
+
+/// Moves an image to another layer: 0 is the back.
+#[tauri::command]
+pub async fn reorder_moodboard_image(
+    library: State<'_, Library>,
+    image_id: Id,
+    index: usize,
+) -> Result<()> {
+    library.with(|store| store.reorder_image(&image_id, index))
+}
+
+#[tauri::command]
+pub async fn delete_moodboard_image(library: State<'_, Library>, image_id: Id) -> Result<()> {
+    library.with(|store| store.delete_image(&image_id))
+}
+
+#[tauri::command]
+pub async fn restore_moodboard_image(library: State<'_, Library>, image_id: Id) -> Result<()> {
+    library.with(|store| store.restore_image(&image_id))
 }
 
 #[tauri::command]

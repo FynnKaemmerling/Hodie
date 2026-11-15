@@ -17,7 +17,7 @@ function card(id: Id, priority: Priority, tagIds: Id[]): CardSummary {
 }
 
 const view: BoardView = {
-  board: { id: "1", name: "Board" },
+  board: { id: "1", name: "Board", kind: "kanban" },
   columns: [
     {
       id: "1",

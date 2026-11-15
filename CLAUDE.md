@@ -6,7 +6,7 @@ Leitfaden für Claude Code bei der Arbeit an diesem Repository.
 
 **Hodie** (lat. „heute“) ist eine Desktop-To-Do-App als Kanban-Board: Boards mit Spalten, Aufgaben als Karten mit Notizen, Teilaufgaben, Priorität und Tags. Sie soll intuitiv, modern und funktional sein und nur diesen einen Zweck erfüllen. Alle Daten liegen lokal.
 
-**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Danach kam der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)), ebenfalls umgesetzt. Weitere Funktionen nur nach Absprache, Ideen stehen unter „Ausblick“ in der README.
+**Status:** Der MVP ist vollständig umgesetzt (alle sechs Meilensteine in [`MVP.md`](MVP.md)). Danach kam der Vault (Meilenstein 7, Format in [`VAULT.md`](VAULT.md)), ebenfalls umgesetzt, und Moodboards (siehe `MVP.md` und `VAULT.md`). Weitere Funktionen nur nach Absprache, Ideen stehen unter „Ausblick“ in der README.
 
 **Umfang:** Was zum MVP gehört und was bewusst nicht, steht in [`MVP.md`](MVP.md). Keine Funktionen aus „Nicht im Umfang“ bauen, solange der Nutzer das nicht ausdrücklich verlangt.
 
@@ -60,6 +60,7 @@ CI (`.github/workflows/build.yml`) führt all diese Prüfungen auf Windows, macO
 src/                    React frontend
 src/api/                Typed wrappers for the Tauri commands, error codes
 src/board/              Board, card and archive state: pure update functions (tested), hooks
+src/moodboard/          Moodboard state: pure geometry and layer functions (tested), useMoodboard
 src/notifications/      Toasts with undo (also Mod+Z)
 src/quickAdd/           The quick entry window (label "quick-add", opened by the global shortcut)
 src/theme.ts            Theme preference (system/light/dark) and data-theme
@@ -85,6 +86,9 @@ src-tauri/src/panel.rs        macOS only: quick entry window as non-activating p
 src-tauri/src/library.rs      Opens the vault at start-up (path from settings or Documents/Hodie), one-time import
 src-tauri/src/vault/          Vault (VAULT.md): file format, atomic writes, loading, trash, import
 src-tauri/src/vault/store.rs  The open vault in memory; answers all board, card and tag commands
+src-tauri/src/vault/store/moodboards.rs  Moodboards and their images in the open vault
+src-tauri/src/vault/image.rs  Recognises PNG, JPEG, GIF and WebP and reads their size (tested)
+src-tauri/src/image_protocol.rs  Serves moodboard images to the web view (hodie-image://)
 src-tauri/src/watch.rs        Watches the vault folder, reloads and emits vault-files-changed
 src-tauri/src/store/          App database: settings, colour presets, Pomodoro sound; legacy.rs reads old board tables once
 src-tauri/src/store/migrations/  SQL migrations, applied in order via user_version
@@ -100,6 +104,8 @@ Optimistische Änderungen laufen über `useBoard`: Erst wird der Zustand mit ein
 **Fensterrahmen:** Das Hauptfenster ist unter Windows und Linux rahmenlos (`decorations: false`); `WindowControls` zeichnet die Knöpfe, Ziehflächen sind mit `data-tauri-drag-region` markiert (gilt nur für das Element selbst, nicht für Kinder). macOS überschreibt das in `tauri.macos.conf.json` (Ampelknöpfe, `titleBarStyle: Overlay`); Windows ergänzt in `tauri.windows.conf.json` den Mica-Effekt (nur Windows 11, `data-vibrancy` wird dort per `isWindows11` gesetzt, sonst bleibt die Seitenleiste deckend); `<html data-platform="mac">` schafft dort Platz im Seitenleistenkopf. Die Seitenleiste ist auf macOS durchscheinend: Das Hauptfenster ist dort transparent mit `windowEffects` (`sidebar`, braucht `macOSPrivateApi` und das Cargo-Feature `macos-private-api`), `<html data-vibrancy>` macht den Seitenleisten-Hintergrund durchsichtig; der Hauptbereich bleibt deckend. Wird das Hauptfenster geschlossen, beendet `lib.rs` die App, sonst liefe sie wegen des versteckten Schnelleingabe-Fensters unsichtbar weiter.
 
 **Zwei Fenster, ein Frontend:** `main.tsx` zeigt je nach Fensterlabel (`main` oder `quick-add`, siehe `tauri.conf.json`) die App oder die Schnelleingabe. Das Tastenkürzel registriert das Backend (`quick_add.rs`) beim Start aus der Tabelle `settings`, Standard ist `Mod+Umschalt+Leertaste`. Es lässt sich in den Einstellungen ändern; ist ein neues Kürzel belegt, bleibt das alte aktiv (`shortcut.unavailable`). Ist es schon beim Start belegt, läuft die App ohne es weiter und die Einstellungen zeigen einen Hinweis. Legt die Schnelleingabe eine Karte an, sendet sie das Ereignis `cards-changed` (`src/api/events.ts`), und das Hauptfenster lädt neu.
+
+**Moodboards:** Ein Board hat ein `kind` (`kanban` oder `moodboard`); beide teilen sich Liste und Reihenfolge der Seitenleiste, `rename_board`, `reorder_board`, `delete_board` und `restore_board` gelten für beide. `App` öffnet je nach Art `useBoard` oder `useMoodboard` (`MoodboardView`, `MoodboardCanvas`). Verschieben und Skalieren zeigen jeden Schritt (`preview`) und speichern erst am Ende (`commit`), Tastatur-Schritte kurz nach der letzten Taste. Bilder kommen als Pfad (`add_moodboard_image`) oder als rohe Bytes ohne JSON (`add_moodboard_image_data`, beim Einfügen) ins Backend und werden über `hodie-image` (in der CSP freigegeben) geladen. Die DOM-Reihenfolge der Bilder bleibt nach Erstellung (Tab-Reihenfolge), die Ebene setzt `z-index`.
 
 **Suche und Filter:** Die Textsuche läuft im Backend (`search_cards`), weil Notizen nicht in den Kartenübersichten stecken. Tag- und Prioritätsfilter wirken im Frontend (`filter.ts`). Solange ein Filter aktiv ist, ist Drag & Drop gesperrt, weil Positionen unter den sichtbaren Karten nicht den echten entsprechen.
 
@@ -155,7 +161,7 @@ Die App muss von Anfang an zur Laufzeit zwischen Sprachen umschaltbar sein, ohne
 - **Archiv:** Archivierte Karten (`archivedAt`) haben keinen Platz in der Spaltenreihenfolge. Beim Zurückholen kommen sie an ihre alte Stelle, falls frei, sonst direkt dahinter.
 - **Alte Datenbank:** Die Tabellen für Boards, Spalten, Karten usw. bleiben im Schema, werden aber nur noch einmal von `store/legacy.rs` gelesen, um sie in den Vault zu übernehmen (`legacy_imported` in `settings`).
 - **Reihenfolge:** Verschiebe-Befehle bekommen den Zielindex. Das Backend berechnet daraus den Sortierschlüssel zwischen den Nachbarn.
-- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `preset.invalid_color`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`, für den Vault außerdem `vault.not_found`, `vault.not_a_vault`, `vault.too_new`, `vault.read_only`, `vault.io`, `file.invalid`.
+- **Fehlercodes:** `not_found`, `validation.empty`, `board.no_columns`, `column.is_done`, `card.archived`, `card.not_archived`, `tag.duplicate_name`, `tag.invalid_color`, `preset.invalid_color`, `image.unsupported`, `image.too_large`, `image.unreadable`, `shortcut.invalid`, `shortcut.unavailable`, `db.too_new`, `db.error`, `internal`, für den Vault außerdem `vault.not_found`, `vault.not_a_vault`, `vault.too_new`, `vault.read_only`, `vault.io`, `file.invalid`.
 
 ## Plattformübergreifend
 

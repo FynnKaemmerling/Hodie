@@ -95,7 +95,10 @@
 }
 
 .item {
+  display: flex;
   flex: 1;
+  align-items: center;
+  gap: var(--space-3);
   min-width: 0;
   min-height: var(--list-row-height);
   padding-inline: var(--space-4) calc(var(--icon-button-size) + var(--space-3));
@@ -103,11 +106,35 @@
   border-radius: var(--radius-md);
   background: transparent;
   text-align: start;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--easing-standard);
+}
+
+/* Tells boards with columns and moodboards apart. */
+.kind {
+  flex-shrink: 0;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  stroke-width: var(--icon-stroke);
+  color: var(--color-text-secondary);
+}
+
+.name {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--easing-standard);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .item:hover {

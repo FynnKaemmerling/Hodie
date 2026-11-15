@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { api, type Board, type Id } from "../api";
+import { api, type Board, type BoardKind, type Id } from "../api";
 import { useNotifications } from "../notifications/Notifications";
 
 // Temporary storage until settings live in the Rust backend.
@@ -56,13 +56,16 @@ export function useBoards() {
   }, [boards, selectedId, select]);
 
   const create = useCallback(
-    async (name: string) => {
+    async (name: string, kind: BoardKind = "kanban") => {
       try {
-        const board = await api.createBoard(name, [
-          t("board.defaultColumns.open"),
-          t("board.defaultColumns.doing"),
-          t("board.defaultColumns.done"),
-        ]);
+        const board =
+          kind === "moodboard"
+            ? await api.createMoodboard(name)
+            : await api.createBoard(name, [
+                t("board.defaultColumns.open"),
+                t("board.defaultColumns.doing"),
+                t("board.defaultColumns.done"),
+              ]);
         setBoards((current) => [...(current ?? []), board]);
         select(board.id);
       } catch (error) {

@@ -37,14 +37,16 @@ function MenuItems({ items }: { items: ActionMenuItem[] }) {
 interface Props {
   label: string;
   items: ActionMenuItem[];
+  /** Replaces the "more" icon, e.g. a plus for a menu of things to add. */
+  icon?: ReactNode;
 }
 
 /** A "more" button that opens a menu of actions. */
-function ActionMenu({ label, items }: Props) {
+function ActionMenu({ label, items, icon }: Props) {
   return (
     <MenuTrigger>
       <Button className={styles.trigger} aria-label={label}>
-        <Ellipsis aria-hidden="true" />
+        {icon ?? <Ellipsis aria-hidden="true" />}
       </Button>
       <Popover className={styles.popover} placement="bottom end" offset={4}>
         <MenuItems items={items} />

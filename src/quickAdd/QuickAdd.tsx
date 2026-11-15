@@ -36,7 +36,8 @@ function QuickAdd() {
   const prepare = useCallback(async () => {
     setError(null);
     try {
-      const boards = await api.listBoards();
+      // Moodboards hold no cards.
+      const boards = (await api.listBoards()).filter((b) => b.kind === "kanban");
       const stored = readStoredBoard();
       const board = boards.find((b) => b.id === stored) ?? boards[0];
       if (!board) {

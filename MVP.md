@@ -50,6 +50,13 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 - Mehrere Personen können den Vault über einen Sync-Dienst (Dropbox, iCloud Drive, OneDrive, Syncthing, Netzlaufwerk, Git) gemeinsam nutzen. Hodie bemerkt Änderungen von außen und zeigt Konflikte an.
 - Bestehende Daten werden beim ersten Start einmalig aus der Datenbank in `Dokumente/Hodie` übernommen
 
+### Moodboards (Erweiterung nach dem MVP)
+- Neben Boards mit Spalten lassen sich Moodboards anlegen, in derselben Liste der Seitenleiste
+- Bilder per Auswahldialog, Ziehen aus dem Dateimanager oder Einfügen (`Mod+V`) hinzufügen
+- Bilder frei verschieben, an den Ecken mit festem Seitenverhältnis skalieren, Ebenen ändern (nach vorne, nach hinten, ganz nach vorne/hinten), löschen mit Rückgängig; alles auch per Tastatur
+- Feste Fläche, die mit den Bildern wächst und scrollt (kein Zoom)
+- Format in [`VAULT.md`](VAULT.md)
+
 ## Nicht im Umfang
 
 - Fälligkeitsdaten, Kalender- oder „Heute“-Ansicht
@@ -57,7 +64,8 @@ Eine **To-Do-App als Kanban-Board**, die nur diesen einen Zweck erfüllt und sic
 - Wiederkehrende Aufgaben
 - Eigene Synchronisation, Konten, Server (geteilt wird nur über den Vault-Ordner und einen fremden Sync-Dienst)
 - Zusammenarbeit in Echtzeit (gleichzeitiges Bearbeiten derselben Karte, Anzeige anderer Nutzer)
-- Anhänge und Bilder in Karten
+- Anhänge und Bilder in Karten (Bilder gibt es nur auf Moodboards)
+- Auf Moodboards: Zoom, Drehen, Text, Zuschneiden
 - Import und Export (auch Backup-Export)
 - Mobile Apps
 

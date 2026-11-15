@@ -17,9 +17,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, GripVertical, Plus, Settings } from "lucide-react";
+import { Archive, GripVertical, Image as ImageIcon, Plus, Settings, SquareKanban } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { Board, Id } from "../api";
+import type { Board, BoardKind, Id } from "../api";
 import logo from "../../src-tauri/icons/app-icon.svg";
 import ActionMenu, { useContextMenu, type ActionMenuItem } from "./ActionMenu";
 import IconButton from "./IconButton";
@@ -33,7 +33,7 @@ interface Props {
   boards: Board[];
   selectedId: Id | null;
   onSelect: (id: Id) => void;
-  onCreate: (name: string) => void;
+  onCreate: (name: string, kind: BoardKind) => void;
   onRename: (id: Id, name: string) => void;
   onReorder: (id: Id, index: number) => void;
   onDelete: (board: Board) => void;
@@ -61,7 +61,13 @@ function Sidebar({
   pomodoro,
 }: Props) {
   const { t } = useTranslation();
-  const [creating, setCreating] = useState(false);
+  // The kind of board being named, or null while nothing is created.
+  const [creating, setCreating] = useState<BoardKind | null>(null);
+  const selectedKind = boards.find((board) => board.id === selectedId)?.kind;
+  const addItems: ActionMenuItem[] = [
+    { id: "kanban", label: t("board.addKanban"), onAction: () => setCreating("kanban") },
+    { id: "moodboard", label: t("board.addMoodboard"), onAction: () => setCreating("moodboard") },
+  ];
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -111,9 +117,7 @@ function Sidebar({
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>{t("nav.boards")}</h2>
-        <IconButton label={t("board.add")} onClick={() => setCreating(true)}>
-          <Plus aria-hidden="true" />
-        </IconButton>
+        <ActionMenu label={t("board.add")} items={addItems} icon={<Plus aria-hidden="true" />} />
       </div>
       <DndContext
         sensors={sensors}
@@ -142,10 +146,13 @@ function Sidebar({
 
       {creating && (
         <InlineInput
-          label={t("board.name")}
-          placeholder={t("board.namePlaceholder")}
-          onSubmit={onCreate}
-          onClose={() => setCreating(false)}
+          key={creating}
+          label={t(creating === "moodboard" ? "board.moodboardName" : "board.name")}
+          placeholder={t(
+            creating === "moodboard" ? "board.moodboardPlaceholder" : "board.namePlaceholder",
+          )}
+          onSubmit={(name) => onCreate(name, creating)}
+          onClose={() => setCreating(null)}
         />
       )}
 
@@ -154,7 +161,7 @@ function Sidebar({
       </div>
 
       <div className={styles.footer}>
-        {selectedId !== null && (
+        {selectedKind === "kanban" && (
           <IconButton
             label={t("nav.archive")}
             aria-current={showingArchive ? "page" : undefined}
@@ -236,7 +243,15 @@ function BoardRow({ board, current, onSelect, onRename, onDelete }: RowProps) {
               }
             }}
           >
-            {board.name}
+            {board.kind === "moodboard" ? (
+              <ImageIcon className={styles.kind} aria-hidden="true" />
+            ) : (
+              <SquareKanban className={styles.kind} aria-hidden="true" />
+            )}
+            <span className={styles.name}>{board.name}</span>
+            {board.kind === "moodboard" && (
+              <span className={styles.visuallyHidden}>{t("board.kindMoodboard")}</span>
+            )}
           </button>
           <div className={styles.menu}>
             <ActionMenu

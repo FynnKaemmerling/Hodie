@@ -29,7 +29,7 @@ function card(id: Id, columnId: Id): CardSummary {
 // Columns 1, 2, 3 with cards [10, 11, 12], [], [30].
 function board(): BoardView {
   return {
-    board: { id: "1", name: "Board" },
+    board: { id: "1", name: "Board", kind: "kanban" },
     columns: [
       {
         id: "1",

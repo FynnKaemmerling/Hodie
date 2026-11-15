@@ -136,9 +136,43 @@ Frist: Ende Juli.
 - **Unbekannte Tag-IDs** (Tag gelöscht, `tags.json` noch nicht synchronisiert) werden nicht angezeigt, bleiben aber in der Datei.
 - **Unbekannte Spalte** (Spalte von jemand anderem gelöscht): Die Karte erscheint in der ersten Spalte. Die Datei wird erst geändert, wenn man die Karte bearbeitet oder verschiebt.
 
+## `<Moodboard>/moodboard.json`
+
+Ein **Moodboard** ist ein Ordner direkt im Vault mit einer `moodboard.json` (statt `board.json`). Ältere App-Versionen kennen die Datei nicht und übergehen den Ordner, deshalb bleibt `formatVersion` bei 1. Die Bilder liegen daneben in `images/`:
+
+```
+Ideen Wohnzimmer/
+├── moodboard.json
+└── images/
+    ├── 01JC2A….jpg
+    └── 01JC2B….png
+```
+
+```json
+{
+  "id": "01JC29…",
+  "name": "Ideen Wohnzimmer",
+  "position": "k",
+  "createdAt": "2026-11-15T20:10:00.000Z",
+  "images": [
+    { "id": "01JC2C…", "file": "01JC2A….jpg", "x": 40, "y": 40, "width": 360, "height": 240 },
+    { "id": "01JC2D…", "file": "01JC2B….png", "x": 220, "y": 120, "width": 180, "height": 180 }
+  ]
+}
+```
+
+- `position` teilt sich die Reihenfolge der Seitenleiste mit den Boards. Umbenennen, Verschieben, Löschen und Rückgängig laufen wie bei Boards, nur über diese Datei bzw. den Ordner.
+- `images` ist von hinten nach vorne geordnet: Spätere Bilder liegen über früheren. Eine Ebene zu ändern verschiebt den Eintrag in der Liste; ein eigener Sortierschlüssel ist nicht nötig, weil ohnehin die ganze Datei neu geschrieben wird.
+- `x`, `y`, `width`, `height` sind CSS-Pixel ab der linken oberen Ecke, gespeichert mit höchstens zwei Nachkommastellen. Koordinaten sind nie negativ, Seiten nie kleiner als 16.
+- `file` ist ein reiner Dateiname in `images/` (kein `/`, `\`, `:`, kein Punkt am Anfang); sonst gilt die Datei als unlesbar. So kann eine von Hand bearbeitete Datei nie auf etwas außerhalb zeigen.
+- **Bilddateien** heißen `<ULID>.<Endung>` und ändern sich nach dem Ablegen nie. Angenommen werden PNG, JPEG, GIF und WebP bis 50 MB; erkannt wird das Format am Inhalt, nicht an der Endung (`image.unsupported`, `image.too_large`, `image.unreadable`). Die Anfangsgröße ist die des Bildes, verkleinert auf höchstens 360 Pixel an der längeren Seite; bei JPEG zählt die EXIF-Ausrichtung.
+- Ein gelöschtes Bild verschwindet aus `images` und seine Datei wird versteckt (`.<Datei>.deleted`); Rückgängig holt es auf seine alte Ebene zurück. Fehlt eine Bilddatei (z. B. noch nicht synchronisiert), zeigt die App einen Platzhalter.
+- Die Oberfläche lädt Bilder über das Protokoll `hodie-image` (`image_protocol.rs`). Es liefert nur Dateien, auf die ein Moodboard des geöffneten Vaults verweist.
+- Gleichzeitige Änderungen am selben Moodboard: Die letzte gewinnt, Konfliktkopien der `moodboard.json` werden wie bei `board.json` in den Einstellungen aufgelistet.
+
 ## Dateinamen
 
-Gilt nur für Board-Ordner, denn Karten heißen immer nach ihrer ID.
+Gilt nur für Board- und Moodboard-Ordner, denn Karten heißen immer nach ihrer ID.
 
 - Diese Zeichen werden durch `-` ersetzt: `< > : " / \ | ? *` und Steuerzeichen.
 - Leerzeichen und Punkte am Anfang und Ende werden entfernt (ein Punkt am Anfang würde den Ordner verstecken). Unter Windows reservierte Namen (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`) bekommen ein `-` angehängt.

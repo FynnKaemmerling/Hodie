@@ -206,6 +206,64 @@ pub fn parse_card(text: &str) -> Option<Card> {
     Some(Card { meta, notes })
 }
 
+/// `<moodboard>/moodboard.json`
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MoodboardFile {
+    pub id: String,
+    pub name: String,
+    /// Shares the order with the boards in the sidebar.
+    pub position: String,
+    pub created_at: Timestamp,
+    /// Back to front: later images lie on top of earlier ones.
+    #[serde(default)]
+    pub images: Vec<ImageEntry>,
+    #[serde(flatten)]
+    pub extra: JsonExtra,
+}
+
+/// An image on a moodboard. Coordinates are CSS pixels from the top left
+/// corner of the moodboard.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageEntry {
+    pub id: String,
+    /// File name inside `images/`.
+    pub file: String,
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+    #[serde(flatten)]
+    pub extra: JsonExtra,
+}
+
+/// Whether `name` is a plain file name, so that a hand-edited moodboard can
+/// never point outside its `images/` folder.
+pub fn is_plain_file_name(name: &str) -> bool {
+    has_text(name)
+        && !name.starts_with('.')
+        && !name.contains(['/', '\\', ':'])
+        && !name.chars().any(char::is_control)
+}
+
+pub fn parse_moodboard(text: &str) -> Option<MoodboardFile> {
+    let file: MoodboardFile = serde_json::from_str(strip_bom(text)).ok()?;
+    let valid = has_text(&file.id)
+        && has_text(&file.name)
+        && position::is_valid(&file.position)
+        && file.images.iter().all(|image| {
+            has_text(&image.id)
+                && is_plain_file_name(&image.file)
+                && [image.x, image.y, image.width, image.height]
+                    .iter()
+                    .all(|value| value.is_finite())
+                && image.width > 0.0
+                && image.height > 0.0
+        });
+    valid.then_some(file)
+}
+
 pub fn write_card(card: &Card) -> Result<String> {
     let front = serde_yaml_ng::to_string(&card.meta)
         .map_err(|_| AppError::Internal("cannot serialise card"))?;
@@ -424,5 +482,52 @@ mod tests {
         );
         assert_eq!(parse_tags("{}"), Some(TagsFile::default()));
         assert!(parse_vault(r#"{ "formatVersion": 1, "id": "" }"#).is_none());
+    }
+
+    #[test]
+    fn moodboard_survives_a_round_trip_and_keeps_unknown_fields() {
+        let text = r#"{
+            "id": "m1", "name": "Ideen", "position": "V",
+            "createdAt": "2026-10-23T09:10:00.000Z",
+            "images": [
+                { "id": "i1", "file": "01J.png", "x": 10, "y": 20.5, "width": 300, "height": 200, "rotation": 5 },
+                { "id": "i2", "file": "02J.jpg", "x": 0, "y": 0, "width": 1, "height": 1 }
+            ],
+            "background": "white"
+        }"#;
+        let file = parse_moodboard(text).unwrap();
+        assert_eq!(file.images.len(), 2);
+        assert_eq!(file.images[0].y, 20.5);
+        assert!(file.extra.contains_key("background"));
+        assert!(file.images[0].extra.contains_key("rotation"));
+        assert_eq!(parse_moodboard(&write_json(&file).unwrap()), Some(file));
+        let empty =
+            r#"{ "id": "m", "name": "N", "position": "V", "createdAt": "2026-10-23T09:10:00Z" }"#;
+        assert!(parse_moodboard(empty).unwrap().images.is_empty());
+    }
+
+    #[test]
+    fn rejects_moodboards_with_invalid_images() {
+        let with = |image: &str| {
+            format!(
+                r#"{{ "id": "m", "name": "N", "position": "V", "createdAt": "2026-10-23T09:10:00Z", "images": [{image}] }}"#
+            )
+        };
+        let valid = r#"{ "id": "i", "file": "a.png", "x": 0, "y": 0, "width": 10, "height": 10 }"#;
+        assert!(parse_moodboard(&with(valid)).is_some());
+        for broken in [
+            valid.replace("a.png", "../a.png"),
+            valid.replace("a.png", "sub/a.png"),
+            valid.replace("a.png", "sub\\\\a.png"),
+            valid.replace("a.png", ".a.png"),
+            valid.replace("a.png", "C:a.png"),
+            valid.replace("a.png", ""),
+            valid.replace(r#""width": 10"#, r#""width": 0"#),
+            valid.replace(r#""height": 10"#, r#""height": -1"#),
+            valid.replace(r#""x": 0"#, r#""x": "links""#),
+            valid.replace(r#""id": "i""#, r#""id": " ""#),
+        ] {
+            assert_eq!(parse_moodboard(&with(&broken)), None, "{broken}");
+        }
     }
 }

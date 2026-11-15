@@ -16,14 +16,14 @@ const RESERVED_NAMES: &[&str] = &[
 
 /// Writes to a hidden temporary file next to `path` and renames it over the
 /// target, so readers (and sync clients) never see a half-written file.
-pub fn write_atomic(path: &Path, content: &str) -> Result<()> {
+pub fn write_atomic(path: &Path, content: impl AsRef<[u8]>) -> Result<()> {
     let (Some(dir), Some(name)) = (path.parent(), path.file_name()) else {
         return Err(AppError::Internal("path without file name"));
     };
     let temp = dir.join(format!(".{}.tmp", name.to_string_lossy()));
     let result = File::create(&temp)
         .and_then(|mut file| {
-            file.write_all(content.as_bytes())?;
+            file.write_all(content.as_ref())?;
             sync(&file)
         })
         .and_then(|()| fs::rename(&temp, path));

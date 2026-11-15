@@ -19,9 +19,13 @@ export const TAG_COLORS = [
 ] as const;
 export type TagColor = (typeof TAG_COLORS)[number];
 
+/** Columns with cards, or a free surface with images. */
+export type BoardKind = "kanban" | "moodboard";
+
 export interface Board {
   id: Id;
   name: string;
+  kind: BoardKind;
 }
 
 export interface Column {
@@ -131,6 +135,30 @@ export interface SubtaskPatch {
 export interface TagPatch {
   name?: string;
   color?: TagColor;
+}
+
+/** An image on a moodboard, in CSS pixels from its top left corner. */
+export interface MoodboardImage {
+  id: Id;
+  /** File name in the moodboard's images folder, see `imageUrl`. */
+  file: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface MoodboardView {
+  board: Board;
+  /** Back to front. */
+  images: MoodboardImage[];
+}
+
+export interface ImagePatch {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
 }
 
 /** Accent and base colour (#rrggbb) of a colour preset for each mode. */

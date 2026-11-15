@@ -4,6 +4,7 @@
 
 pub mod files;
 pub mod format;
+pub mod image;
 pub mod import;
 pub mod store;
 pub mod time;
@@ -15,7 +16,7 @@ use ulid::Ulid;
 
 use crate::error::{AppError, Result};
 use files::{remove_leftovers, trash_name, visible_entries, write_atomic};
-use format::{BoardFile, Card, TagsFile, VaultFile};
+use format::{BoardFile, Card, MoodboardFile, TagsFile, VaultFile};
 
 /// Highest `formatVersion` this app reads and writes.
 pub const FORMAT_VERSION: u32 = 1;
@@ -24,7 +25,9 @@ pub const META_DIR: &str = ".hodie";
 pub const VAULT_FILE: &str = "vault.json";
 const TAGS_FILE: &str = "tags.json";
 const BOARD_FILE: &str = "board.json";
+const MOODBOARD_FILE: &str = "moodboard.json";
 pub const CARDS_DIR: &str = "cards";
+pub const IMAGES_DIR: &str = "images";
 
 pub fn new_id() -> String {
     Ulid::generate().to_string()
@@ -41,6 +44,8 @@ pub struct VaultData {
     pub tags: TagsFile,
     /// Sorted by position.
     pub boards: Vec<LoadedBoard>,
+    /// Sorted by position.
+    pub moodboards: Vec<LoadedMoodboard>,
     pub problems: Vec<Problem>,
 }
 
@@ -51,6 +56,13 @@ pub struct LoadedBoard {
     pub board: BoardFile,
     /// Sorted by position; archived ones included.
     pub cards: Vec<LoadedCard>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct LoadedMoodboard {
+    /// Folder name inside the vault.
+    pub dir: String,
+    pub moodboard: MoodboardFile,
 }
 
 #[derive(Debug, PartialEq)]
@@ -113,11 +125,14 @@ impl Vault {
         remove_leftovers(&self.root)?;
         remove_leftovers(&self.root.join(META_DIR))?;
         for entry in visible_entries(&self.root)? {
-            if entry.is_dir && entry.path.join(BOARD_FILE).is_file() {
+            let is_board = entry.path.join(BOARD_FILE).is_file();
+            if entry.is_dir && (is_board || entry.path.join(MOODBOARD_FILE).is_file()) {
                 remove_leftovers(&entry.path)?;
-                let cards = entry.path.join(CARDS_DIR);
-                if cards.is_dir() {
-                    remove_leftovers(&cards)?;
+                let inner = entry
+                    .path
+                    .join(if is_board { CARDS_DIR } else { IMAGES_DIR });
+                if inner.is_dir() {
+                    remove_leftovers(&inner)?;
                 }
             }
         }
@@ -148,8 +163,14 @@ impl Vault {
 
         let mut seen: Vec<(String, PathBuf)> = Vec::new();
         for entry in visible_entries(&self.root)? {
+            if !entry.is_dir {
+                continue;
+            }
             let board_path = entry.path.join(BOARD_FILE);
-            if !entry.is_dir || !board_path.is_file() {
+            if !board_path.is_file() {
+                if entry.path.join(MOODBOARD_FILE).is_file() {
+                    self.load_moodboard(entry, &mut seen, &mut data)?;
+                }
                 continue;
             }
             let relative = Path::new(&entry.name).join(BOARD_FILE);
@@ -189,7 +210,52 @@ impl Vault {
         data.boards.sort_by(|a, b| {
             (&a.board.position, &a.board.id).cmp(&(&b.board.position, &b.board.id))
         });
+        data.moodboards.sort_by(|a, b| {
+            (&a.moodboard.position, &a.moodboard.id).cmp(&(&b.moodboard.position, &b.moodboard.id))
+        });
         Ok(data)
+    }
+
+    /// A moodboard folder: `moodboard.json` and its conflict copies. Board
+    /// and moodboard ids share `seen`, so a copied folder counts either way.
+    fn load_moodboard(
+        &self,
+        entry: files::Entry,
+        seen: &mut Vec<(String, PathBuf)>,
+        data: &mut VaultData,
+    ) -> Result<()> {
+        let relative = Path::new(&entry.name).join(MOODBOARD_FILE);
+        let Some(moodboard) = read(&entry.path.join(MOODBOARD_FILE), format::parse_moodboard)
+        else {
+            data.problems.push(Problem::Invalid { path: relative });
+            return Ok(());
+        };
+        if let Some((_, original)) = seen.iter().find(|(id, _)| *id == moodboard.id) {
+            data.problems.push(Problem::Conflict {
+                path: relative,
+                original: original.clone(),
+            });
+            return Ok(());
+        }
+        seen.push((moodboard.id.clone(), relative.clone()));
+        for other in visible_entries(&entry.path)? {
+            if other.is_dir || other.name == MOODBOARD_FILE || !other.name.ends_with(".json") {
+                continue;
+            }
+            let is_copy = read(&other.path, format::parse_moodboard)
+                .is_some_and(|copy| copy.id == moodboard.id);
+            if is_copy {
+                data.problems.push(Problem::Conflict {
+                    path: Path::new(&entry.name).join(&other.name),
+                    original: relative.clone(),
+                });
+            }
+        }
+        data.moodboards.push(LoadedMoodboard {
+            dir: entry.name,
+            moodboard,
+        });
+        Ok(())
     }
 
     fn load_tags(&self, data: &mut VaultData) -> Result<()> {
@@ -290,7 +356,64 @@ impl Vault {
         replace(&path, &format::write_json(board)?, format::parse_board)
     }
 
-    /// Hides the board's folder until the next start, so deleting can be
+    /// Creates the folder for a new moodboard and returns its name.
+    pub fn create_moodboard(&self, moodboard: &MoodboardFile) -> Result<String> {
+        let dir = files::board_dir_name(&moodboard.name, &self.taken_names()?);
+        fs::create_dir_all(self.root.join(&dir).join(IMAGES_DIR))?;
+        self.write_moodboard(&dir, moodboard)?;
+        Ok(dir)
+    }
+
+    pub fn write_moodboard(&self, dir: &str, moodboard: &MoodboardFile) -> Result<()> {
+        let path = self.root.join(dir).join(MOODBOARD_FILE);
+        replace(
+            &path,
+            &format::write_json(moodboard)?,
+            format::parse_moodboard,
+        )
+    }
+
+    /// The moodboard's file as it is on disk now; None if it is gone.
+    pub fn read_moodboard(&self, dir: &str) -> Result<Option<MoodboardFile>> {
+        read_existing(
+            &self.root.join(dir).join(MOODBOARD_FILE),
+            format::parse_moodboard,
+        )
+    }
+
+    /// Stores an image under a new name in the moodboard's `images/` folder
+    /// and returns that name. Image files never change after this, so sync
+    /// services only ever see new files.
+    pub fn write_image(&self, dir: &str, bytes: &[u8], extension: &str) -> Result<String> {
+        let images = self.root.join(dir).join(IMAGES_DIR);
+        fs::create_dir_all(&images)?;
+        let file = format!("{}.{extension}", new_id());
+        write_atomic(&images.join(&file), bytes)?;
+        Ok(file)
+    }
+
+    /// Where an image of a moodboard lies; it may be missing, e.g. not yet
+    /// synced.
+    pub fn image_path(&self, dir: &str, file: &str) -> PathBuf {
+        self.root.join(dir).join(IMAGES_DIR).join(file)
+    }
+
+    pub fn trash_image(&self, dir: &str, file: &str) -> Result<()> {
+        let images = self.root.join(dir).join(IMAGES_DIR);
+        rename_if_present(&images.join(file), &images.join(trash_name(file)))
+    }
+
+    pub fn restore_image(&self, dir: &str, file: &str) -> Result<()> {
+        let images = self.root.join(dir).join(IMAGES_DIR);
+        rename_if_present(&images.join(trash_name(file)), &images.join(file))
+    }
+
+    /// Removes an image that was just written but could not be placed.
+    pub fn remove_image(&self, dir: &str, file: &str) -> Result<()> {
+        Ok(fs::remove_file(self.image_path(dir, file))?)
+    }
+
+    /// Hides the board's (or moodboard's) folder until the next start, so deleting can be
     /// undone and files Hodie does not know survive that. Returns the name to
     /// restore it from.
     pub fn trash_board(&self, dir: &str) -> Result<String> {
@@ -374,6 +497,15 @@ impl Vault {
     }
 }
 
+/// Renames `from` to `to`; an image that is missing (not yet synced, removed
+/// by hand) is no reason to fail deleting or restoring its place.
+fn rename_if_present(from: &Path, to: &Path) -> Result<()> {
+    match fs::rename(from, to) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        result => Ok(result?),
+    }
+}
+
 pub fn card_file_name(id: &str) -> String {
     format!("{id}.md")
 }
@@ -409,7 +541,7 @@ pub(crate) mod tests {
 
     use super::*;
     use crate::model::Priority;
-    use format::{CardMeta, ColumnEntry, TagEntry, Timestamp};
+    use format::{CardMeta, ColumnEntry, MoodboardFile, TagEntry, Timestamp};
 
     /// A fresh directory under the system temp dir, removed on drop.
     pub struct TestDir(PathBuf);
@@ -764,6 +896,67 @@ pub(crate) mod tests {
         assert!(before > 0);
         fs::write(dir.path().join("notizen.txt"), [0u8; 100]).unwrap();
         assert_eq!(vault.disk_usage(), before + 100);
+    }
+
+    fn moodboard(name: &str, position: &str) -> MoodboardFile {
+        MoodboardFile {
+            id: new_id(),
+            name: name.into(),
+            position: position.into(),
+            created_at: Timestamp(1_792_746_600_000),
+            images: Vec::new(),
+            extra: Default::default(),
+        }
+    }
+
+    #[test]
+    fn moodboards_load_next_to_boards_with_their_conflict_copies() {
+        let dir = TestDir::new();
+        let vault = Vault::open(dir.path()).unwrap();
+        vault.create_board(&board("Arbeit", "V")).unwrap();
+        let ideas = moodboard("Ideen", "k");
+        let ideas_dir = vault.create_moodboard(&ideas).unwrap();
+        let file = vault.write_image(&ideas_dir, b"bild", "png").unwrap();
+        fs::copy(
+            dir.path().join("Ideen/moodboard.json"),
+            dir.path().join("Ideen/moodboard (Konfliktkopie).json"),
+        )
+        .unwrap();
+        fs::create_dir(dir.path().join("Kaputt")).unwrap();
+        fs::write(dir.path().join("Kaputt/moodboard.json"), "{").unwrap();
+        fs::write(dir.path().join("Ideen/images/.alt.png.tmp"), "halb").unwrap();
+        vault.trash_image(&ideas_dir, &file).unwrap();
+
+        let data = vault.load().unwrap();
+        assert_eq!(data.boards.len(), 1);
+        assert_eq!(data.moodboards.len(), 1);
+        assert_eq!(data.moodboards[0].moodboard, ideas);
+        assert_eq!(
+            data.problems,
+            [
+                Problem::Conflict {
+                    path: Path::new("Ideen").join("moodboard (Konfliktkopie).json"),
+                    original: Path::new("Ideen").join("moodboard.json"),
+                },
+                Problem::Invalid {
+                    path: Path::new("Kaputt").join("moodboard.json"),
+                },
+            ]
+        );
+        assert_eq!(
+            vault
+                .write_moodboard("Kaputt", &moodboard("Kaputt", "t"))
+                .unwrap_err()
+                .code(),
+            "file.invalid"
+        );
+
+        // Reopening removes the interrupted write and the deleted image.
+        Vault::open(dir.path()).unwrap();
+        let images: Vec<_> = fs::read_dir(dir.path().join("Ideen/images"))
+            .unwrap()
+            .collect();
+        assert!(images.is_empty());
     }
 
     #[test]

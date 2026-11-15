@@ -4,16 +4,20 @@
 //! Deleted boards, columns and cards are hidden on disk (see `trash_*` in the
 //! parent module) and kept here, so they can be restored until the app quits.
 
+mod moodboards;
+
 use super::format::{
     BoardFile, Card, CardMeta, ColumnEntry, SubtaskEntry, TagEntry, TagsFile, Timestamp,
 };
 use std::path::{Path, PathBuf};
 
-use super::{CARDS_DIR, LoadedBoard, LoadedCard, Problem, Vault, card_file_name, new_id};
+use super::{
+    CARDS_DIR, LoadedBoard, LoadedCard, LoadedMoodboard, Problem, Vault, card_file_name, new_id,
+};
 use crate::error::{AppError, Result};
 use crate::model::{
-    Board, BoardView, CardDetail, CardPatch, CardSummary, CardVersion, Column, ColumnView, Id,
-    NewCard, Subtask, SubtaskPatch, TAG_COLORS, Tag, TagPatch, VaultProblem,
+    Board, BoardKind, BoardView, CardDetail, CardPatch, CardSummary, CardVersion, Column,
+    ColumnView, Id, NewCard, Subtask, SubtaskPatch, TAG_COLORS, Tag, TagPatch, VaultProblem,
 };
 use crate::position;
 use crate::store::{now_ms, require_text};
@@ -23,6 +27,8 @@ pub struct VaultStore {
     tags: TagsFile,
     /// Sorted by position.
     boards: Vec<LoadedBoard>,
+    /// Sorted by position; shares the order in the sidebar with `boards`.
+    moodboards: Vec<LoadedMoodboard>,
     /// Files skipped while loading: unreadable ones and conflict copies.
     problems: Vec<Problem>,
     trash: Trash,
@@ -31,6 +37,8 @@ pub struct VaultStore {
 #[derive(Default)]
 struct Trash {
     boards: Vec<TrashedBoard>,
+    moodboards: Vec<moodboards::TrashedMoodboard>,
+    images: Vec<moodboards::TrashedImage>,
     columns: Vec<TrashedColumn>,
     cards: Vec<TrashedCard>,
 }
@@ -116,6 +124,7 @@ impl VaultStore {
             vault,
             tags: data.tags,
             boards: data.boards,
+            moodboards: data.moodboards,
             problems: data.problems,
             trash: Trash::default(),
         })
@@ -126,10 +135,13 @@ impl VaultStore {
     /// itself does not count.
     pub fn refresh(&mut self) -> Result<bool> {
         let data = self.vault.load()?;
-        let changed =
-            data.tags != self.tags || data.boards != self.boards || data.problems != self.problems;
+        let changed = data.tags != self.tags
+            || data.boards != self.boards
+            || data.moodboards != self.moodboards
+            || data.problems != self.problems;
         self.tags = data.tags;
         self.boards = data.boards;
+        self.moodboards = data.moodboards;
         self.problems = data.problems;
         Ok(changed)
     }
@@ -424,14 +436,36 @@ impl VaultStore {
 
     // Boards
 
+    /// Boards and moodboards in their shared sidebar order.
     pub fn list_boards(&self) -> Vec<Board> {
-        self.boards
+        let mut entries: Vec<(&str, Board)> = self
+            .boards
             .iter()
-            .map(|board| Board {
-                id: board.board.id.clone(),
-                name: board.board.name.clone(),
+            .map(|board| {
+                let file = &board.board;
+                (
+                    file.position.as_str(),
+                    Board {
+                        id: file.id.clone(),
+                        name: file.name.clone(),
+                        kind: BoardKind::Kanban,
+                    },
+                )
             })
-            .collect()
+            .chain(self.moodboards.iter().map(|loaded| {
+                let file = &loaded.moodboard;
+                (
+                    file.position.as_str(),
+                    Board {
+                        id: file.id.clone(),
+                        name: file.name.clone(),
+                        kind: BoardKind::Moodboard,
+                    },
+                )
+            }))
+            .collect();
+        entries.sort_by(|a, b| (a.0, &a.1.id).cmp(&(b.0, &b.1.id)));
+        entries.into_iter().map(|(_, board)| board).collect()
     }
 
     /// The board with its columns and the active (not archived) cards.
@@ -470,6 +504,7 @@ impl VaultStore {
             board: Board {
                 id: board.board.id.clone(),
                 name: board.board.name.clone(),
+                kind: BoardKind::Kanban,
             },
             columns,
         })
@@ -495,11 +530,7 @@ impl VaultStore {
             });
             previous = Some(key);
         }
-        let keys: Vec<String> = self
-            .boards
-            .iter()
-            .map(|b| b.board.position.clone())
-            .collect();
+        let keys = self.sidebar_keys("");
         let file = BoardFile {
             id: new_id(),
             name: name.clone(),
@@ -516,10 +547,17 @@ impl VaultStore {
             cards: Vec::new(),
         });
         self.sort_boards();
-        Ok(Board { id, name })
+        Ok(Board {
+            id,
+            name,
+            kind: BoardKind::Kanban,
+        })
     }
 
     pub fn rename_board(&mut self, id: &str, name: &str) -> Result<()> {
+        if self.is_moodboard(id) {
+            return self.rename_moodboard(id, name);
+        }
         let name = require_text(name)?;
         let b = self.board_index(id)?;
         let mut file = self.fresh_board(b)?;
@@ -527,22 +565,37 @@ impl VaultStore {
         self.save_board(b, file)
     }
 
-    fn other_board_keys(&self, id: &str) -> Vec<String> {
-        self.boards
+    /// Position keys of all boards and moodboards except `except`, sorted:
+    /// both share one order in the sidebar.
+    fn sidebar_keys(&self, except: &str) -> Vec<String> {
+        let mut keys: Vec<(&str, &str)> = self
+            .boards
             .iter()
-            .filter(|board| board.board.id != id)
-            .map(|board| board.board.position.clone())
-            .collect()
+            .map(|board| (board.board.position.as_str(), board.board.id.as_str()))
+            .chain(self.moodboards.iter().map(|loaded| {
+                let file = &loaded.moodboard;
+                (file.position.as_str(), file.id.as_str())
+            }))
+            .filter(|(_, id)| *id != except)
+            .collect();
+        keys.sort();
+        keys.into_iter().map(|(key, _)| key.to_owned()).collect()
     }
 
     pub fn reorder_board(&mut self, id: &str, index: usize) -> Result<()> {
+        if self.is_moodboard(id) {
+            return self.reorder_moodboard(id, index);
+        }
         let b = self.board_index(id)?;
         let mut file = self.fresh_board(b)?;
-        file.position = position::key_at(&self.other_board_keys(id), index)?;
+        file.position = position::key_at(&self.sidebar_keys(id), index)?;
         self.save_board(b, file)
     }
 
     pub fn delete_board(&mut self, id: &str) -> Result<()> {
+        if self.is_moodboard(id) {
+            return self.delete_moodboard(id);
+        }
         let b = self.board_index(id)?;
         let trash = self.vault.trash_board(&self.boards[b].dir)?;
         let board = self.boards.remove(b);
@@ -551,6 +604,9 @@ impl VaultStore {
     }
 
     pub fn restore_board(&mut self, id: &str) -> Result<()> {
+        if self.is_trashed_moodboard(id) {
+            return self.restore_moodboard(id);
+        }
         let t = self
             .trash
             .boards
@@ -564,7 +620,7 @@ impl VaultStore {
         let TrashedBoard { mut board, .. } = self.trash.boards.remove(t);
         board.dir = dir;
         let wanted = board.board.position.clone();
-        let key = position::free_key(&self.other_board_keys(id), &wanted)?;
+        let key = position::free_key(&self.sidebar_keys(id), &wanted)?;
         self.boards.push(board);
         self.sort_boards();
         if key != wanted {

@@ -19,14 +19,37 @@
   "board": {
     "name": "Name des Boards",
     "namePlaceholder": "z. B. Arbeit",
-    "add": "Neues Board",
+    "add": "Neu anlegen",
     "defaultName": "Meine Aufgaben",
     "defaultColumns": {
       "open": "Offen",
       "doing": "In Arbeit",
       "done": "Erledigt"
     },
-    "move": "„{{name}}“ verschieben"
+    "move": "„{{name}}“ verschieben",
+    "addKanban": "Board mit Spalten",
+    "addMoodboard": "Moodboard",
+    "moodboardName": "Name des Moodboards",
+    "moodboardPlaceholder": "z. B. Ideen Wohnzimmer",
+    "kindMoodboard": "Moodboard"
+  },
+  "moodboard": {
+    "add": "Bilder hinzufügen",
+    "imageFiles": "Bilder",
+    "selection": "Ausgewähltes Bild",
+    "imageLabel": "Bild {{position}} von {{total}}",
+    "instructions": "Pfeiltasten verschieben das Bild, mit Umschalt in größeren Schritten. Plus und Minus ändern die Größe. {{forward}} und {{backward}} legen es eine Ebene nach vorne oder hinten, mit Umschalt ganz nach vorne oder hinten. Entf löscht es.",
+    "missing": "Die Bilddatei fehlt",
+    "layer": {
+      "front": "Ganz nach vorne",
+      "forward": "Eine Ebene nach vorne",
+      "backward": "Eine Ebene nach hinten",
+      "back": "Ganz nach hinten"
+    },
+    "empty": {
+      "title": "Noch keine Bilder",
+      "description": "Ziehe Bilder hierher, füge sie mit {{paste}} ein oder wähle sie aus."
+    }
   },
   "column": {
     "name": "Name der Spalte",
@@ -68,7 +91,8 @@
     "cardRestored": "Karte „{{title}}“ ist wieder auf dem Board",
     "subtaskDeleted": "Teilaufgabe „{{title}}“ gelöscht",
     "tagDeleted": "Tag „{{name}}“ gelöscht",
-    "shortcutSaved": "Neues Kürzel: {{shortcut}}"
+    "shortcutSaved": "Neues Kürzel: {{shortcut}}",
+    "imageDeleted": "Bild gelöscht"
   },
   "dnd": {
     "instructions": "Leertaste drücken, um das Element aufzunehmen. Mit den Pfeiltasten verschieben, mit der Leertaste ablegen, mit Escape abbrechen.",
@@ -223,6 +247,11 @@
     },
     "preset": {
       "invalid_color": "Ungültige Farbe."
+    },
+    "image": {
+      "unsupported": "Dieses Dateiformat wird nicht unterstützt. Möglich sind PNG, JPEG, GIF und WebP.",
+      "too_large": "Das Bild ist zu groß (höchstens 50 MB).",
+      "unreadable": "Die Bilddatei konnte nicht gelesen werden."
     }
   },
   "panel": {

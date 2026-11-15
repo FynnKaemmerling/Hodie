@@ -19,14 +19,37 @@
   "board": {
     "name": "Board name",
     "namePlaceholder": "e.g. Work",
-    "add": "New board",
+    "add": "Create new",
     "defaultName": "My tasks",
     "defaultColumns": {
       "open": "To do",
       "doing": "In progress",
       "done": "Done"
     },
-    "move": "Move “{{name}}”"
+    "move": "Move “{{name}}”",
+    "addKanban": "Board with columns",
+    "addMoodboard": "Moodboard",
+    "moodboardName": "Moodboard name",
+    "moodboardPlaceholder": "e.g. Living room ideas",
+    "kindMoodboard": "Moodboard"
+  },
+  "moodboard": {
+    "add": "Add images",
+    "imageFiles": "Images",
+    "selection": "Selected image",
+    "imageLabel": "Image {{position}} of {{total}}",
+    "instructions": "Arrow keys move the image, with Shift in larger steps. Plus and minus change its size. {{forward}} and {{backward}} bring it forward or send it backward one layer, with Shift to the front or back. Delete removes it.",
+    "missing": "The image file is missing",
+    "layer": {
+      "front": "Bring to front",
+      "forward": "Bring forward",
+      "backward": "Send backward",
+      "back": "Send to back"
+    },
+    "empty": {
+      "title": "No images yet",
+      "description": "Drag images here, paste them with {{paste}} or pick them."
+    }
   },
   "column": {
     "name": "Column name",
@@ -68,7 +91,8 @@
     "cardRestored": "Card “{{title}}” is back on the board",
     "subtaskDeleted": "Subtask “{{title}}” deleted",
     "tagDeleted": "Tag “{{name}}” deleted",
-    "shortcutSaved": "New shortcut: {{shortcut}}"
+    "shortcutSaved": "New shortcut: {{shortcut}}",
+    "imageDeleted": "Image deleted"
   },
   "dnd": {
     "instructions": "Press space to pick up the item. Use the arrow keys to move it, space to drop it, and escape to cancel.",
@@ -223,6 +247,11 @@
     },
     "preset": {
       "invalid_color": "Invalid colour."
+    },
+    "image": {
+      "unsupported": "This file format is not supported. Use PNG, JPEG, GIF or WebP.",
+      "too_large": "The image is too large (50 MB at most).",
+      "unreadable": "The image file could not be read."
     }
   },
   "panel": {
