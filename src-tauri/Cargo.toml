@@ -1,6 +1,6 @@
 [package]
 name = "hodie"
-version = "0.3.0"
+version = "0.3.1"
 description = "To-do app as a Kanban board"
 authors = ["Fynn Kämmerling"]
 license = "MIT"

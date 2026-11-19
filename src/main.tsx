@@ -44,6 +44,12 @@ if (windowLabel() === "main") {
 }
 if (windowLabel() === "main") void syncPalette();
 
+// overflow: hidden (global.css) stops the user, but not scripts: dnd-kit's
+// auto-scroll and scrollIntoView can still move the document. Put it back.
+window.addEventListener("scroll", () => {
+  if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+});
+
 // Every board, card and tag id belongs to the vault; after a switch both
 // windows simply start over.
 void listen(VAULT_CHANGED, () => window.location.reload());

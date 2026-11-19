@@ -13,6 +13,14 @@ body,
   margin: 0;
 }
 
+/* Only areas inside the app scroll, never the document itself. Otherwise
+   anything poking past the window edge (a popover, a dragged column) adds a
+   second scrollbar and shifts the whole app, leaving an unpainted strip. */
+html,
+body {
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-family);
   font-size: var(--font-size-md);
